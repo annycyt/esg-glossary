@@ -2,567 +2,1242 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="永續速查">
-<title>永續名詞速查 · iPAS對齊版</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESG 永續領域架構關係圖</title>
 <style>
 :root{
-  --bg:#0E1117;--bg2:#161B25;--bg3:#1E2535;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
-  --text:#E8EDF5;--text2:#8B95A8;--text3:#5A6270;
-  --accent:#3B82F6;--green:#10B981;--amber:#F59E0B;
-  --teal-fill:#0D4F3C;--teal-stroke:#1D9E75;--teal-text:#6EE7B7;
-  --blue-fill:#0C2A4A;--blue-stroke:#185FA5;--blue-text:#93C5FD;
-  --purple-fill:#1E1654;--purple-stroke:#534AB7;--purple-text:#C4B5FD;
-  --amber-fill:#3D2A0A;--amber-stroke:#854F0B;--amber-text:#FCD34D;
-  --gray-fill:#1A1F2B;--gray-stroke:#444441;--gray-text:#9CA3AF;
-  --radius:10px;--radius-sm:6px;
+  --bg:#0e1117;--bg2:#161b27;--bg3:#1e2535;--bg4:#252d40;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#dde2f0;--text2:#8e98b5;--text3:#4e5875;
+  --font:'IBM Plex Sans TC','Noto Sans TC',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;overflow-x:hidden}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
 
-/* ── TOPBAR ── */
-.topbar{position:sticky;top:0;z-index:100;background:rgba(14,17,23,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:10px 16px 0}
-.app-name{font-size:12px;font-weight:500;letter-spacing:.12em;color:var(--text2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ── header ── */
+#hdr{flex-shrink:0;display:flex;align-items:center;gap:14px;padding:9px 18px;background:var(--bg2);border-bottom:1px solid var(--border2)}
+#hdr h1{font-size:13px;font-weight:500;white-space:nowrap}
+#hdr .sub{font-size:11px;color:var(--text3)}
+#srch{flex:1;max-width:240px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text);font-family:var(--font);outline:none}
+#srch:focus{border-color:rgba(255,255,255,0.25)}
+#srch::placeholder{color:var(--text3)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3);white-space:nowrap}
+.leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
 
-/* ── TABS ── */
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--border)}
-.tab{flex:1;text-align:center;padding:8px 0 10px;font-size:13px;font-weight:400;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em}
-.tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:500}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
+/* ── layout ── */
+#body{display:flex;flex:1;overflow:hidden}
+#map-wrap{flex:1;overflow:auto;padding:28px 24px 40px}
+#map-wrap::-webkit-scrollbar{width:6px;height:6px}
+#map-wrap::-webkit-scrollbar-track{background:transparent}
+#map-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-/* ── SEARCH (glossary) ── */
-.search-wrap{position:relative;padding:10px 16px 8px}
-.search-wrap svg{position:absolute;left:27px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
-#searchBox{width:100%;padding:9px 12px 9px 36px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
-#searchBox:focus{border-color:var(--accent)}
-#searchBox::placeholder{color:var(--text3)}
+/* ── panel ── */
+#panel{width:360px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border2);overflow-y:auto;display:flex;flex-direction:column;transition:width .25s,opacity .2s}
+#panel.closed{width:0;opacity:0;overflow:hidden;border:none}
+#panel-inner{padding:18px 16px;min-width:360px}
+#panel-inner::-webkit-scrollbar{width:4px}
+.p-close{display:flex;justify-content:flex-end;margin-bottom:10px}
+.p-close button{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:var(--font)}
+.p-close button:hover{background:var(--bg4)}
+.p-badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;margin-bottom:8px;letter-spacing:.04em}
+.p-title{font-size:16px;font-weight:500;margin-bottom:2px}
+.p-en{font-size:11px;color:var(--text3);margin-bottom:12px;font-family:var(--mono)}
+.p-sec{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin:12px 0 5px;font-weight:500}
+.p-box{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;margin-bottom:7px;font-size:12px;line-height:1.75;color:var(--text2)}
+.p-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px}
+.p-cell{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 9px}
+.p-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:3px;font-weight:500}
+.p-val{font-size:11px;line-height:1.65;color:var(--text2);white-space:pre-wrap}
+.p-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.chip{font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--text2);cursor:pointer;border:1px solid var(--border2);transition:all .1s;font-family:var(--font)}
+.chip:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.p-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:200px;color:var(--text3);font-size:12px;text-align:center;gap:8px;padding:20px}
 
-/* ── CAT BAR ── */
-.cat-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 16px 8px;scrollbar-width:none}
-.cat-bar::-webkit-scrollbar{display:none}
-.cat-btn{white-space:nowrap;font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;flex-shrink:0;transition:all .15s;font-family:inherit}
-.cat-btn.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
-
-/* ── LOADING ── */
-#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;gap:16px}
-.spinner{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:13px;color:var(--text2)}
-#errorBox{display:none;text-align:center;padding:2rem;font-size:13px;color:#F87171}
-.retry-btn{margin-top:12px;padding:8px 20px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit}
-
-/* ── GLOSSARY ── */
-.stats{font-size:11px;color:var(--text3);padding:4px 16px 6px;font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)}
-#glossaryMain{display:none}
-#glossaryMain.show{display:block}
-.sec-hdr{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:12px 16px 5px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace}
-.card{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
-.card:active{background:var(--bg3)}
-.card-hdr{padding:11px 16px;display:flex;gap:10px;align-items:flex-start}
-.abbr{font-size:11px;font-weight:500;background:rgba(59,130,246,.12);color:#93C5FD;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;margin-top:1px}
-.card-meta{flex:1;min-width:0}
-.card-zh{font-size:14px;font-weight:500;line-height:1.4}
-.card-en{font-size:11px;color:var(--text3);margin-top:2px}
-.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
-.tag{font-size:10px;padding:2px 6px;border-radius:3px}
-.tag-type{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
-.tag-exam{background:rgba(16,185,129,.12);color:#6EE7B7}
-.chev{color:var(--text3);flex-shrink:0;margin-top:3px;font-size:16px;transition:transform .2s}
-.card.open .chev{transform:rotate(180deg)}
-.card-body{display:none;padding:0 16px 12px;font-size:13px;line-height:1.7;animation:fadeUp .18s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.card.open .card-body{display:block}
-.blbl{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:8px 0 4px;font-family:'DM Mono',monospace}
-.btext{color:var(--text2)}
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
-.dcell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 9px}
-.dcell.full{grid-column:1/-1}
-.dlbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
-.dval{font-size:12px;color:var(--text2)}
-.rel-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
-.rel-chip{font-size:11px;padding:3px 9px;border-radius:4px;background:rgba(59,130,246,.1);color:#93C5FD;border:1px solid rgba(59,130,246,.2);cursor:pointer;transition:all .15s}
-.rel-chip:active{background:rgba(59,130,246,.3)}
-.empty{padding:3rem 1rem;text-align:center;font-size:13px;color:var(--text3)}
-
-/* ── MAP ── */
-.map-wrap{padding:12px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.map-hint{font-size:11px;color:var(--text3);text-align:center;padding:4px 0 8px}
-/* Map node hover */
-svg .node{cursor:pointer}
-svg .node:hover rect{opacity:.8}
-
-/* ── INFO PANEL ── */
-.info-panel{display:none;margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;animation:fadeUp .18s ease}
-.info-panel.show{display:block}
-.ip-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.ip-title{font-size:14px;font-weight:500}
-.ip-close{font-size:20px;color:var(--text2);cursor:pointer;line-height:1}
-.ip-body{padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text2)}
-.ip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.ip-cell{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--border)}
-.ip-lbl{font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace}
-.ip-val{font-size:12px;color:var(--text)}
-
-/* ── FOOTER ── */
-.footer{padding:14px;text-align:center;font-size:11px;color:var(--text3);border-top:1px solid var(--border);font-family:'DM Mono',monospace}
+/* ── SVG node styles ── */
+.nd{cursor:pointer;transition:opacity .1s}
+.nd:hover rect,.nd:hover .pill{opacity:.85}
+.nd.dim{opacity:.22}
+.nd.hi rect,.nd.hi .pill{stroke-width:1.5!important}
 </style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
+<div id="app">
 
-<div class="topbar">
-  <div class="app-name"><span class="dot"></span>永續速查 · iPAS對齊版</div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('map',this)">🗺 架構關係圖</div>
-    <div class="tab" onclick="switchTab('glossary',this)">📚 名詞速查</div>
+<div id="hdr">
+  <div>
+    <h1>ESG 永續領域架構關係圖</h1>
+    <div class="sub">105 個名詞 · 10 大分類 · 點擊節點查看完整說明</div>
   </div>
+  <input id="srch" placeholder="搜尋名詞 / 縮寫…" autocomplete="off">
+  <div class="legend" id="legend"></div>
 </div>
 
-<!-- ══ TAB 1: MAP ══ -->
-<div id="tab-map" class="tab-panel active">
-  <div class="map-hint">點擊任一節點查看詳細說明</div>
-  <div class="map-wrap">
-<svg width="100%" viewBox="0 0 680 820" role="img" xmlns="http://www.w3.org/2000/svg">
-<title>永續領域架構關係圖</title>
-<desc>從國際氣候公約出發，往下分為歐盟法規與國際準則兩大分支，再延伸至台灣專區與工具機制</desc>
-<defs>
-<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</marker>
-</defs>
-
-<!-- 頂部標籤 -->
-<text x="340" y="20" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.1em;font-family:'DM Mono',monospace;text-transform:uppercase">氣候議題根源</text>
-
-<!-- UNFCCC -->
-<g class="node" onclick="showInfo('unfccc')">
-<rect x="28" y="28" width="108" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
-<text x="82" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">UNFCCC</text>
-<text x="82" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">氣候框架公約</text>
-</g>
-<line x1="136" y1="51" x2="162" y2="51" stroke="#1D9E75" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- 巴黎協定 -->
-<g class="node" onclick="showInfo('paris')">
-<rect x="164" y="28" width="120" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="1.5"/>
-<text x="224" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">巴黎協定</text>
-<text x="224" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">Paris Agreement</text>
-</g>
-<line x1="284" y1="51" x2="312" y2="51" stroke="#1D9E75" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- NDC -->
-<g class="node" onclick="showInfo('ndc')">
-<rect x="314" y="28" width="100" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
-<text x="364" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">NDC</text>
-<text x="364" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">各國承諾</text>
-</g>
-<line x1="414" y1="51" x2="440" y2="51" stroke="#1D9E75" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- COP -->
-<g class="node" onclick="showInfo('cop')">
-<rect x="442" y="28" width="100" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
-<text x="492" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">COP</text>
-<text x="492" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">每年檢視</text>
-</g>
-
-<!-- 箭頭到全球減碳壓力 -->
-<line x1="340" y1="74" x2="340" y2="96" stroke="#5A6270" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- 全球減碳壓力 -->
-<g class="node" onclick="showInfo('pressure')">
-<rect x="210" y="98" width="260" height="40" rx="8" fill="#1A1F2B" stroke="#444441" stroke-width="0.5"/>
-<text x="340" y="118" text-anchor="middle" dominant-baseline="central" style="font-size:13px;font-weight:500;fill:#E8EDF5;font-family:'Noto Sans TC',sans-serif">全球減碳壓力</text>
-</g>
-
-<!-- 分叉箭頭 -->
-<line x1="280" y1="138" x2="194" y2="164" stroke="#5A6270" stroke-width="1" marker-end="url(#arr)"/>
-<line x1="400" y1="138" x2="486" y2="164" stroke="#5A6270" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- 左側標籤 -->
-<text x="148" y="162" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.08em;font-family:'DM Mono',monospace">歐盟法規</text>
-<!-- 右側標籤 -->
-<text x="532" y="162" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.08em;font-family:'DM Mono',monospace">國際準則</text>
-
-<!-- ═══ 左欄：歐盟法規 ═══ -->
-<!-- CSRD -->
-<g class="node" onclick="showInfo('csrd')">
-<rect x="44" y="170" width="148" height="46" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="188" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">CSRD</text>
-<text x="118" y="204" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">企業永續報告指令</text>
-</g>
-<line x1="118" y1="216" x2="118" y2="234" stroke="#185FA5" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
-
-<!-- ESRS -->
-<g class="node" onclick="showInfo('esrs')">
-<rect x="44" y="236" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="254" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">ESRS</text>
-<text x="118" y="270" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">報告格式準則</text>
-</g>
-<line x1="118" y1="280" x2="118" y2="298" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- CSDDD -->
-<g class="node" onclick="showInfo('csddd')">
-<rect x="44" y="300" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="318" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">CSDDD</text>
-<text x="118" y="334" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">供應鏈盡職調查</text>
-</g>
-<line x1="118" y1="344" x2="118" y2="362" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- CBAM -->
-<g class="node" onclick="showInfo('cbam')">
-<rect x="44" y="364" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="382" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">CBAM</text>
-<text x="118" y="398" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">碳邊境調整機制</text>
-</g>
-<line x1="118" y1="408" x2="118" y2="426" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- EU ETS -->
-<g class="node" onclick="showInfo('euets')">
-<rect x="44" y="428" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="446" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">EU ETS</text>
-<text x="118" y="462" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">歐盟碳排放交易</text>
-</g>
-<line x1="118" y1="472" x2="118" y2="490" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- SFDR -->
-<g class="node" onclick="showInfo('sfdr')">
-<rect x="44" y="492" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="510" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">SFDR</text>
-<text x="118" y="526" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">永續金融揭露</text>
-</g>
-<line x1="118" y1="536" x2="118" y2="554" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- EU Taxonomy -->
-<g class="node" onclick="showInfo('eutax')">
-<rect x="44" y="556" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="118" y="574" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">EU Taxonomy</text>
-<text x="118" y="590" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">永續金融分類法</text>
-</g>
-
-<!-- ═══ 右欄：國際準則 ═══ -->
-<!-- IFRS/ISSB -->
-<g class="node" onclick="showInfo('issb')">
-<rect x="488" y="170" width="148" height="46" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="188" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">IFRS / ISSB</text>
-<text x="562" y="204" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">永續揭露準則</text>
-</g>
-<line x1="562" y1="216" x2="562" y2="234" stroke="#534AB7" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
-
-<!-- S1/S2 -->
-<g class="node" onclick="showInfo('s1s2')">
-<rect x="488" y="236" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="254" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">S1 / S2</text>
-<text x="562" y="270" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">一般／氣候相關</text>
-</g>
-<line x1="562" y1="280" x2="562" y2="298" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- GRI -->
-<g class="node" onclick="showInfo('gri')">
-<rect x="488" y="300" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="318" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">GRI</text>
-<text x="562" y="334" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">社會視角準則</text>
-</g>
-<line x1="562" y1="344" x2="562" y2="362" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- TCFD -->
-<g class="node" onclick="showInfo('tcfd')">
-<rect x="488" y="364" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="382" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">TCFD</text>
-<text x="562" y="398" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">已併入 ISSB S2</text>
-</g>
-<line x1="562" y1="408" x2="562" y2="426" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- TNFD -->
-<g class="node" onclick="showInfo('tnfd')">
-<rect x="488" y="428" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="446" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">TNFD</text>
-<text x="562" y="462" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">自然相關風險揭露</text>
-</g>
-<line x1="562" y1="472" x2="562" y2="490" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- CDP -->
-<g class="node" onclick="showInfo('cdp')">
-<rect x="488" y="492" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="510" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">CDP</text>
-<text x="562" y="526" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">碳揭露評比平台</text>
-</g>
-<line x1="562" y1="536" x2="562" y2="554" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
-
-<!-- SASB -->
-<g class="node" onclick="showInfo('sasb')">
-<rect x="488" y="556" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="562" y="574" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">SASB</text>
-<text x="562" y="590" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">行業別揭露準則</text>
-</g>
-
-<!-- 連線到台灣專區 -->
-<line x1="192" y1="490" x2="260" y2="650" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="4 3"/>
-<line x1="488" y1="490" x2="420" y2="650" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="4 3"/>
-<line x1="192" y1="386" x2="280" y2="650" stroke="#F59E0B" stroke-width="0.5" stroke-dasharray="4 3"/>
-<line x1="488" y1="386" x2="400" y2="650" stroke="#F59E0B" stroke-width="0.5" stroke-dasharray="4 3"/>
-
-<!-- 台灣標籤 -->
-<text x="340" y="646" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.08em;font-family:'DM Mono',monospace">台灣專區</text>
-
-<!-- 台灣碳費 -->
-<g class="node" onclick="showInfo('tw-carbon')">
-<rect x="172" y="654" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="232" y="672" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">台灣碳費</text>
-<text x="232" y="688" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">2025年起徵</text>
-</g>
-
-<!-- 氣候法 -->
-<g class="node" onclick="showInfo('tw-climate')">
-<rect x="300" y="654" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="360" y="672" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">氣候變遷因應法</text>
-<text x="360" y="688" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">2050淨零目標</text>
-</g>
-
-<!-- T-REC -->
-<g class="node" onclick="showInfo('tw-trec')">
-<rect x="172" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="232" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">T-REC</text>
-<text x="232" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">再生能源憑證</text>
-</g>
-
-<!-- TCEX -->
-<g class="node" onclick="showInfo('tw-tcex')">
-<rect x="300" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="360" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">TCEX</text>
-<text x="360" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">台灣碳交易所</text>
-</g>
-
-<!-- SBTi -->
-<g class="node" onclick="showInfo('sbti')">
-<rect x="428" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="488" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">SBTi</text>
-<text x="488" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">科學基礎減量目標</text>
-</g>
-
-<!-- RE100 -->
-<g class="node" onclick="showInfo('re100')">
-<rect x="44" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="104" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">RE100</text>
-<text x="104" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">再生能源100%倡議</text>
-</g>
-
-<!-- 圖例 -->
-<rect x="44" y="782" width="12" height="12" rx="2" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
-<text x="62" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">國際公約</text>
-<rect x="130" y="782" width="12" height="12" rx="2" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
-<text x="148" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">歐盟法規</text>
-<rect x="216" y="782" width="12" height="12" rx="2" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
-<text x="234" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">國際準則</text>
-<rect x="302" y="782" width="12" height="12" rx="2" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
-<text x="320" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">台灣工具</text>
-</svg>
-  </div>
-
-  <!-- 說明面板 -->
-  <div class="info-panel" id="infoPanel">
-    <div class="ip-hdr">
-      <span class="ip-title" id="ipTitle"></span>
-      <span class="ip-close" onclick="closeInfo()">×</span>
-    </div>
-    <div class="ip-body">
-      <div id="ipDef"></div>
-      <div class="ip-grid" id="ipGrid"></div>
-    </div>
-  </div>
-  <div class="footer">點擊節點 → 定義 · 考試重點 · 台灣觀點</div>
+<div id="body">
+  <div id="map-wrap"><svg id="svg"></svg></div>
+  <div id="panel" class="closed"><div id="panel-inner">
+    <div class="p-empty">點擊任一節點<br>查看完整說明</div>
+  </div></div>
 </div>
 
-<!-- ══ TAB 2: GLOSSARY ══ -->
-<div id="tab-glossary" class="tab-panel">
-  <div class="search-wrap">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input id="searchBox" type="search" placeholder="搜尋縮寫、中文名稱、關鍵字…" autocomplete="off">
-  </div>
-  <div class="cat-bar" id="catBar"></div>
-  <div id="loading"><div class="spinner"></div><div class="loading-text">載入名詞資料庫…</div></div>
-  <div id="errorBox"><div>無法載入資料</div><div style="margin-top:6px;font-size:12px;color:var(--text3)" id="errMsg"></div><button class="retry-btn" onclick="loadData()">重試</button></div>
-  <div id="glossaryMain">
-    <div class="stats" id="stats"></div>
-    <div id="glossaryList"></div>
-    <div class="footer">資料來源：Google Sheets · 每次開啟自動更新</div>
-  </div>
 </div>
-
 <script>
-// ═══════════════════════════════════════════════
-// Google Sheet CSV URL
-// ═══════════════════════════════════════════════
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1YS8E7d2KVQw1MXdh_HPxUuvy1m5xMrjsYVBSc0BqSu0/export?format=csv";
-
-// ═══════════════════════════════════════════════
-// 架構圖資料
-// ═══════════════════════════════════════════════
-const MAP_INFO = {
-  unfccc:{t:"UNFCCC 聯合國氣候變化綱要公約",d:"1992年通過的國際環境公約，奠定全球氣候治理的法律基礎。幾乎所有國家都是締約方，每年召開締約方大會（COP）。",e:"UNFCCC是巴黎協定的母公約；COP與UNFCCC的關係是考點。",tw:"台灣非UN成員，但依照UNFCCC精神制定氣候政策。"},
-  paris:{t:"巴黎協定 Paris Agreement",d:"2015年COP21通過，目標將全球升溫控制在2°C以內（努力1.5°C）。各國提交自主貢獻（NDC）並每5年更新，是全球淨零目標的法律基礎。",e:"1.5°C vs 2°C目標；NDC定義；2050淨零的法律基礎，是必考核心。",tw:"台灣2050淨零排放路徑以巴黎協定精神為依據。"},
-  ndc:{t:"NDC 國家自主貢獻",d:"各國在巴黎協定下自行訂定並提交的減碳承諾，每5年必須更新且力道只能增強。與京都議定書自上而下不同，NDC是自下而上機制。",e:"NDC是自下而上的機制；與京都議定書的差異是考點。",tw:"台灣以「自願承諾」方式發布相當於NDC的2050淨零路徑。"},
-  cop:{t:"COP 締約方大會",d:"UNFCCC每年召開的最高決策機構。COP21通過巴黎協定（2015）、COP26達成格拉斯哥氣候公約（2021）、COP28審查1.5°C進展（2023）。",e:"COP21=巴黎協定（2015）；COP26=格拉斯哥（2021）；年份與決議是考點。",tw:"台灣以觀察員角色關注COP進展，並同步調整氣候法規。"},
-  pressure:{t:"全球減碳壓力",d:"巴黎協定確立的1.5°C目標，透過各國NDC承諾、歐盟法規（CBAM/CSRD）、國際準則（ISSB/GRI）、供應鏈要求等多元管道，形成對企業的全面減碳壓力。",e:"理解壓力來源的多元性：法規強制（CSRD/CBAM）＋市場自願（SBTi/CDP）＋供應鏈（Scope 3）。",tw:"台灣製造業面臨歐美客戶、CBAM、台灣碳費三重壓力。"},
-  csrd:{t:"CSRD 歐盟企業永續報告指令",d:"2024年起分階段取代NFRD，要求大型企業依ESRS準則揭露詳細ESG資訊，採雙重重大性評估，強制第三方查證。台灣有歐洲客戶的企業將受到影響。",e:"CSRD取代NFRD；ESRS是底層準則；雙重重大性定義是考點。",tw:"台灣有歐洲大客戶或子公司的企業，需提供CSRD所需的供應鏈ESG數據。"},
-  esrs:{t:"ESRS 歐洲永續報告準則",d:"CSRD底層的具體揭露準則，由EFRAG制定，涵蓋氣候（E1）、生物多樣性（E4）、供應鏈（S2）等12個主題準則，是CSRD的技術實施細節。",e:"ESRS是CSRD的執行準則；E1氣候準則與TCFD高度相似是考點。",tw:"台灣供應商須了解ESRS E1（氣候）與S2（供應鏈工作者）對自身的影響。"},
-  csddd:{t:"CSDDD 歐盟企業永續盡職調查指令",d:"要求大型企業識別、預防、減輕供應鏈中的人權與環境負面衝擊，並設立申訴機制。違規可處營業額1.5-5%的罰款。",e:"CSDDD是行動義務（要做）；CSRD是報告義務（要說）——兩者差異是考點。",tw:"台灣電子、紡織供應鏈首當其衝；RBA、SA8000等認證有助準備。"},
-  cbam:{t:"CBAM 歐盟碳邊境調整機制",d:"對進口到歐盟的高碳商品（水泥、鋼鐵、鋁、化肥、電力、氫）徵收碳費，依生產地內嵌碳排放計算，防止碳洩漏。2023年過渡期，2026年正式課費。",e:"iPAS核心。6大涵蓋產業；台灣受影響的出口項目；過渡期vs正式期時程必考。",tw:"台灣鋼鐵業（中鋼等）、鋁業首當其衝；須申報內嵌碳排放量（embedded emissions）。"},
-  euets:{t:"EU ETS 歐盟排放交易體系",d:"全球最大強制性碳市場，採總量管制與排放交易（cap-and-trade），涵蓋電力、航空、重工業。排放配額（EUA）在市場交易，當前碳價約60-80歐元/噸。",e:"EU ETS是全球最大強制性碳市場；cap-and-trade機制；與VCM（自願性）的差異是考點。",tw:"CBAM計算時會扣除出口商在本國已付的碳費；台灣碳費制度設計參考EU ETS。"},
-  sfdr:{t:"SFDR 永續金融揭露法規",d:"歐盟要求金融機構揭露永續相關風險的法規，將基金分為第6條（無永續主張）、第8條（促進環境/社會）、第9條（以永續為目標）三類。",e:"三類基金（6/8/9條）的差異；PAI（主要負面指標）揭露要求是考點。",tw:"台灣金管會參考SFDR制定本土永續金融分類指引；台灣金融業對歐盟客戶基金需符合SFDR。"},
-  eutax:{t:"EU Taxonomy 歐盟永續金融分類法",d:"定義哪些經濟活動可被視為「環境永續」，依六大環境目標評估，要求「不顯著損害」（DNSH）原則。是綠色金融產品定義的依據。",e:"六大環境目標名稱；DNSH原則定義；與SFDR的關係是考點。",tw:"台灣金融業參考EU Taxonomy建立本土永續金融分類架構。"},
-  issb:{t:"ISSB 國際永續揭露準則委員會",d:"IFRS基金會設立的永續揭露準則制定機構。S1規範一般永續揭露要求；S2規範氣候相關揭露（以TCFD為基礎），要求揭露Scope 1/2/3。整合了TCFD、SASB、CDSB。",e:"S1 vs S2的內容差異；ISSB整合了哪些框架；台灣金管會接軌路線是必考。",tw:"台灣IFRS永續揭露準則以ISSB為基礎，分階段強制適用。"},
-  s1s2:{t:"ISSB S1 / S2 準則",d:"S1：企業一般永續相關風險與機會的揭露要求。S2：氣候相關揭露，要求揭露Scope 1/2/3排放量、氣候情境分析、轉型計畫。S2基本上是TCFD的升級版。",e:"S1是通用框架；S2是氣候專門準則；S2要求Scope 3揭露（S1不要求）是考點。",tw:"台灣金管會要求特定規模上市公司依S1/S2編製永續報告書。"},
-  gri:{t:"GRI 全球報告倡議組織準則",d:"最廣泛使用的永續報告框架，採利害關係人導向的「雙重重大性」。通用準則GRI 1-3規範重大性評估流程，議題準則200-400系列涵蓋環境、社會、治理各面向。",e:"GRI vs SASB（雙重重大性vs財務重大性；通用vs行業別）；GRI三大揭露是高頻考點。",tw:"台灣上市公司永續報告書多依GRI準則；金管會要求揭露GRI對照表。"},
-  tcfd:{t:"TCFD 氣候相關財務揭露建議",d:"FSB設立的工作小組，提出四大支柱：治理（Governance）、策略（Strategy）、風險管理（Risk Management）、指標與目標（Metrics & Targets）。已正式併入ISSB S2。",e:"TCFD四大支柱名稱；實體風險vs轉型風險的差異是高頻考點。",tw:"台灣金管會要求特定規模上市公司揭露TCFD；現已要求依ISSB S2揭露。"},
-  tnfd:{t:"TNFD 自然相關財務揭露框架",d:"仿效TCFD建立的自然資本相關財務揭露框架，2023年發布v1.0。要求企業揭露對生態系統的依賴與衝擊，採用LEAP（定位、評估、量化、準備）方法。",e:"TCFD處理氣候；TNFD處理自然（生物多樣性）；LEAP方法論；兩者架構平行是考點。",tw:"台灣金管會已將TNFD納入永續報告書參考框架。"},
-  cdp:{t:"CDP 碳揭露項目",d:"全球最大的環境資訊自願揭露平台，企業回應氣候、水安全、森林三份問卷，由機構投資人驅動。評級從A到D-，A List是最高榮譽。",e:"CDP是自願揭露平台；投資人驅動機制；與TCFD/ISSB的關係是考點。",tw:"台灣有超過200家企業填報CDP；蘋果、NIKE等要求台灣供應商填報。"},
-  sasb:{t:"SASB 永續會計準則委員會",d:"依77個產業別制定的永續揭露準則，聚焦「財務重大性」。已整合入ISSB框架，但SASB行業分類仍是實務中最常用的行業別揭露工具。",e:"SASB vs GRI差異（行業別vs通用；投資人vs利害關係人）是最高頻考點。",tw:"台灣金管會永續藍圖鼓勵企業參考SASB依行業揭露財務重大性議題。"},
-  'tw-carbon':{t:"台灣碳費制度",d:"氣候法授權環境部對年排放量2.5萬噸CO₂e以上的工廠收取碳費。2025年起徵，初期費率一般行業300元/噸，高碳洩漏風險行業優惠費率50元/噸。約500家工廠為首批徵收對象。",e:"iPAS核心。碳費vs碳稅差異；一般費率300元vs優惠費率50元；門檻2.5萬噸；高碳洩漏風險定義。",tw:"碳費收入進入氣候基金，專款用於企業減碳補貼；2030年後費率將大幅調升至1,200-1,800元/噸。"},
-  'tw-climate':{t:"氣候變遷因應法",d:"台灣2023年修正通過，確立2050淨零排放為國家目標，授權三大機制：碳費徵收、強制盤查（2.5萬噸以上需申報）、減量額度制度（可申請碳權）。",e:"iPAS核心。三大機制名稱；主管機關（環境部）；三子法（碳費收費辦法、自願減量辦法、減量額度認可辦法）必考。",tw:"氣候法是台灣碳管理制度的最高法源，後續所有碳相關法規均依此授權。"},
-  'tw-trec':{t:"T-REC 台灣再生能源憑證",d:"1張T-REC代表1,000度（1 MWh）的再生能源電力。企業購買T-REC可作為Scope 2市場計算法的零排放依據，也是RE100承諾的認可工具。",e:"iPAS中級核心。T-REC vs CPPA的差異（當期購買vs長期合約）；市場計算法vs位置計算法概念。",tw:"台灣T-REC制度由能源局管理；台積電、鴻海等大廠大量購買T-REC以達成RE100目標。"},
-  'tw-tcex':{t:"TCEX 台灣碳交易所",d:"2023年成立於高雄，由台灣證交所與國發會合資設立。目前提供國際碳信用（VCM）交易，本土自願減量碳信用即將上架。依氣候法第36條唯一受託辦理。",e:"TCEX成立年份（2023）；功能（VCM平台）；與台灣碳費的關係；法定用途vs非法定用途額度差異。",tw:"TCEX是台灣唯一官方認可的碳信用交易平台；企業購買碳信用可用於ISO 14068碳中和。"},
-  sbti:{t:"SBTi 科學基礎減量目標",d:"企業依科學（IPCC 1.5°C路徑）設定減碳目標的國際倡議。目標需涵蓋Scope 1&2（近期，5-10年）與Scope 3（長期），並每5年更新。通過認證可對外公告。",e:"SBTi = 科學基礎；1.5°C路徑；Scope 3目標要求；與CDP的關係是考點。",tw:"台積電、台達電等大廠已通過SBTi認證；台灣SBTi認證企業數量快速增加。"},
-  re100:{t:"RE100 再生能源100%倡議",d:"由氣候組織與CDP共同管理，承諾100%使用再生能源。成員可透過自發自用、CPPA、T-REC等方式達成，需每年向CDP報告進度。",e:"RE100成員的達成路徑（自發自用/CPPA/T-REC/國際EAC）；台灣大廠參與狀況是考點。",tw:"台灣有超過20家企業加入RE100；蘋果要求供應鏈加入RE100，帶動台廠積極參與。"}
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+const CATS={
+  'climate': {label:'氣候協議',    color:'#1D9E75', dimColor:'#0a4530'},
+  'intl':    {label:'國際法規',    color:'#378ADD', dimColor:'#0c2d52'},
+  'disc':    {label:'揭露框架',    color:'#7F77DD', dimColor:'#221e52'},
+  'carbon':  {label:'碳市場',      color:'#BA7517', dimColor:'#3d2508'},
+  'social':  {label:'社會面 S',    color:'#D85A30', dimColor:'#471a0a'},
+  'gov':     {label:'治理面 G',    color:'#888780', dimColor:'#282826'},
+  'nature':  {label:'自然生態',    color:'#639922', dimColor:'#1c300a'},
+  'finance': {label:'永續金融',    color:'#D4537E', dimColor:'#451829'},
+  'tech':    {label:'減碳技術',    color:'#5DCAA5', dimColor:'#0d3d30'},
+  'tw':      {label:'台灣專區',    color:'#E24B4A', dimColor:'#441515'},
 };
 
-function showInfo(id){
-  const d=MAP_INFO[id]; if(!d) return;
-  document.getElementById('ipTitle').textContent=d.t;
-  document.getElementById('ipDef').textContent=d.d;
-  document.getElementById('ipGrid').innerHTML=
-    `<div class="ip-cell"><div class="ip-lbl">🎓 考試重點</div><div class="ip-val">${esc(d.e)}</div></div>`+
-    `<div class="ip-cell"><div class="ip-lbl">🇹🇼 台灣觀點</div><div class="ip-val">${esc(d.tw)}</div></div>`;
-  const p=document.getElementById('infoPanel');
-  p.classList.add('show');
-  setTimeout(()=>p.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
-}
-function closeInfo(){document.getElementById('infoPanel').classList.remove('show')}
+const D={
+unfccc:{zh:'UNFCCC',en:'聯合國氣候框架公約',cat:'climate',
+  prob:'各國燒煤燒油，大氣CO₂濃度飆升，地球暖化。但沒有任何機構能要求主權國家減碳——UNFCCC就是為了填補這個空缺而誕生的全球第一個氣候談判框架。',
+  how:'1992年里約地球高峰會通過，198個締約方加入。核心原則：CBDR-RC「共同但有區別的責任」——已開發國家（附件一，41國）歷史排碳多，要率先減；開發中國家依自身能力跟進。每年召開COP締約方大會評估進展。',
+  tw:'台灣不是UNFCCC締約方（非UN成員）。但台灣主動對標UNFCCC精神，制定氣候法、NDC、2050淨零路徑，以非正式觀察員角色參與COP。',
+  exam:'▸ UNFCCC最終目標：穩定大氣GHG濃度\n▸ CBDR-RC原則定義（必考）\n▸ 附件一（已開發41國）vs 非附件一\n▸ COP第一屆：1995年柏林\n▸ 1992年通過、1994年生效',
+  num:'1992年通過 ／ 1994年生效 ／ 198締約方',
+  who:'全球主權國家政府（政府層級）',
+  rel:['kyoto','paris','cop','ipcc']},
 
-// ═══════════════════════════════════════════════
-// TAB 切換
-// ═══════════════════════════════════════════════
-function switchTab(id,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tab-'+id).classList.add('active');
-  if(id==='glossary'&&!dataLoaded) loadData();
-}
+kyoto:{zh:'京都議定書',en:'Kyoto Protocol',cat:'climate',
+  prob:'UNFCCC只是框架，沒有具體的減碳數字。1990年代科學已確認人為排碳造成暖化，需要給已開發國家設定法律約束的減量目標。',
+  how:'只約束UNFCCC「附件一」的41個已開發國家（中印不受約束）。要求2008-2012年間平均減碳5.2%（vs 1990年基準）。各國目標不同：歐盟-8%、美國-7%（後退出）、日本-6%。設計三個彈性機制：CDM（幫開發中國家減碳算自己的）、JI（已開發國家互相合作）、ET（直接買賣碳配額）。',
+  tw:'台灣非附件一，京都議定書無直接法律約束力。但CDM機制孕育了現在VCM自願碳市場的前身。',
+  exam:'▸ 附件一國家平均減量5.2%（vs 1990）（高頻）\n▸ 第一期2008-2012；第二期2013-2020\n▸ 三彈性機制：CDM、JI、ET（必考）\n▸ 2005年2月16日生效；CDM 2026年落日',
+  num:'附件一41國 ／ 平均-5.2% ／ 2008-2012',
+  who:'UNFCCC附件一已開發國家（具法律約束力）',
+  rel:['cdm','paris','unfccc']},
 
-// ═══════════════════════════════════════════════
-// GLOSSARY
-// ═══════════════════════════════════════════════
-const CATS=[
-  {id:"all",label:"全部"},{id:"iso",label:"📐 ISO標準"},{id:"ghg",label:"🌡 溫室氣體"},
-  {id:"disclosure",label:"📋 揭露框架"},{id:"intl-policy",label:"🌍 國際法規"},
-  {id:"carbon",label:"💨 碳市場"},{id:"energy",label:"⚡ 能源"},
-  {id:"social",label:"⚖️ 人權社會"},{id:"governance",label:"🏛 治理"},
-  {id:"finance",label:"💰 永續金融"},{id:"taiwan",label:"🇹🇼 台灣"},
-  {id:"biodiversity",label:"🌿 生態自然"}
+cdm:{zh:'CDM / JI / ET',en:'京都三彈性機制',cat:'climate',
+  prob:'已開發國家在自己國內減碳成本很高，但在開發中國家做同樣減碳便宜很多。有沒有辦法讓錢花在最有效率的地方？',
+  how:'CDM（清潔發展機制）：日本出資在印尼建太陽能，減了100噸算給日本。核發CER碳信用。JI（共同執行）：已開發國家互助。ET（排放交易）：已開發國家直接買賣碳配額。EU ETS就是ET邏輯的延伸。CDM 2026年正式落日，被巴黎協定第6條（ITMO/PACM）取代。',
+  tw:'CDM時代台灣有部分企業參與林業碳匯專案。VCM的運作邏輯直接繼承自CDM。',
+  exam:'▸ 三機制英文全名：CDM/JI/ET（高頻必考）\n▸ CDM核發CER；PACM核發A6.4ER\n▸ CDM 2026年落日→被第6.4條取代\n▸ ET是EU ETS的制度原型',
+  num:'CDM已核發~20億噸CER ／ 2026年落日',
+  who:'京都附件一國家 + 開發中國家（東道主）',
+  rel:['vcm','itmo','pacm','euets']},
+
+paris:{zh:'巴黎協定',en:'Paris Agreement',cat:'climate',
+  prob:'京都議定書只管已開發國家，中國印度完全不受約束，全球排碳繼續上升。需要一個覆蓋所有國家的新框架。',
+  how:'2015年COP21通過，196個締約方全部加入。核心架構：① 溫度目標：2°C以內，努力1.5°C ② NDC機制：各國自訂目標，每5年更新（棘輪條款）③ 全球盤點GST每5年一次 ④ 第六條ITMO國際碳市場 ⑤ 氣候融資每年1,000億美元。',
+  tw:'台灣非締約方，但2023年氣候法明訂2050淨零為國家目標。NDC 3.0設定2030年減28±2%（vs 2005年）。所有減碳政策均以1.5°C路徑為科學依據。',
+  exam:'▸ 1.5°C努力目標 vs 2°C主要目標（超高頻）\n▸ NDC每5年更新、棘輪條款（只能更嚴）\n▸ 2016年11月4日生效\n▸ 第六條ITMO國際碳市場機制',
+  num:'2°C主要 ／ 1.5°C努力 ／ 196締約方',
+  who:'UNFCCC全體締約方（含開發中國家）',
+  rel:['ndc','cop','sbti','itmo','pacm','unfccc']},
+
+ndc:{zh:'NDC',en:'Nationally Determined Contributions',cat:'climate',
+  prob:'以前氣候協議是聯合國告訴你要減多少，沒人願意簽。巴黎協定改成「你自己說要減多少」——棘輪機制讓每次更新只能更嚴格。',
+  how:'主要國家承諾：🇪🇺歐盟-55%（vs 1990）🇺🇸美國-50-52%（vs 2005）🇨🇳中國2030達峰、2060淨零 🇮🇳印度2070淨零 🇯🇵日本-46%（vs 2013）🇹🇼台灣-28±2%（2030）、-38±2%（2035）。現行NDC合計只能達2.5-3.2°C情境，距1.5°C差距巨大。',
+  tw:'台灣NDC 3.0（2024）是最新版本，2030目標比NDC 2.0更嚴格4個百分點。非UNFCCC締約方但主動提交。',
+  exam:'▸ NDC棘輪條款（只能更嚴不能放寬）（必考）\n▸ 現行差距：2.5-3.2°C（排放差距報告）\n▸ INDC是巴黎協定生效前的過渡名稱\n▸ 台灣NDC 3.0：2030年-28±2%（vs 2005）',
+  num:'5年更新週期 ／ 現行差距2.5-3.2°C',
+  who:'UNFCCC所有締約方政府（自願提交）',
+  rel:['paris','cop','sbti']},
+
+cop:{zh:'COP 大事記',en:'Conference of the Parties',cat:'climate',
+  prob:'UNFCCC通過後需要一個每年召開的場合讓各國代表檢視進度、談判細節。COP就是全球最重要的氣候政治舞台。',
+  how:'重要里程碑：COP1（1995柏林）首屆 → COP3（1997京都）京都議定書 → COP15（2009哥本哈根）失望收場 → COP21（2015巴黎）巴黎協定 → COP26（2021格拉斯哥）強化1.5°C美國重返 → COP27（2022）損失與損害基金 → COP28（2023杜拜）首次全球盤點GST1、排放峰值、RE增3倍 → COP29（2024巴庫）NCQG → COP30（2025貝倫）巴黎十周年。',
+  tw:'台灣以NGO、學術機構身分出席COP，無投票權。COP決議直接影響台灣CBAM應對、碳費設計、金管會法規走向。',
+  exam:'▸ COP3=京都議定書；COP21=巴黎協定（必考）\n▸ COP27=損失與損害基金\n▸ COP28=首次全球盤點GST1\n▸ 2020年因COVID-19未舉行實體會議',
+  num:'COP3=京都 ／ COP21=巴黎 ／ COP28=首次GST',
+  who:'UNFCCC全體締約方政府代表',
+  rel:['paris','ndc','unfccc']},
+
+ipcc:{zh:'IPCC',en:'Intergovernmental Panel on Climate Change',cat:'climate',
+  prob:'政策談判需要科學依據——哪個溫度目標才安全？現在暖化了幾度？IPCC就是回答這些問題的機構。',
+  how:'1988年成立。不做新研究，整合全球頂尖科學家的研究成果，每5-6年發布評估報告（AR）。AR6（2023年）：2023年全球均溫比工業化前高1.45°C；溫度每升0.5°C，極端氣候衝擊呈非線性惡化；維持1.5°C需2030年前減碳43%。',
+  tw:'台灣科學家參與IPCC報告撰寫。IPCC的1.5°C目標是台灣NDC、SBTi、氣候法的科學基礎。',
+  exam:'▸ IPCC不做研究，整合科學共識\n▸ AR6（2023）：均溫+1.45°C\n▸ 1.5°C目標的科學依據來源\n▸ 溫度每升0.5°C影響呈非線性',
+  num:'1988年成立 ／ AR6（2023）最新 ／ 195成員國',
+  who:'聯合國政府間機構，整合全球科學家研究',
+  rel:['paris','ndc','unfccc']},
+
+itmo:{zh:'ITMO（第6.2條）',en:'Intl Transferred Mitigation Outcomes',cat:'climate',
+  prob:'CDM落日後，各國還是想透過跨境合作實現更便宜的減碳。巴黎第六條就是新版的國際碳市場——這次要確保不「重複計算」。',
+  how:'第6.2條「合作方法」：國家A（日本）投資國家B（越南）做減碳，減量成果轉讓給日本用於NDC目標，稱為ITMO。關鍵是「相應調整」：越南把這噸從自己NDC帳戶扣掉，日本加進自己帳戶，確保不重複計算。',
+  tw:'台灣企業參與ITMO需透過政府授權。目前台灣正評估如何在TCEX平台上銜接ITMO機制。',
+  exam:'▸ ITMO = 國際轉讓減緩成果\n▸ 相應調整（Corresponding Adjustment）是核心\n▸ 第6.2條（雙邊）vs 第6.4條PACM（聯合國集中）\n▸ 與CDM差異：需相應調整、防雙重計算',
+  num:'2021年COP26後正式啟動 ／ 需相應調整',
+  who:'巴黎協定締約方政府（需官方授權）',
+  rel:['pacm','vcm','cdm','tcex']},
+
+pacm:{zh:'PACM（第6.4條）',en:'Paris Agreement Crediting Mechanism',cat:'climate',
+  prob:'CDM品質良莠不齊、環境效益存疑。PACM是CDM的升級版，由聯合國集中管理，標準更嚴格。',
+  how:'由聯合國A6.4監督機構統一管理，核發A6.4ER碳信用。比ITMO更中央化。CDM專案需重新申請才能轉換。強制扣除2%用於全球減排（OMGE）、5%用於調適基金。',
+  tw:'台灣企業可作為計畫開發者或買家參與PACM。TCEX已開始引進符合PACM標準的碳信用。',
+  exam:'▸ PACM vs CDM（更嚴格、聯合國集中管理）\n▸ CDM 2026落日→PACM取代\n▸ A6.4ER是新碳信用名稱（取代CER）\n▸ 扣除2%OMGE + 5%調適基金',
+  num:'CDM 2026落日 ／ A6.4ER取代CER',
+  who:'巴黎協定締約方 + 授權企業實體',
+  rel:['cdm','itmo','vcm','ccp']},
+
+// 國際法規
+csrd:{zh:'CSRD',en:'企業永續報告指令',cat:'intl',
+  prob:'以前歐盟只要求少數大型企業做非財務報告，而且格式五花八門。CSRD要大幅擴大適用範圍、統一格式、強制查證。',
+  how:'取代NFRD。採「雙重重大性」評估，強制第三方查證。適用：①歐盟大型企業 ②在歐盟上市公司 ③在歐盟年營業額>1.5億歐元的非歐盟企業。分階段：2024→2025→2026→2028。',
+  tw:'台灣企業三種情境：①在歐盟有子公司 ②在歐盟年營業額>1.5億歐元 ③是歐洲品牌供應商（需提供Scope 3數據）。台積電、鴻海、廣達需配合客戶提供CSRD所需數據。',
+  exam:'▸ CSRD取代NFRD（必考）\n▸ ESRS是CSRD底層準則（12項）\n▸ 雙重重大性：財務+衝擊兩維度\n▸ 非歐盟門檻：在歐盟年營業額>1.5億歐元\n▸ 分四階段2024-2028',
+  num:'1.5億歐元非歐盟門檻 ／ 2024-2028四階段',
+  who:'歐盟大型企業 + 部分非歐盟企業（含台灣子公司）',
+  rel:['esrs','csddd','issb','gri','doubmat','cbam']},
+
+esrs:{zh:'ESRS',en:'歐洲永續報告準則',cat:'intl',
+  prob:'CSRD法規說「要揭露ESG資訊」，但用什麼格式、揭露哪些項目？ESRS就是具體的填報規格書。',
+  how:'共12項準則：通用（2項：ESRS 1架構、ESRS 2一般揭露）＋ 環境（5項：E1氣候、E2污染、E3水資源、E4生物多樣性、E5循環經濟）＋ 社會（4項：S1員工、S2供應鏈勞工、S3社區、S4消費者）＋ 治理（1項：G1商業行為）。企業需先完成雙重重大性評估決定揭露哪些項目。',
+  tw:'E1（氣候）準則要求揭露Scope 1/2/3、1.5°C情境分析、轉型計畫，是台灣廠商最難準備的部分。',
+  exam:'▸ 12項準則分類：2通用+5環境+4社會+1治理（必考）\n▸ E1氣候：含Scope 1/2/3、轉型計畫\n▸ 雙重重大性決定哪些準則需揭露',
+  num:'12項準則 ／ 5項環境 ／ 4項社會',
+  who:'依CSRD需申報的企業',
+  rel:['csrd','issb','gri','tcfd','doubmat']},
+
+csddd:{zh:'CSDDD',en:'企業永續盡職調查指令',cat:'intl',
+  prob:'以前歐洲品牌只管自己工廠，供應商（台灣、越南工廠）怎樣都不管。CSDDD說：不行，你要對整條供應鏈的人權和環境負責。',
+  how:'要求大型歐盟企業對整個供應鏈進行人權與環境盡職調查。義務：識別→預防→減輕→補救→設申訴機制→公開報告。違規最高罰5%全球營業額。適用：員工>1000人且全球營業額>4.5億歐元。2027年起分階段。',
+  tw:'台灣電子（RBA）、紡織、食品等供應鏈首當其衝。歐洲品牌客戶會發問卷給台灣供應商要求填報勞工條件、童工政策、廢水處理等，填不出來訂單可能就沒了。',
+  exam:'▸ CSRD=報告義務；CSDDD=行動義務（必考差異）\n▸ 最高罰5%全球營業額\n▸ 2027年起分階段適用\n▸ UNGP三支柱是理念基礎',
+  num:'5%全球營業額罰款上限 ／ 2027年起',
+  who:'歐盟大型企業 + 在歐盟年營業額>4.5億歐元的非歐盟企業',
+  rel:['csrd','ungp','rba','ilo','sa8000']},
+
+cbam:{zh:'CBAM',en:'碳邊境調整機制',cat:'intl',
+  prob:'歐盟工廠要付碳費，但台灣、中國工廠不用——歐盟企業就輸了，而且碳排跑到別的地方繼續排（碳洩漏）。CBAM就是補這個漏洞的。',
+  how:'對從高碳排國家進口至歐盟的6大產業產品徵收碳費：水泥、鋼鐵、鋁、化肥、電力、氫。按「內嵌排放量」計算，費率與EU ETS碳價掛鉤（現約€65/噸）。2023-2025過渡期（只申報不繳費）→2026正式課費→2034免費配額歸零。',
+  tw:'中鋼、東和鋼鐵等出口歐盟的鋼材，2026年起開始繳費。台灣廠商現在要學會算「內嵌碳排放」（依ISO 14067方法）。台灣碳費越高，CBAM可扣抵的金額就越多。',
+  exam:'▸ CBAM 6大產業（必考）：水泥、鋼鐵、鋁、化肥、電力、氫\n▸ 2026正式課費；2034免費配額歸零\n▸ 碳洩漏定義\n▸ 內嵌排放量（embedded emissions）',
+  num:'6大產業 ／ 2026正式課費 ／ ~€65/噸',
+  who:'向歐盟進口6大產業產品的進口商（含台灣出口商）',
+  rel:['euets','iso14067','csrd','twcf']},
+
+euets:{zh:'EU ETS',en:'歐盟碳排放交易體系',cat:'intl',
+  prob:'如何確保歐洲排放量不超標，同時讓市場自己找到最便宜的減碳方式？EU ETS用總量管制+市場交易來解決這個問題。',
+  how:'全球最大強制性碳市場，2005年啟動。政府設定排放總量上限（cap），每年遞減4.3%；管制業者超出免費配額的部分需購買EUA（1 EUA=1噸CO₂e），現價約€60-80/噸。涵蓋電力業、重工業、航空、2024年起航運。ETS 2.0（2027年）擴展至建築和道路運輸。',
+  tw:'CBAM計算可扣抵金額時，以EU ETS碳價為基準。台灣碳費（300元≈€9）遠低於EU ETS（€65/噸），差距=台灣企業需額外繳的CBAM費用。',
+  exam:'▸ Cap-and-trade機制原理（必考）\n▸ EU ETS是全球最大「強制性」碳市場\n▸ EUA=歐洲排放配額，1 EUA=1噸CO₂e\n▸ 2027年ETS 2.0擴展至建築、道路運輸\n▸ cap年遞減4.3%',
+  num:'€60-80/噸 ／ 2027年ETS 2.0 ／ cap年遞減4.3%',
+  who:'EU境內電力業、重工業、航空、航運業者',
+  rel:['cbam','eua','vcm','cap','corsia','twcf']},
+
+eudr:{zh:'EUDR',en:'歐盟反毀林規章',cat:'intl',
+  prob:'全球每年超過1,000萬公頃森林消失，很大一部分是為了種大豆、油棕、養牛而砍伐。歐盟說：只要你的產品和毀林有關，就不準進歐盟。',
+  how:'禁止進口與毀林相關的7大商品：牛肉、大豆、棕櫚油、木材、可可、咖啡、橡膠。進口商須提供盡職調查聲明，證明商品來自2020年12月31日後未發生毀林的土地，可溯源至GPS坐標層級。大型企業2025年生效，中小企業2026年。',
+  tw:'台灣食品業（棕櫚油、大豆）、紙漿造紙（木材）、橡膠業可能受上游供應鏈影響。需要求供應商提供EUDR合規文件和農場層級溯源數據。',
+  exam:'▸ EUDR 7大商品（必知）\n▸ 2020年12月31日截止日期\n▸ GPS坐標層級溯源要求\n▸ 與FSC森林認證的關係',
+  num:'7大商品 ／ 2020.12.31截止日期 ／ GPS溯源',
+  who:'向歐盟出口7大商品及其衍生品的所有企業',
+  rel:['fsc','csddd']},
+
+ppwr:{zh:'PPWR',en:'歐盟包材廢棄物法規',cat:'intl',
+  prob:'歐盟每人每年產生約180公斤包裝廢棄物，其中大量無法回收。需要強制要求包材設計更環保，並讓生產者承擔回收責任。',
+  how:'取代1994年舊指令。核心：①2030年起塑膠包材含≥30%再生料 ②2030年起所有包材需可回收 ③2040年人均包材廢棄物減15% ④禁止過度包裝（電商fill rate≥40%）⑤EPR費率依可回收性調整。2026年8月生效。',
+  tw:'台灣出口至歐盟的電商、食品、電子產品包材需符合PPWR。短期影響以設計改良為主，中期需建立再生料供應鏈。',
+  exam:'▸ 2026年8月生效\n▸ 2030年：30%再生料、所有包材可回收\n▸ 2040年：減量15%\n▸ EPR費率差異化概念',
+  num:'2026年8月生效 ／ 2030年30%再生料',
+  who:'在歐盟市場銷售產品的所有製造商與進口商',
+  rel:['epr','circular']},
+
+corsia:{zh:'CORSIA',en:'國際航空碳抵換計劃',cat:'intl',
+  prob:'航空業是成長最快的排碳行業之一，但又難以電氣化。如何讓航空業對氣候暖化負責？',
+  how:'ICAO主導的全球航空碳抵換計劃。要求航空公司將2021年後國際航班排放量超過2019年水準的部分，以購買符合資格的碳信用加以抵換。三階段：試行期（2021-2023）→第一期（2024-2026）→第二期（2027-2035強制）。SAF可100%抵減CORSIA義務。',
+  tw:'長榮、華航的國際航線受CORSIA約束，需購買碳信用或使用SAF。台灣桃園機場目標成為亞太SAF樞紐。',
+  exam:'▸ CORSIA vs EU ETS航空版差異\n▸ SAF可100%抵減CORSIA義務\n▸ 第二期2027年強制所有締約方\n▸ 2020年後碳中性成長目標',
+  num:'2027年強制 ／ SAF可100%抵減',
+  who:'ICAO成員國的國際民航業者',
+  rel:['saf','vcm','euets','imo']},
+
+imo:{zh:'IMO 2050',en:'國際航運淨零目標',cat:'intl',
+  prob:'航運業約佔全球排碳2-3%，且使用的重燃油是最骯髒的化石燃料之一。如何讓全球船隊走向淨零？',
+  how:'2023年修訂的航運去碳化策略：2030年前使用至少5%（努力10%）零碳或近零碳燃料；2040年大幅減量；2050年淨零。落地機制：CII（碳強度指標，A-E五級評分）、EEXI（現有船舶能源效率）、EEDI（新造船）。',
+  tw:'台灣貨運、散裝航運業者需提升能源效率（CII評級）。台灣造船業面臨綠色船舶（氨燃料、甲醇燃料）訂單轉型壓力。',
+  exam:'▸ IMO 2050 vs 2018策略（50%→淨零升級）\n▸ CII A-E五級評分（A最好）\n▸ Well-to-wake全生命週期計算\n▸ EEXI vs EEDI差異',
+  num:'2030：5-10%零碳燃料 ／ 2050淨零',
+  who:'400總噸以上的國際航行船舶',
+  rel:['saf','greenh2','greenamm','corsia','p2x']},
+
+ira:{zh:'IRA（美國）',en:'Inflation Reduction Act',cat:'intl',
+  prob:'美國要追趕歐盟在清潔能源的投資，同時應對通脹和能源安全。IRA是美國史上最大的氣候法案。',
+  how:'2022年通過，10年3,690億美元。三大稅抵減：45X（太陽能板、電池美國製造補貼）、45Q（CCUS每噸$85）、45V（綠氫最高$3/kg）。「本地製造」要求（domestic content）引發台廠赴美投資潮。',
+  tw:'IRA 45X驅使台積電赴美設廠、台灣太陽能板廠商設立美國製造基地。2025年後部分補貼面臨政策調整風險。',
+  exam:'▸ 三大稅抵減：45X/45Q/45V（必記）\n▸ 45Q CCUS：$85/噸\n▸ 45V綠氫：最高$3/kg\n▸ Domestic content要求影響台廠',
+  num:'3,690億美元 ／ 45V綠氫$3/kg',
+  who:'在美生產的製造商、美國消費者（電動車補貼）',
+  rel:['ccus','greenh2']},
+
+secrule:{zh:'SEC 氣候規則',en:'SEC Climate Disclosure Rule',cat:'intl',
+  prob:'美國上市公司的氣候風險揭露格式各異，投資人無法比較。SEC要統一格式，但又不想像CSRD那麼嚴格。',
+  how:'2024年3月通過（目前被法院暫停執行）。要求：①Scope 1&2強制揭露（大型加速申報企業）②極端氣候事件的財務影響 ③轉型計畫。原計畫Scope 3強制要求最終版刪除。',
+  tw:'台積電ADR（NYSE上市）直接受SEC規則約束。其他在美發行ADR的台灣企業同樣適用。',
+  exam:'▸ SEC規則 vs ISSB S2差異（Scope 3不強制）\n▸ 與CSRD比較（美vs歐嚴格程度）\n▸ 目前被法院暫停執行\n▸ 台灣ADR企業適用',
+  num:'2024年3月通過 ／ 目前法院暫停',
+  who:'在美上市公司（含外國企業ADR，如台積電）',
+  rel:['issb','csrd','tcfd','scope']},
+
+cap:{zh:'Cap-and-Trade',en:'總量管制與排放交易',cat:'intl',
+  prob:'如何確保排放量不超標，同時讓企業自己找到最便宜的減碳方式？Cap-and-Trade是最主流的答案。',
+  how:'政府設定排放總量上限（cap），每年遞減；企業若排放超過分配配額，需從市場購買碳權；排放低於配額者可出售盈餘碳權。比起碳稅，cap確保排放量不超上限，但碳價波動較大。',
+  tw:'台灣目前採碳費（不是cap-and-trade），但環境部已規劃2026-2027年試辦台灣版ETS，屆時轉換為真正的cap-and-trade體系。',
+  exam:'▸ Cap-and-trade vs 碳稅（量確定vs價確定）\n▸ EU ETS是全球最大cap-and-trade\n▸ 台灣碳費≠cap-and-trade（但類似）\n▸ 台灣ETS試辦：2026-2027',
+  num:'EU ETS年遞減4.3% ／ 台灣ETS試辦2026-2027',
+  who:'被納入碳市場管制的企業（依各地ETS規定）',
+  rel:['euets','twcf','vcm','eua']},
+
+// 揭露框架
+issb:{zh:'ISSB S1/S2',en:'國際永續揭露準則',cat:'disc',
+  prob:'全球每家公司的永續報告書格式都不一樣，投資人無法比較。ISSB要統一全球永續揭露的「語言」。',
+  how:'IFRS基金會設立。S1：一般永續揭露（治理、策略、風險管理、指標目標）。S2：氣候相關揭露（以TCFD為基礎，要求揭露Scope 1/2/3、轉型計畫、情境分析）。台灣採用時程：資本額100億以上2026年編制、其餘上市櫃2028年開始。',
+  tw:'台灣金管會依ISSB制定本土永續揭露準則，上市櫃公司分階段強制適用。S2要求揭露Scope 1/2/3，這是目前多數台灣企業最大的挑戰。',
+  exam:'▸ S1：一般揭露 vs S2：氣候揭露（必考差異）\n▸ ISSB整合了TCFD、SASB、CDSB\n▸ S2要求Scope 1/2/3全部揭露\n▸ 台灣：資本額100億以上2026年起',
+  num:'資本額100億↑：2026編制 ／ 其餘：2028',
+  who:'各司法管轄區採納後，轄區內上市公司',
+  rel:['tcfd','sasb','gri','csrd','scope']},
+
+gri:{zh:'GRI',en:'全球報告倡議組織準則',cat:'disc',
+  prob:'企業對社會和環境的影響很廣，僅聚焦財務影響不夠。GRI從「所有利害關係人」的角度，要求企業揭露對社會、環境的衝擊。',
+  how:'最廣泛使用的永續報告框架，採「雙重重大性」。架構：GRI 1（基礎）、GRI 2（一般揭露）、GRI 3（重大性評估）+ 200-400系列議題準則（環境/社會/經濟）。企業需執行重大性評估決定揭露主題。',
+  tw:'台灣上市公司永續報告書多依GRI準則。金管會要求上市公司揭露GRI對照表；GRI 3重大性評估流程是合規重點。',
+  exam:'▸ GRI vs ISSB差異（利害關係人vs投資人；雙重vs財務重大性）\n▸ GRI通用準則：GRI 1/2/3\n▸ 議題準則200-400系列\n▸ 雙重重大性定義',
+  num:'使用最廣泛的永續報告框架',
+  who:'所有規模企業（自願，但台灣上市櫃公司強制參考）',
+  rel:['sasb','issb','tcfd','csrd','doubmat']},
+
+tcfd:{zh:'TCFD',en:'氣候相關財務揭露',cat:'disc',
+  prob:'氣候變遷會影響企業財務表現（颱風摧毀工廠、碳稅提高成本），但投資人根本不知道哪些企業面臨最大風險。TCFD提供統一架構讓企業揭露這些風險。',
+  how:'FSB設立。四大支柱：治理（Governance）、策略（Strategy）、風險管理（Risk Management）、指標與目標（Metrics & Targets）。風險類型：①實體風險（急性：颱風；慢性：海平面上升）②轉型風險（政策法規、技術、市場、聲譽）。TCFD已於2023年正式整合入ISSB S2。',
+  tw:'台灣「上市公司永續發展行動方案」已要求分階段納入TCFD揭露。ISSB S2以TCFD為基礎，兩者實質相同。',
+  exam:'▸ 四大支柱名稱（必背）\n▸ 實體風險（急性/慢性）vs 轉型風險（政策/技術/市場/聲譽）\n▸ TCFD已整合入ISSB S2\n▸ 轉型風險四子類型',
+  num:'已整合入ISSB S2（2023）',
+  who:'自願採用（各地漸強制），台灣特定規模上市公司',
+  rel:['issb','gri','cdp','sbti']},
+
+tnfd:{zh:'TNFD',en:'自然相關財務揭露框架',cat:'disc',
+  prob:'TCFD處理氣候風險，但企業對自然（土地、水、海洋、生物多樣性）的依賴和衝擊也是重大財務風險。TNFD就是「自然版的TCFD」。',
+  how:'2023年正式發布v1.0。架構仿效TCFD四大支柱，使用LEAP方法論（Locate, Evaluate, Assess, Prepare）評估對生態系統的依賴與衝擊。',
+  tw:'台灣金管會已將TNFD納入永續報告書參考框架。農業、採礦、食品等行業自然依賴度高。',
+  exam:'▸ TCFD=氣候；TNFD=自然（必考對照）\n▸ LEAP方法論（Locate/Evaluate/Assess/Prepare）\n▸ 2023年v1.0正式發布\n▸ 對應GBF 30x30生物多樣性目標',
+  num:'2023年v1.0發布',
+  who:'農業、採礦、食品、基礎設施等自然依賴行業',
+  rel:['tcfd','gbf','sbtn','naturalcap']},
+
+cdp:{zh:'CDP',en:'碳揭露評比平台',cat:'disc',
+  prob:'機構投資人想知道企業的環境表現，但沒有統一平台蒐集這些資訊。CDP提供一個由投資人驅動的自願揭露系統。',
+  how:'全球最大環境資訊揭露平台。企業自願回應CDP問卷（氣候、水安全、森林），由管理超過100兆美元資產的機構投資人驅動。評分從D-到A（Leadership）。',
+  tw:'台灣超過200家企業填報CDP。蘋果、BMW等要求供應商填CDP，是驅動台灣廠商參與的主要動力。',
+  exam:'▸ CDP是「自願揭露平台」（非強制）\n▸ 由機構投資人（100兆美元）驅動\n▸ 問卷三類型：氣候、水安全、森林\n▸ 評分：D→C→B→A（A=最佳）',
+  num:'100兆美元資產規模的投資人驅動',
+  who:'自願企業（但供應鏈客戶要求者視同強制）',
+  rel:['tcfd','issb','gri','sbti']},
+
+sasb:{zh:'SASB',en:'永續會計準則委員會',cat:'disc',
+  prob:'不同行業面對的ESG重大議題完全不同——銀行業和採礦業截然不同。GRI的通用框架無法做到行業別的財務重大性分析。',
+  how:'依產業別制定77個行業別準則，聚焦「財務重大性」（對投資人有財務影響的ESG議題）。已整合入ISSB框架。與GRI差異：SASB=行業別+投資人+財務重大性；GRI=通用+利害關係人+雙重重大性。',
+  tw:'台灣金管會藍圖鼓勵企業參考SASB依行業揭露。台積電、聯發科等適用「半導體行業準則」。',
+  exam:'▸ SASB vs GRI差異（行業別vs通用；投資人vs利害關係人）\n▸ 77個行業別準則\n▸ 已整合入ISSB框架\n▸ 財務重大性（非雙重重大性）',
+  num:'77個行業別準則',
+  who:'自願使用，常見於與機構投資人溝通的企業',
+  rel:['gri','issb','tcfd','cdp']},
+
+doubmat:{zh:'雙重重大性',en:'Double Materiality',cat:'disc',
+  prob:'ISSB只要求揭露「ESG對企業財務的影響」，但企業對環境和社會造成的衝擊呢？CSRD和GRI主張這兩個維度都要評估。',
+  how:'雙重重大性=財務重大性（ESG如何影響企業財務）+衝擊重大性（企業活動如何影響環境/社會）取聯集。CSRD強制要求。步驟：識別潛在議題→評估財務影響→評估環境/社會衝擊→確認重大議題→排序。',
+  tw:'台灣上市公司依GRI 3執行重大性評估，實質上就是雙重重大性。需訪談各類利害關係人（員工、客戶、社區、投資人）。',
+  exam:'▸ 雙重重大性 vs 財務重大性（CSRD用雙重；ISSB用財務）（必考）\n▸ 財務重大性+衝擊重大性取「聯集」\n▸ GRI 3是執行工具\n▸ ESRS要求雙重重大性評估',
+  num:'CSRD強制 ／ GRI鼓勵',
+  who:'依CSRD需申報的企業 + 自願採用GRI的企業',
+  rel:['csrd','gri','issb','esrs']},
+
+scope:{zh:'Scope 1/2/3',en:'溫室氣體排放三範疇',cat:'disc',
+  prob:'企業排放的溫室氣體來源複雜——有自己燃燒的、有用電間接的、有供應鏈裡的。GHG Protocol設計了三個範疇清楚分類。',
+  how:'Scope 1：直接排放（燃燒化石燃料、製程排放、逸散如冷媒外洩）。Scope 2：購入電力的間接排放（有市場基礎法和位置基礎法）。Scope 3：供應鏈上下游所有其他間接排放，分15個子類。Scope 3通常佔企業總排放的70-90%。',
+  tw:'台灣金管會要求上市櫃公司揭露Scope 1&2；Scope 3為鼓勵性揭露。但ISSB S2要求全部揭露，未來台灣將跟進。',
+  exam:'▸ 三個範疇定義（超高頻必考）\n▸ Scope 3有15個子類別\n▸ 市場基礎法vs位置基礎法（Scope 2）\n▸ Scope 3佔企業總排放70-90%',
+  num:'Scope 3共15個子類 ／ 通常佔70-90%排放',
+  who:'所有進行GHG盤查的企業',
+  rel:['issb','ghgpro','iso14064','sbti','csrd']},
+
+esma:{zh:'ESMA',en:'歐盟ESG評級監管',cat:'disc',
+  prob:'MSCI、Sustainalytics等ESG評級機構影響力巨大，但不受任何監管，方法論不透明，同一企業評分差異巨大。',
+  how:'歐盟金融監管局（ESMA）從2026年7月起，要求在歐盟提供ESG評級服務的機構取得授權。要求：方法論透明、避免利益衝突、揭露數據來源。',
+  tw:'MSCI、Sustainalytics等評級機構需向ESMA申請授權，可能影響其對台灣企業的評分方法論。台灣金管會參考ESMA做法研議相關規範。',
+  exam:'▸ ESMA 2026年7月起監管ESG評級機構\n▸ 主要機構：MSCI、Sustainalytics、富時羅素\n▸ 評級分歧問題（同企業不同機構評分差異大）',
+  num:'2026年7月起監管授權',
+  who:'在歐盟提供ESG評級服務的評級機構',
+  rel:['issb','sfdr','gri']},
+
+sbtn:{zh:'SBTN',en:'Science Based Targets Network',cat:'disc',
+  prob:'SBTi處理氣候減碳目標，但自然（土地、水、海洋、生物多樣性）的目標呢？SBTN是「自然版的SBTi」。',
+  how:'2023年發布企業框架。要求企業針對自然設定科學基礎目標：陸地、淡水、海洋、生物多樣性四大系統。五步驟：評估→解讀→衡量→設定→揭露。',
+  tw:'農業、採礦、食品等行業台灣企業需關注SBTN要求。目前仍為自願性，但趨勢向強制化發展。',
+  exam:'▸ SBTN vs SBTi（自然 vs 氣候）\n▸ 四大自然系統：陸地、淡水、海洋、生物多樣性\n▸ 五步驟框架',
+  num:'2023年企業框架發布（自願）',
+  who:'農業、採礦、食品等自然依賴度高的行業（自願）',
+  rel:['tnfd','gbf','sbti','naturalcap']},
+
+// 碳市場
+vcm:{zh:'VCM',en:'自願性碳市場',cat:'carbon',
+  prob:'企業想宣稱「碳中和」，但自己的減碳還不夠。可以購買別人的碳信用來抵換——但哪些碳信用是真實有效的？VCM就是這個市場加上品質管控機制。',
+  how:'企業或個人自願購買碳信用以抵換排放的市場。碳信用來源：再生能源、植林、CCUS、藍碳等。主要認證機構：Verra（VCS標準）、Gold Standard。ICVCM制定CCP標籤，識別高品質碳信用。',
+  tw:'TCEX（台灣碳交易所）是本土VCM平台，2023年成立。目前以國際碳信用交易為主，本土碳信用（自願減量額度）即將上路。',
+  exam:'▸ VCM vs 強制碳市場（EU ETS）的差異\n▸ CCP是VCM品質認證標準\n▸ Verra（VCS）、Gold Standard是主要認證機構\n▸ 碳信用用於ISO 14068碳中和聲明',
+  num:'全球VCM市場規模：數百億美元',
+  who:'自願購買碳信用的企業和個人',
+  rel:['ccp','eua','redd','itmo','tcex','iso14068']},
+
+ccp:{zh:'CCP',en:'碳信用核心原則',cat:'carbon',
+  prob:'VCM充斥低品質甚至造假的碳信用——企業買了，但碳排根本沒有真正被抵消。CCP是用來識別「真正有效」碳信用的品質標章。',
+  how:'ICVCM（完整性理事會）制定的10項核心原則，包含：真實性、額外性（沒有這個計畫就不會減碳）、永久性、無雙重計算等。通過CCP認定的碳信用可獲CCP標籤，交易價格更高、更受機構投資人認可。',
+  tw:'TCEX已開始引進CCP認可的碳信用，確保交易品質。台灣企業購買CCP碳信用用於ISO 14068碳中和聲明。',
+  exam:'▸ CCP是ICVCM制定的品質認證標準\n▸ 核心10項原則（重點：額外性、永久性、無雙重計算）\n▸ VCMI是規範企業「如何使用」碳信用的配套框架',
+  num:'10項核心原則',
+  who:'碳信用買家（企業）和賣家（項目開發商）',
+  rel:['vcm','pacm','cdm']},
+
+eua:{zh:'EUA',en:'歐洲排放配額',cat:'carbon',
+  prob:'EU ETS要運作，需要有一個可以交易的具體單位。EUA就是這個單位——可以買賣的一噸CO₂排放權。',
+  how:'EU ETS的基本交易單位，1 EUA = 1噸CO₂e。企業每年清繳等量EUA抵消實際排放量。獲取途徑：①免費分配（逐年減少）②市場購買 ③政府拍賣。碳價€60-80/噸，波動受能源價格、天氣、政策影響。',
+  tw:'CBAM的收費基準就是EU ETS碳價。台灣碳費（300元≈€9）遠低於EUA（€65），這個差距就是台灣出口商在CBAM上的額外成本。',
+  exam:'▸ EUA=1噸CO₂e（EU ETS基本單位）\n▸ 與碳信用（VCM）的區別（強制vs自願）\n▸ CBAM費率與EUA碳價掛鉤',
+  num:'€60-80/噸（現價） ／ 1 EUA = 1噸CO₂e',
+  who:'EU ETS管制範圍內的歐洲企業',
+  rel:['euets','vcm','cbam','cap']},
+
+redd:{zh:'REDD+',en:'減少森林砍伐碳匯',cat:'carbon',
+  prob:'全球森林砍伐佔全球排碳約10-15%，如何用市場機制讓開發中國家有動力保護森林而不砍伐變現？',
+  how:'聯合國REDD+框架：開發中國家透過保護森林或減少砍伐，獲得以森林碳匯為基礎的碳信用。主要挑戰：基準線設定、洩漏（這片不砍換到別片砍）、永久性（砍了怎辦）。',
+  tw:'台灣企業可購買REDD+碳信用（經VCS認證的林業碳匯）用於自願碳中和。',
+  exam:'▸ REDD+是開發中國家的林業碳匯機制\n▸ 主要挑戰：洩漏、基準線、永久性\n▸ 與VCM/VCS的關係',
+  num:'全球森林砍伐佔排碳~10-15%',
+  who:'開發中國家政府 + 購買林業碳信用的企業',
+  rel:['vcm','ccp','cdr','fsc']},
+
+sbti:{zh:'SBTi',en:'科學基礎減量目標倡議',cat:'carbon',
+  prob:'企業宣稱「2050年碳中和」，但說說而已，沒有具體時程。SBTi要求企業設定與IPCC 1.5°C路徑一致的「科學基礎」減碳目標，並提交認證。',
+  how:'由CDP、UN Global Compact、WRI、WWF四大組織聯合發起。企業設定Scope 1&2近期目標（5-10年）、Scope 3長期目標（必要時）。申請五步驟：承諾→發展→提交→認證→揭露。通過認證後每5年更新。蘋果要求整個供應鏈設定SBTi目標。',
+  tw:'台積電、台達電等大廠已通過SBTi認證。台灣SBTi認證企業數量快速成長，供應鏈壓力是主要驅動力。',
+  exam:'▸ SBTi=科學基礎（IPCC 1.5°C路徑）\n▸ Scope 3目標：若Scope 3佔比>40%則必須\n▸ 申請五步驟\n▸ 每5年更新目標',
+  num:'全球超過7,000家企業認證',
+  who:'自願企業（但供應鏈客戶要求者視同強制）',
+  rel:['paris','scope','netzero','tcfd']},
+
+netzero:{zh:'Net Zero / 淨零',en:'淨零排放目標',cat:'carbon',
+  prob:'碳中和只需要把剩餘排放用碳信用抵換，但如果碳信用品質不好，等於白說。淨零要求先大幅削減（>90%），再用碳移除（CDR）抵銷剩餘。',
+  how:'企業或國家的GHG排放量，在大幅削減後（通常≥90%），剩餘排放被碳移除（CDR）所抵銷，達到排放與移除的淨平衡。IPCC要求全球2050年達到淨零。SBTi淨零標準要求：Scope 1&2削減≥90%、Scope 3削減≥90%，然後才能用高品質CDR抵銷。',
+  tw:'台灣「2050淨零排放路徑」是國家目標，12項關鍵策略為執行架構。台灣碳費、ETS、能源轉型都是達成淨零的政策工具。',
+  exam:'▸ 淨零 vs 碳中和差異（先削減≥90%才能抵換）（必考）\n▸ IPCC：2050年全球淨零\n▸ SBTi淨零標準：Scope 1&2削減≥90%',
+  num:'2050年全球淨零目標 ／ 削減≥90%才可抵換',
+  who:'設定淨零目標的企業和國家政府',
+  rel:['sbti','cdr','paris','twpath']},
+
+twcf:{zh:'台灣碳費',en:'Taiwan Carbon Fee',cat:'carbon',
+  prob:'台灣需要把碳排放的外部成本（氣候損害）內部化，讓高碳排企業承擔責任，同時籌措綠色轉型資金。',
+  how:'氣候變遷因應法授權環境部對年排放量>2.5萬噸CO₂e的工廠收取碳費。費率：初期300元/噸（2025）；2030後預計調升至1,200-1,800元/噸。收入進入「氣候基金」，用於補貼企業減碳及調適。首批約500家廠商（鋼鐵、石化、水泥、電力為主）。',
+  tw:'台灣碳費（300元/噸≈€9）遠低於EU ETS（€65/噸）。這個差距意味著台灣鋼鐵業在CBAM上還有大量額外費用要付。未來費率調升是必然趨勢。',
+  exam:'▸ 碳費門檻：>2.5萬噸CO₂e/年（必考）\n▸ 初期費率：300元/噸（2025）\n▸ 碳費 vs 碳稅差異（行政收費vs立法課稅）\n▸ 收入進入氣候基金（專款專用）',
+  num:'>2.5萬噸門檻 ／ 300元初期費率 ／ 約500家',
+  who:'年排放>2.5萬噸CO₂e的台灣工廠（約500家）',
+  rel:['euets','cbam','tcex','cfvst']},
+
+tcex:{zh:'TCEX',en:'台灣碳交易所',cat:'carbon',
+  prob:'台灣企業想購買碳信用用於碳中和聲明，但沒有官方認可的交易平台，碳信用品質無法保證。',
+  how:'2023年成立於高雄，由台灣證交所與國發會合資設立。目前提供國際碳信用（CCP認可）交易平台；未來將整合本土自願減量碳信用；長期目標銜接台灣ETS。是台灣唯一官方認可的碳信用交易平台。',
+  tw:'TCEX是台灣碳市場的基礎設施。企業購買TCEX碳信用可用於ISO 14068碳中和聲明，未來也可能用於抵減部分碳費。',
+  exam:'▸ TCEX成立背景：2023年、高雄、台灣證交所+國發會\n▸ 目前功能：國際碳信用交易\n▸ 台灣唯一官方VCM平台',
+  num:'2023年成立 ／ 台灣唯一官方VCM平台',
+  who:'台灣企業（購買碳信用）',
+  rel:['vcm','twcf','itmo','iso14068']},
+
+cfvst:{zh:'碳費 vs 碳稅',en:'Carbon Fee vs Carbon Tax',cat:'carbon',
+  prob:'「碳費」和「碳稅」聽起來很像，但法律性質、收入用途、靈活性都不一樣。台灣採碳費而非碳稅，這個選擇有重要含義。',
+  how:'碳稅：透過立法課稅，收入進一般財政，法律效力強，修改需立法院通過，難度高。碳費：行政收費，由主管機關（環境部）收取，收入進氣候基金（專款），調整費率較靈活，但法律效力稍弱。台灣選擇碳費，主要考量政治可行性和政策靈活性。',
+  tw:'台灣採碳費（而非碳稅），環境部可較靈活調整費率。但費率低（300元≈€9）仍是主要批評。碳費只是第一步，未來ETS才是主要工具。',
+  exam:'▸ 碳稅（立法課稅）vs 碳費（行政收費）（必考）\n▸ 台灣採碳費（非碳稅）\n▸ 碳費收入→氣候基金（專款）\n▸ Cap-and-trade vs 碳稅/費（量vs價）',
+  num:'台灣初期300元/噸（碳費）',
+  who:'了解碳定價機制的企業和從業者',
+  rel:['twcf','euets','cap']},
+
+cdr:{zh:'CDR',en:'碳移除技術',cat:'carbon',
+  prob:'即使全力節能減碳，部分行業（如鋼鐵、水泥、航空）仍有「難以消除的剩餘排放」。淨零的最後一塊拼圖，就是把這些CO₂從大氣中移除掉。',
+  how:'自然移除：植林造林、土壤碳匯、藍碳（紅樹林、海草床）——成本低但永久性較弱。工程移除：DAC（直接空氣捕捉）、BECCS（生物能源+碳捕捉）——成本高但永久性強。CDR是淨零達成的必要補充，但不能取代實質減碳。',
+  tw:'台灣林業碳匯、海洋藍碳（大肚溪口濕地）是本土CDR重要來源，可申請TCEX的碳信用。台灣2050淨零路徑將CDR列為必要技術。',
+  exam:'▸ CDR分自然碳匯 vs 工程移除\n▸ 用於抵銷「難以消除的剩餘排放」\n▸ 不能取代實質減碳（SBTi要求先減90%）\n▸ DAC成本最高但永久性最佳',
+  num:'需抵銷全球剩餘排放 ／ 成本$50-1,000/噸不等',
+  who:'設定淨零目標的企業和國家',
+  rel:['netzero','dac','ccus','bluec','vcm']},
+
+// 社會面S
+ungp:{zh:'UNGP',en:'聯合國工商業與人權指導原則',cat:'social',
+  prob:'企業在全球各地運營，可能在知情或不知情的情況下侵害人權（使用強迫勞動的供應商、污染原住民土地等）。需要一個全球性框架規範企業對人權的責任。',
+  how:'2011年聯合國通過，「保護、尊重、救濟」三支柱框架：①國家保護人權（制定法律）②企業尊重人權（盡職調查）③提供救濟機制（申訴管道）。是CSDDD和各國人權盡職調查立法的理念基礎。',
+  tw:'台灣國家人權行動計畫（2022）以UNGP為基礎。台灣外貿協會協助廠商建立人權盡職調查能力以應對CSDDD。',
+  exam:'▸ UNGP三支柱：保護/尊重/救濟（必背）\n▸ 企業責任是「尊重」而非「保護」\n▸ CSDDD法律基礎源自UNGP\n▸ 2011年通過（非強制，但為立法基礎）',
+  num:'2011年通過 ／ 三支柱框架',
+  who:'所有企業（跨國企業為主要對象）',
+  rel:['csddd','rba','ilo','sa8000']},
+
+ilo:{zh:'ILO 核心公約',en:'Intl Labour Organization Core Conventions',cat:'social',
+  prob:'全球各地勞工標準差異巨大——有的地方允許童工、強迫勞動、禁止工會。ILO核心公約設定了全球最低勞工標準底線。',
+  how:'8項核心公約：禁止童工（138號年齡、182號最惡劣形式）、禁止強迫勞動（29號、105號）、結社自由（87號）、集體協商（98號）、同等報酬（100號）、反就業歧視（111號）。供應鏈稽核（RBA、SA8000）均以ILO核心公約為標準。',
+  tw:'台灣已批准部分ILO公約（精神），並在勞基法中落實。台灣外銷歐洲的企業，客戶會稽核ILO核心公約的遵循情況。',
+  exam:'▸ ILO 8項核心公約（重點：禁童工、禁強迫、結社自由）\n▸ 是RBA、SA8000的標準基礎\n▸ CSDDD要求供應鏈盡職調查時參考ILO標準',
+  num:'8項核心公約 ／ 188個成員國',
+  who:'ILO成員國及在其境內運營的企業',
+  rel:['csddd','rba','sa8000','ungp']},
+
+rba:{zh:'RBA',en:'責任商業聯盟',cat:'social',
+  prob:'電子供應鏈（蘋果、戴爾到台積電）遍佈全球，如何確保整條供應鏈都符合勞工、環境、道德標準？RBA提供電子業專屬的統一稽核標準。',
+  how:'前身EICC，涵蓋：勞工（工時、工資、強迫勞動、童工）、健康安全、環境、管理體系、道德（反貪腐）。要求第三方VAP（驗證稽核程序）稽核，分為公告和未公告稽核。稽核結果分：符合、輕微不符合、主要不符合、關鍵不符合。',
+  tw:'台灣電子業是全球RBA參與最密集的地區之一。台積電、鴻海、廣達等要求供應商通過RBA VAP稽核。台灣供應商每年接受大量RBA稽核。',
+  exam:'▸ RBA=電子供應鏈標準（前身EICC）\n▸ VAP=驗證稽核程序（RBA特有）\n▸ 涵蓋：勞工/健安/環境/道德/管理\n▸ RBA vs SA8000（電子 vs 跨產業）',
+  num:'全球超過6,000家成員企業',
+  who:'電子供應鏈企業（台積電、鴻海的供應商）',
+  rel:['csddd','ungp','ilo','sa8000','uflpa']},
+
+sa8000:{zh:'SA8000',en:'Social Accountability 8000',cat:'social',
+  prob:'電子業有RBA，但紡織、食品、化工等其他行業的供應鏈勞工標準呢？SA8000提供跨產業的第三方認證標準。',
+  how:'由SAI制定，涵蓋9大標準：童工、強迫勞動、健康安全、結社自由與集體協商、歧視、懲戒措施、工時、薪酬、管理體系。需第三方機構（如SGS、Bureau Veritas）現場稽核並頒發認證證書，有效期3年。',
+  tw:'台灣紡織、製鞋、食品等產業的歐洲客戶常要求SA8000認證。與RBA不同，SA8000是認證（發證書），RBA是稽核（出報告）。',
+  exam:'▸ SA8000 9大標準（重點：童工、強迫勞動、工時）\n▸ SA8000 vs RBA差異（跨產業vs電子；認證vs稽核）\n▸ 3年認證有效期',
+  num:'9大標準 ／ 3年認證有效期',
+  who:'紡織、食品、化工等非電子業供應鏈企業',
+  rel:['rba','ungp','ilo','csddd']},
+
+uflpa:{zh:'UFLPA',en:'維吾爾強迫勞動防止法',cat:'social',
+  prob:'新疆生產的商品（多晶矽、棉花等）可能涉及強迫勞動，但企業難以追溯供應鏈。美國UFLPA採取「推定有罪」的極強硬立場。',
+  how:'2022年美國通過。推定原則：凡是來自新疆的商品，一律推定涉及強迫勞動，禁止進口，除非企業能「清楚且有說服力地」舉證清白（舉證責任倒置）。要求全面供應鏈溯源。',
+  tw:'台灣太陽能業：使用中國多晶矽的模組被美國海關扣押（多起案例）。台灣紡織業：棉花溯源要求。台灣業者需建立全面的供應鏈溯源體系。',
+  exam:'▸ UFLPA「推定有罪」原則（舉證責任倒置）（必考）\n▸ 影響最大：太陽能多晶矽、紡織棉花\n▸ 企業須清楚舉證清白\n▸ 2022年通過',
+  num:'2022年通過 ／ 推定原則（舉證責任倒置）',
+  who:'向美國出口含新疆原料商品的所有企業',
+  rel:['csddd','rba','ungp']},
+
+fpic:{zh:'FPIC',en:'自由事先知情同意',cat:'social',
+  prob:'採礦、農業開發常常在原住民傳統領地上進行，造成土地被剝奪、文化被破壞。FPIC要求在動土前必須獲得原住民族的真實同意。',
+  how:'Free, Prior and Informed Consent。三個要素：①Free（無脅迫、無壓力）②Prior（計畫開始前，有充分諮詢時間）③Informed（提供完整、真實資訊）。採礦、農業、林業、基礎設施開發的國際項目必須遵守。',
+  tw:'台灣原住民族基本法已包含FPIC精神。台灣企業在東南亞、非洲投資採礦、農業時面臨FPIC要求。',
+  exam:'▸ FPIC三要素：Free/Prior/Informed（必記）\n▸ 採礦、農業開發的核心人權議題\n▸ CSDDD盡職調查需考慮FPIC',
+  num:'Free + Prior + Informed（三要素）',
+  who:'在原住民傳統領地進行開發的採礦、農業、基礎設施企業',
+  rel:['ungp','csddd','gbf']},
+
+msa:{zh:'現代奴隸法',en:'Modern Slavery Act (UK/Aus)',cat:'social',
+  prob:'強迫勞動不只是發展中國家的問題，企業供應鏈中可能在任何地方存在現代奴隸制。英國和澳洲率先立法要求企業披露風險。',
+  how:'英國《現代奴隸法》（2015）：年營業額>3,600萬英鎊的企業每年須發布《現代奴隸聲明》。澳洲《現代奴隸法》（2018）：年營業額>1億澳幣。與CSDDD不同，英澳現代奴隸法只要求「報告」不要求「行動」。',
+  tw:'台灣在英澳有客戶關係的企業，需配合英澳客戶的現代奴隸調查。長期趨勢：從「報告義務」走向CSDDD式的「行動義務」。',
+  exam:'▸ 英國：>£3,600萬；澳洲：>A$1億\n▸ 只要求「報告」（vs CSDDD要求「行動」）\n▸ 每年須發布現代奴隸聲明',
+  num:'英國：>£3,600萬 ／ 澳洲：>A$1億',
+  who:'符合規模門檻的英澳企業及外國供應商',
+  rel:['csddd','rba','ungp','uflpa']},
+
+// 治理面G
+sdgs:{zh:'SDGs',en:'聯合國永續發展目標',cat:'gov',
+  prob:'全球面對的問題——貧窮、氣候、不平等、海洋污染——互相關聯，需要一個整合性的全球目標框架來引導各國和企業的行動。',
+  how:'聯合國2030議程的17項目標、169項細項指標。與氣候相關的重點目標：SDG7（清潔能源）、SDG13（氣候行動）、SDG12（負責任消費）、SDG14（海洋）、SDG15（陸地生態）。企業常對照SDGs說明永續策略和貢獻。',
+  tw:'台灣政院已訂定永續發展目標台灣版本（對標UN SDGs）。台灣上市公司永續報告書普遍對照SDGs揭露貢獻。',
+  exam:'▸ SDGs共17項目標、169項指標（2030年截止）\n▸ 重要：SDG7清潔能源、SDG13氣候行動\n▸ SDG12負責任消費與生產',
+  num:'17項目標 ／ 169項指標 ／ 2030年截止',
+  who:'所有UN成員國政府及企業（自願對標）',
+  rel:['ungc','gri','paris']},
+
+ungc:{zh:'UNGC',en:'聯合國全球盟約',cat:'gov',
+  prob:'企業如何展示對永續發展和人權的承諾？UNGC提供一個全球最大的企業永續倡議平台，10項原則涵蓋人權、勞工、環境、反貪腐。',
+  how:'10項原則：人權（1-2條）、勞工（3-6條）、環境（7-9條）、反貪腐（10條）。加入後每年需提交「進度通報（CoP）」，否則被移出。目前全球超過20,000家企業加入。',
+  tw:'台灣超過100家企業加入UNGC。加入UNGC是展示國際ESG承諾的重要方式，對台灣想進入歐洲市場的企業尤其重要。',
+  exam:'▸ UNGC 10項原則分4大領域（必記）\n▸ CoP年度進度通報要求\n▸ 未提交CoP→被移出盟約',
+  num:'10項原則 ／ 全球>20,000家企業',
+  who:'自願加入的企業（任何規模皆可）',
+  rel:['sdgs','gri','ungp']},
+
+oecd:{zh:'OECD 指導方針',en:'OECD Guidelines for MNEs',cat:'gov',
+  prob:'跨國企業在東道國可能鑽法律漏洞，規避環保和勞工標準。OECD指導方針要求跨國企業在全球保持一致的負責任行為標準。',
+  how:'OECD多國企業指導方針，適用於在OECD成員國和合作國境內或從事商業活動的跨國企業。2023年更新版加入氣候和生物多樣性章節。涵蓋信息披露、人權、就業與勞工、環境、反腐敗、消費者利益、科學技術、競爭、稅務。設有「國家聯絡點（NCP）」處理企業申訴。',
+  tw:'台灣雖非OECD成員，但台灣企業在OECD成員國（美、歐、日、澳）的投資須遵守。荷蘭NCP曾處理涉台企業投訴案。',
+  exam:'▸ OECD指導方針 vs UNGP的關係（互補）\n▸ NCP（國家聯絡點）是申訴機制\n▸ 2023年更新版加入氣候章節',
+  num:'2023年更新版 ／ OECD成員國38國',
+  who:'在OECD成員國營業的跨國企業',
+  rel:['ungp','ungc','csddd']},
+
+clitigation:{zh:'氣候訴訟',en:'Climate Litigation',cat:'gov',
+  prob:'各國政府和企業在氣候上的承諾跟實際行動有巨大落差。NGO、受氣候影響的民眾開始透過法庭強制執行氣候責任——這是全新的法律風險類別。',
+  how:'全球氣候訴訟案件超過2,300件（2023年）。代表性案例：①Shell荷蘭案（2021）：法院要求Shell遵守巴黎協定，2030年Scope 1/2/3減45% ②澳洲案：政府批准煤礦時須評估氣候衝擊 ③德國案：政府氣候政策不足違憲。趨勢：從「政府被告」轉向「企業被告」。',
+  tw:'台灣雖無代表性案例，但隨台灣加入全球供應鏈的深度加深，氣候訴訟風險上升。企業的氣候資訊揭露不實可能成訴訟標的。',
+  exam:'▸ Shell荷蘭案：法院要求企業遵守巴黎協定（里程碑判決）\n▸ 氣候訴訟從「政府」轉向「企業」\n▸ 漂綠（greenwashing）也成訴訟標的',
+  num:'全球>2,300件訴訟（2023）',
+  who:'高碳排企業、化石燃料公司、漂綠企業',
+  rel:['paris','csrd','tcfd']},
+
+cbcr:{zh:'稅務透明 CbCR',en:'Country-by-Country Reporting',cat:'gov',
+  prob:'跨國企業透過移轉定價把利潤轉移到低稅地區（如開曼群島），逃避在真正創造價值地點的納稅義務。',
+  how:'OECD要求全球營業額>7.5億歐元的跨國企業逐國提交「國別報告（CbCR）」，揭露各國的利潤、稅款、員工數、資產等資訊。是BEPS（稅基侵蝕與利潤移轉）行動計畫的一部分。',
+  tw:'台灣已要求符合規模門檻的跨國企業提交CbCR。台積電、台達電等大型跨國集團已建立CbCR合規系統。',
+  exam:'▸ CbCR門檻：全球營業額>7.5億歐元\n▸ 是OECD BEPS行動計畫的工具\n▸ 目的：防止租稅規避',
+  num:'門檻：>€7.5億全球營業額',
+  who:'全球營業額>7.5億歐元的跨國企業',
+  rel:['oecd','ungc']},
+
+equator:{zh:'赤道原則',en:'Equator Principles',cat:'gov',
+  prob:'銀行資助大型基礎設施（水壩、礦山、化工廠）時，這些項目可能造成嚴重的環境破壞和人權侵害。赤道原則讓銀行把環境社會標準納入放貸決策。',
+  how:'自願性的金融業框架（目前140家銀行採用）。適用於融資金額>1,000萬美元的大型專案（含採礦、基礎設施、能源）。要求銀行評估專案的環境社會風險，分為三類：A類（高風險）、B類（中）、C類（低）。高風險專案需第三方獨立評估，並建立申訴機制。',
+  tw:'台灣多家大型銀行（如玉山、台灣銀行）已簽署赤道原則。影響台灣銀行業的海外大型專案融資決策。',
+  exam:'▸ 赤道原則：銀行業大型專案融資標準\n▸ 融資門檻：>1,000萬美元\n▸ 三類風險：A（高）/B（中）/C（低）',
+  num:'>$1,000萬適用 ／ 140家銀行採用',
+  who:'提供大型專案融資的銀行',
+  rel:['ungp','sfdr','greenbond']},
+
+// 自然生態
+gbf:{zh:'GBF 30x30',en:'全球生物多樣性框架',cat:'nature',
+  prob:'全球生物多樣性危機：物種滅絕速度是自然速度的100倍，生態系統服務（水源、授粉、糧食）面臨崩潰風險。需要一個像巴黎協定一樣的全球框架。',
+  how:'2022年COP15（昆明-蒙特婁）通過。核心目標「30x30」：到2030年保護30%陸地和30%海洋。23個目標涵蓋：減少生物多樣性有害補貼、減少農藥污染、恢復退化生態系。要求企業揭露對生物多樣性的依賴和衝擊（TNFD是企業層面工具）。',
+  tw:'台灣農業部推動生態系統服務評估與棲地保育。台灣珊瑚礁、濕地、山地森林是重要生物多樣性熱點。',
+  exam:'▸ GBF核心：30x30目標（2030年保護30%陸地和海洋）\n▸ 2022年COP15昆明-蒙特婁通過\n▸ TNFD是GBF的企業層面執行工具\n▸ 與巴黎協定的平行地位',
+  num:'2030年保護30%陸地+30%海洋',
+  who:'UN成員國政府 + 農業、採礦、食品等依賴自然的企業',
+  rel:['tnfd','sbtn','bluec','naturalcap']},
+
+naturalcap:{zh:'自然資本',en:'Natural Capital',cat:'nature',
+  prob:'企業在財務報表上看不到森林、地下水、土壤的價值，所以決策時常常忽視對這些資源的破壞。自然資本把生態系統服務轉化成可評估的財務語言。',
+  how:'將生態系統提供的服務（潔淨水源、授粉、氣候調節、糧食生產）視為具有經濟價值的資本，進行量化評估。評估方法：TEEB（生態系統和生物多樣性經濟學）、ENCORE（自然資本風險工具）。',
+  tw:'台灣農業部推動生態系統服務評估。濕地、森林碳匯在台灣是重要自然資本，也是CDR的潛在來源。',
+  exam:'▸ 自然資本=生態系統服務的貨幣化評估\n▸ TNFD的評估基礎\n▸ ENCORE是主要評估工具',
+  num:'全球自然資本每年提供>100兆美元服務',
+  who:'農業、採礦、食品、基礎設施等高自然依賴行業',
+  rel:['tnfd','gbf','cdr','bluec']},
+
+bluec:{zh:'藍碳',en:'Blue Carbon',cat:'nature',
+  prob:'陸地森林碳匯已廣為人知，但海洋生態系統（紅樹林、海草床、鹽沼）的固碳能力更強、更持久，卻常被忽視。',
+  how:'藍碳=海洋生態系統固碳。特點：①固碳速率是陸地森林的3-5倍 ②碳儲存在沉積物中，永久性強 ③單位面積固碳量遠高於陸地森林。生態復育（恢復紅樹林）可申請VCM碳信用。主要藍碳生態系：紅樹林、海草床、鹽沼。',
+  tw:'台灣濕地（大肚溪口、台江國家公園等）具有重要藍碳潛力。農業部正評估藍碳核算方法，未來可申請TCEX碳信用。',
+  exam:'▸ 藍碳 vs 綠碳（森林）的比較（固碳速率3-5倍）\n▸ 三大藍碳生態系：紅樹林、海草床、鹽沼\n▸ 可申請VCM碳信用',
+  num:'固碳速率是陸地森林3-5倍',
+  who:'濕地管理機構、沿海城市、購買藍碳碳信用的企業',
+  rel:['cdr','vcm','naturalcap','gbf']},
+
+epr:{zh:'EPR',en:'延伸生產者責任',cat:'nature',
+  prob:'廢棄物（廢電子、廢電池、廢包裝）的處理成本目前主要由社會承擔，製造商卻不用負責。EPR把這個責任轉回給製造商，驅動更環保的產品設計。',
+  how:'Extended Producer Responsibility：製造商對產品整個生命週期（包含廢棄階段）負責。實施方式：①強制回收比例 ②回收費用（含在產品價格中）③再生材料使用要求。PPWR的核心機制之一。',
+  tw:'台灣資源回收費已是EPR的實踐。廢電子、廢電池的EPR制度讓台灣電子業承擔回收責任，推動了更易拆解、回收的產品設計。',
+  exam:'▸ EPR=延伸生產者責任（製造商為廢棄物負責）\n▸ PPWR的核心機制\n▸ 台灣廢電子、廢電池強制回收是EPR實踐',
+  num:'全球EPR計畫超過400個',
+  who:'製造商、進口商（特別是電子、包裝、電池業）',
+  rel:['ppwr','circular']},
+
+fsc:{zh:'FSC',en:'森林管理委員會認證',cat:'nature',
+  prob:'全球木材和紙漿市場充斥非永續砍伐的木材，消費者和企業難以區分哪些木材來自永續管理的森林。',
+  how:'FSC認證確保木材、紙漿、木質包材來自符合環境和社會標準的永續管理森林。認證分：FSC 100%、FSC Mix（混合）、FSC Recycled（回收）。企業使用FSC認證材料可降低EUDR合規風險（但FSC不等於EUDR合規，仍需盡職調查）。',
+  tw:'台灣紙業、木材業需關注FSC認證，特別是出口歐盟的產品。IKEA等歐洲品牌要求供應商使用FSC木材。',
+  exam:'▸ FSC vs EUDR的關係（FSC有幫助但不等於合規）\n▸ 三種FSC標籤：100%/Mix/Recycled\n▸ 主要應用：木材、紙漿、包裝',
+  num:'全球>250百萬公頃森林獲FSC認證',
+  who:'木材、紙漿、木質包材製造商和進口商',
+  rel:['eudr','redd','gbf']},
+
+circular:{zh:'循環經濟',en:'Circular Economy',cat:'nature',
+  prob:'現代工業是線性的：取用原料→製造→使用→丟棄，大量消耗資源、產生廢棄物。循環經濟要把這個線圈起來，讓廢棄物變成原料。',
+  how:'三大原則（3R→5R）：Reduce（減量）、Reuse（再使用）、Recycle（回收）、Repair（修復）、Recover（再生）。應用：產品設計易拆解、廢舊品回收再製造、商業模式從「賣產品」變成「賣服務」（租賃模式）。EU循環經濟行動計畫、PPWR是立法推動工具。',
+  tw:'台灣循環經濟政策由環境部推動。電動車電池回收、太陽能板回收是近期重點。台灣化學業、塑膠業面臨循環設計轉型壓力。',
+  exam:'▸ 3R vs 5R（加上Repair和Recover）\n▸ 線性經濟 vs 循環經濟\n▸ PPWR和EPR是循環經濟的立法工具',
+  num:'歐盟2030年循環經濟目標',
+  who:'製造業、包裝業、電子業、化學業',
+  rel:['ppwr','epr','naturalcap']},
+
+// 永續金融
+sfdr:{zh:'SFDR',en:'永續金融揭露法規',cat:'finance',
+  prob:'金融機構大量推出「ESG基金」、「永續投資」，但標準不一，投資人無法判斷哪個真正有永續效益（綠色洗白）。SFDR提供統一分類。',
+  how:'歐盟要求金融機構揭露永續相關風險和衝擊的法規。三類基金：第6條（無特定永續主張）、第8條（促進環境/社會特性）、第9條（以永續為投資目標）。要求揭露PAI（主要負面指標，14項強制+2項自選）。',
+  tw:'台灣金管會參考SFDR制定本土永續金融分類指引。台灣金融業對歐盟客戶的基金銷售需符合SFDR分類。',
+  exam:'▸ SFDR三類基金：6條/8條/9條（必考）\n▸ PAI：主要負面指標（Principal Adverse Impact）\n▸ 9條>8條>6條（嚴格程度）',
+  num:'三類：第6條/8條/9條',
+  who:'在歐盟市場提供金融產品服務的資產管理人',
+  rel:['eutax','greenbond','esma','prisma']},
+
+eutax:{zh:'EU Taxonomy',en:'歐盟永續金融分類法',cat:'finance',
+  prob:'什麼是「永續投資」？天然氣算不算？核能算不算？沒有統一定義，各方都有自己的說法。EU Taxonomy提供官方的「環境永續」定義。',
+  how:'六大環境目標：①氣候變遷減緩 ②氣候變遷調適 ③水資源永續 ④循環經濟 ⑤污染防治 ⑥生物多樣性。任何活動被認定為「永續」必須：對至少一項目標有實質貢獻（TSC）、不顯著損害其他五項目標（DNSH）、遵守最低社會保障標準。',
+  tw:'台灣金融業參考EU Taxonomy建立本土永續金融分類架構。影響台灣企業的綠色融資、綠色債券認定標準。',
+  exam:'▸ EU Taxonomy六大環境目標（重點記前三項）\n▸ DNSH原則：不顯著損害（Do No Significant Harm）\n▸ TSC：對至少一項目標有實質貢獻',
+  num:'六大環境目標 ／ DNSH原則',
+  who:'歐盟金融機構 + CSRD適用企業',
+  rel:['sfdr','greenbond','csrd','circular']},
+
+greenbond:{zh:'綠色債券',en:'Green Bond',cat:'finance',
+  prob:'企業需要大量資金投入再生能源、節能建築等綠色計畫，但一般債券的資金流向不受限制。綠色債券確保資金專用於綠色用途。',
+  how:'募集資金專門用於符合環境效益的計畫（再生能源、節能建築、清潔交通）的債券，需符合ICMA《綠色債券原則》，並進行第三方驗證。與SLB的差異：綠色債券限定資金用途，SLB限定績效指標但資金不限用途。',
+  tw:'台灣2023年綠色債券發行規模超過700億台幣。台積電、元大金等已發行綠色債券。台灣證交所設有綠色債券平台。',
+  exam:'▸ 綠色債券 vs SLB：資金用途限定 vs 績效指標掛鉤（必考）\n▸ ICMA綠色債券原則（標準依據）\n▸ 需第三方驗證',
+  num:'台灣2023年：>700億台幣',
+  who:'需要綠色計畫融資的企業和政府',
+  rel:['slb','eutax','sfdr','transitfin']},
+
+slb:{zh:'SLB',en:'永續連結債券',cat:'finance',
+  prob:'綠色債券只適合有明確綠色投資計畫的企業。如果企業想整體轉型（如鋼廠要綠化），資金用途難以明確區分。SLB讓績效指標掛鉤利率，更靈活。',
+  how:'利率與企業永續績效指標（SPT，如減碳目標達成率、再生能源使用比例）掛鉤的債券。若未達目標，利率加碼（懲罰機制）；達標維持原利率。資金用途不限。ICMA《SLB原則》提供指引。',
+  tw:'台灣環境部、部分上市公司已發行SLB。SLB適合資金用途難以拆分的企業（零售業、食品業）。',
+  exam:'▸ SLB vs 綠色債券：績效指標 vs 資金用途（必考）\n▸ SPT=永續績效目標（發行人自設）\n▸ 未達標→利率加碼',
+  num:'全球SLB市場快速成長',
+  who:'希望整體轉型但資金用途難以明確的企業',
+  rel:['greenbond','sbti','transitfin']},
+
+transitfin:{zh:'轉型金融',en:'Transition Finance',cat:'finance',
+  prob:'綠色債券和SLB主要服務已經很「綠」的企業，但最需要資金的是高碳排行業（鋼鐵、水泥、化工）的轉型。轉型金融就是專為這些「棕色」企業設計的。',
+  how:'協助高碳排行業（鋼鐵、航空、石化、水泥）走向低碳的金融產品和服務。包含轉型債券。GFANZ（格拉斯哥金融聯盟，130兆美元）是主要推動機構。轉型計畫必須可信、有時間表且符合巴黎協定路徑。',
+  tw:'台灣鋼鐵業（中鋼）、石化業（台塑）是轉型金融的潛在受益者。台灣金融業正研究如何設計符合國際標準的轉型金融產品。',
+  exam:'▸ 轉型金融 vs 綠色金融（服務高碳排轉型 vs 已很綠的企業）\n▸ GFANZ：格拉斯哥金融聯盟\n▸ 轉型計畫需符合巴黎協定路徑',
+  num:'GFANZ管理資產：130兆美元',
+  who:'高碳排行業（鋼鐵、水泥、航空、石化）的融資需求',
+  rel:['greenbond','slb','paris','sbti']},
+
+prisma:{zh:'PRI',en:'責任投資原則',cat:'finance',
+  prob:'機構投資人管理的資金龐大，他們的投資決策直接影響企業的ESG表現。PRI建立一套框架，讓機構投資人把ESG因素納入投資分析和決策。',
+  how:'UN-supported Principles for Responsible Investment，聯合國主導。六項原則：納入ESG因素進入投資分析、實踐負責任的所有權、要求被投資企業揭露ESG、推廣PRI在投資業的實踐等。目前超過5,000家機構投資人簽署，管理資產超過130兆美元。',
+  tw:'台灣退休基金（勞退、公退）已開始將ESG因素納入投資評估。台灣金融業簽署PRI數量快速增加。',
+  exam:'▸ PRI六項原則（重點：ESG納入投資分析）\n▸ 管理資產：>130兆美元\n▸ 驅動企業ESG揭露的重要力量',
+  num:'>5,000家機構 ／ 管理資產>130兆美元',
+  who:'機構投資人（資產管理公司、退休基金、保險公司）',
+  rel:['sfdr','cdp','issb','greenbond']},
+
+esgratin:{zh:'ESG評級',en:'ESG Rating (MSCI/Sustainalytics)',cat:'finance',
+  prob:'投資人想快速評估企業ESG表現，但閱讀每份永續報告書耗時費力。ESG評級機構提供綜合評分，但方法論不透明、各機構之間評分差異巨大。',
+  how:'主要評級機構：MSCI（最廣泛，A-AAA等級）、Sustainalytics（以風險分數衡量）、富時羅素、標普全球。評分影響：進入ESG指數（如MSCI ESG Leaders）→吸引被動型基金資金流入。2026年ESMA開始監管評級機構。',
+  tw:'台灣上市公司越來越重視MSCI ESG評級。台積電MSCI評級AA，在台灣企業中屬最高等級。金管會永續藍圖鼓勵改善評級。',
+  exam:'▸ 主要機構：MSCI、Sustainalytics\n▸ 評級分歧問題（相關性~0.6）\n▸ ESMA 2026年起監管評級機構\n▸ 影響ESG指數成分股',
+  num:'評級相關性~0.6（機構間差異大）',
+  who:'機構投資人 + 被評級的上市公司',
+  rel:['esma','sfdr','issb','prisma']},
+
+// 減碳技術
+ghgpro:{zh:'GHG Protocol',en:'溫室氣體盤查議定書',cat:'tech',
+  prob:'企業都說要減碳，但用什麼方法計算碳排放？GHG Protocol就是全球通用的「碳排放計算方法學聖經」。',
+  how:'由WRI與WBCSD聯合開發，是全球最廣泛使用的企業溫室氣體盤查框架。定義了Scope 1/2/3的計算方法，提供活動數據×排放係數的計算邏輯。ISSB、CSRD、台灣環境部的盤查要求均以GHG Protocol為基礎。',
+  tw:'台灣環境部的溫室氣體盤查規定參考GHG Protocol架構。台灣企業的碳盤查報告幾乎全部依循GHG Protocol。',
+  exam:'▸ GHG Protocol是全球最廣泛的盤查框架\n▸ 定義Scope 1/2/3（必考起源）\n▸ 市場基礎法vs位置基礎法（Scope 2）\n▸ ISSB、CSRD、台灣法規的基礎',
+  num:'全球>90%的Fortune 500企業使用',
+  who:'所有進行GHG盤查的企業',
+  rel:['scope','iso14064','issb']},
+
+iso14064:{zh:'ISO 14064',en:'GHG盤查驗證國際標準',cat:'tech',
+  prob:'企業說自己的碳排放是X噸，但怎麼確認這個數字是真的？ISO 14064提供盤查方法學和第三方查證的標準。',
+  how:'三個部分：ISO 14064-1（組織層級盤查，6大類別）、ISO 14064-2（專案層級盤查）、ISO 14064-3（查證標準）。組織邊界設定三種方法：①營運控制法（台灣主流）②財務控制法 ③股權比例法。ISO 14065是查驗機構的認可標準。',
+  tw:'台灣強制盤查（>2.5萬噸）的企業需依ISO 14064-1盤查，並取得ISO 14064-3查證。查驗機構（BSI、SGS等）需取得ISO 14065認可。',
+  exam:'▸ 14064-1（組織）vs 14064-2（專案）vs 14064-3（查證）\n▸ 組織邊界三種方法（營運控制法是台灣主流）\n▸ 6大排放類別\n▸ 查證 vs 確證的差異',
+  num:'6大排放類別 ／ 三種組織邊界方法',
+  who:'所有需要正式GHG盤查和查證的企業',
+  rel:['ghgpro','scope','iso14067','twcf']},
+
+iso14067:{zh:'ISO 14067',en:'產品碳足跡標準',cat:'tech',
+  prob:'供應商出口歐洲、回應客戶要求時，需要知道每一個產品「從搖籃到大門」或「從搖籃到墳墓」產生了多少碳。ISO 14067就是計算產品碳足跡（PCF）的標準。',
+  how:'以LCA（生命週期評估）方法計算產品碳足跡，涵蓋原料取得→製造→運輸→使用→廢棄全流程。兩種系統邊界：搖籃到大門（Cradle-to-Gate，生產階段）和搖籃到墳墓（Cradle-to-Grave，全生命週期）。CBAM要求的「內嵌排放量」計算依此標準。',
+  tw:'台灣碳標籤制度依ISO 14067。CBAM要求台灣鋼鐵、鋁業提供內嵌排放量，計算依據就是ISO 14067。',
+  exam:'▸ PCF=產品碳足跡（Product Carbon Footprint）\n▸ 搖籃到大門 vs 搖籃到墳墓（必考差異）\n▸ CBAM「內嵌排放量」依此計算\n▸ LCA四階段（目標範疇→清單分析→衝擊評估→詮釋）',
+  num:'搖籃到大門 or 搖籃到墳墓兩種邊界',
+  who:'需計算產品碳足跡的製造商（特別是出口歐盟）',
+  rel:['cbam','iso14064','iso14068','trec']},
+
+iso14068:{zh:'ISO 14068-1',en:'碳中和標準',cat:'tech',
+  prob:'企業想宣稱「碳中和產品」，但如果只是買了劣質碳信用抵換就宣稱碳中和，這是漂綠。ISO 14068提供碳中和的嚴格標準和查證要求。',
+  how:'碳中和≠淨零（碳中和可用抵換，但需符合嚴格條件）。三步驟：①量化（依ISO 14064或14067）②減少（先盡力減碳）③移除或抵換剩餘（只有在充分減碳後才能用CDR或高品質VCM抵換）。需取得第三方查證才能對外宣稱碳中和。',
+  tw:'台灣企業宣稱「碳中和產品或服務」必須依ISO 14068並取得查證，否則屬漂綠。台灣環境部已公告此標準為官方依循規範。',
+  exam:'▸ 碳中和三步驟：量化→減少→抵換/移除\n▸ 碳中和 vs 淨零差異\n▸ 必須取得第三方查證\n▸ 先減碳再抵換（順序重要）',
+  num:'三步驟：量化→減少→抵換/移除',
+  who:'宣稱碳中和的企業和產品',
+  rel:['vcm','cdr','iso14064','iso14067']},
+
+dac:{zh:'DAC',en:'Direct Air Capture 直接空氣碳捕捉',cat:'tech',
+  prob:'CCUS從工廠煙道捕捉CO₂，但已排放到大氣中的CO₂怎麼辦？DAC直接從空氣中捕捉CO₂，是最靈活但最昂貴的負碳技術。',
+  how:'直接從大氣中捕捉CO₂（約400ppm），不需要工廠煙道。技術類型：固態DAC（吸附劑）和液態DAC（鹼液吸收）。捕捉的CO₂可封存地下（永久移除）或用於合成燃料（e-fuel）。成本目前$300-1,000/噸，IRA 45Q最高補貼$180/噸。',
+  tw:'台灣目前無商業規模DAC，主要關注CCUS。但台積電等企業已評估採購DAC碳信用以達成淨零目標。',
+  exam:'▸ DAC vs CCUS差異（大氣 vs 工廠煙道）\n▸ DAC成本最高（$300-1,000/噸）但永久性最佳\n▸ IRA 45Q補貼：最高$180/噸\n▸ 是高品質CDR的代表',
+  num:'成本：$300-1,000/噸 ／ 永久性最佳',
+  who:'設定淨零目標的科技公司、航空業（需高品質CDR）',
+  rel:['ccus','cdr','netzero','ira']},
+
+ccus:{zh:'CCUS',en:'碳捕捉利用與封存',cat:'tech',
+  prob:'鋼鐵、水泥、化工等行業難以完全電氣化，仍有大量製程排碳。CCUS在排放源頭把CO₂抓住，避免進入大氣。',
+  how:'Carbon Capture, Utilization and Storage。從工業煙道氣捕捉CO₂，再利用（製成化學品、燃料）或封存（地質構造注入）。CCUS（含利用）vs CCS（只封存）。成本約$50-100/噸。IRA 45Q補貼最高$85/噸（封存）。台灣中鋼、台電正在試驗CCUS。',
+  tw:'台灣CCUS面臨的挑戰：適合地質封存的場址有限（台灣多地震）。目前中鋼與工研院合作在高爐試驗CO₂捕捉技術。',
+  exam:'▸ CCUS vs CCS（含利用 vs 只封存）\n▸ CCUS vs DAC（煙道 vs 大氣）\n▸ 工程型碳移除（非自然碳匯）\n▸ IRA 45Q：$85/噸封存補貼',
+  num:'成本：$50-100/噸 ／ IRA 45Q：$85/噸',
+  who:'鋼鐵、水泥、化工、發電等高碳排工業',
+  rel:['dac','cdr','ira','cbam']},
+
+saf:{zh:'SAF',en:'永續航空燃料',cat:'tech',
+  prob:'航空業難以電氣化（電池太重），但繼續燒傳統航空煤油無法達成淨零。SAF用生物質或合成方式生產，可直接用於現有飛機引擎。',
+  how:'Sustainable Aviation Fuel。原料：廢食用油（UCO）、農業廢料、木質素、電合成（Power-to-Liquid）。減碳效果：vs 傳統航油減碳70-90%（全生命週期）。現狀：比傳統航油貴3-5倍；2023年全球SAF只佔航空燃料0.1%。歐盟要求2025年起歐盟機場SAF摻混比例達2%（2050年達70%）。',
+  tw:'長榮、華航已在部分航線測試SAF混摻。台灣桃園機場目標成為亞太SAF供應樞紐。台灣生質能源供應鏈正在建立。',
+  exam:'▸ SAF=永續航空燃料（減碳70-90%）\n▸ CORSIA可用SAF100%抵減義務\n▸ 目前比傳統航油貴3-5倍\n▸ 歐盟2025年起2%摻混要求',
+  num:'減碳70-90% ／ 目前佔比僅0.1%',
+  who:'航空公司（長榮、華航）、機場、SAF生產商',
+  rel:['corsia','imo','p2x','greenamm']},
+
+greenh2:{zh:'綠氫 / 藍氫',en:'Green / Blue Hydrogen',cat:'tech',
+  prob:'鋼鐵（直接還原鐵）、航運、重工業很難用電力替代化石燃料，但氫能可以。問題是現有「灰氫」（天然氣重組，不捕碳）仍大量排碳，需要「綠氫」或「藍氫」取代。',
+  how:'綠氫：用再生能源電解水（零碳），成本$4-10/kg，是終極目標。藍氫：天然氣重組+CCUS（過渡期低碳），成本較低。灰氫：現有主流，不捕碳，高排放。IRA 45V對綠氫最高補貼$3/kg，大幅降低成本。',
+  tw:'台灣中油、台電已啟動氫能示範計畫。台灣氫能以「進口藍氫+本土綠氫」雙軌策略。台中發電廠試驗天然氣混氫發電。',
+  exam:'▸ 綠氫（電解水）vs 藍氫（天然氣+CCUS）vs 灰氫（天然氣，不捕碳）\n▸ IRA 45V綠氫補貼：最高$3/kg\n▸ 應用：鋼鐵DRI、航運、重工業',
+  num:'綠氫：$4-10/kg ／ IRA 45V：最高$3/kg',
+  who:'鋼鐵業、航運業、重工業、電力業',
+  rel:['ira','ccus','p2x','greenamm','imo']},
+
+greenamm:{zh:'綠氨',en:'Green Ammonia',cat:'tech',
+  prob:'航運業尋找接替重燃油的零碳燃料。綠氨（用綠氫合成）是最有潛力的選項之一——能量密度高、儲存基礎設施可改建。',
+  how:'用綠氫（H₂）和氮氣（N₂，空氣中取得）合成氨（NH₃）。優點：液化溫度高（-33°C），比液氫（-253°C）儲存容易；能量密度比液氫高；現有氨儲運基礎設施可改建。IMO 2050的零碳燃料路徑中，氨是主要候選之一。挑戰：燃燒氨會產生NOx排放需處理。',
+  tw:'台灣中油已評估氨進口和利用。台灣發電業測試氨混燃。台灣造船業關注氨燃料船設計。',
+  exam:'▸ 綠氨=綠氫+氮氣合成\n▸ IMO零碳燃料候選之一\n▸ 燃燒氨→NOx需處理（挑戰）',
+  num:'氨沸點-33°C（比液氫-253°C易儲存）',
+  who:'航運業、電力業、農業（化肥原料）',
+  rel:['greenh2','imo','p2x','saf']},
+
+egs:{zh:'EGS',en:'增強型地熱系統',cat:'tech',
+  prob:'傳統地熱只能用在有天然熱水的地方（冰島、台灣東部）。EGS利用石油業鑽探技術，可以在幾乎任何地方開採地熱，提供24小時不間斷的零碳基載電力。',
+  how:'Enhanced Geothermal System。在高溫岩石中鑽兩個深孔，注水進一個孔，被地熱加熱後從另一個孔取出熱水發電。AI資料中心需要穩定、大量的電力，EGS被視為最符合需求的零碳基載電力。Google、Amazon已投資EGS新創公司（Quaise、Fervo等）。',
+  tw:'台灣地熱資源豐富（宜蘭、花蓮），目前以傳統地熱為主。台電正評估EGS技術應用於東台灣。',
+  exam:'▸ EGS vs 傳統地熱（不需天然熱水）\n▸ 24小時基載電力（vs 太陽能/風能間歇性）\n▸ AI資料中心電力需求的潛在解方',
+  num:'技術成熟度：商業化初期',
+  who:'電力業、AI資料中心業主',
+  rel:['greenh2','ccus']},
+
+smr:{zh:'SMR',en:'小型模組化反應爐',cat:'tech',
+  prob:'傳統大型核電站建設週期長（15-20年）、成本高且超支嚴重。SMR體積小、可工廠預製、彈性部署，重新引起核能在淨零中的討論。',
+  how:'Small Modular Reactor，300MW以下的小型核電站，可在工廠預製後運至現場組裝。代表廠商：NuScale（美國）、Rolls-Royce（英國）。優點：成本較低、建設週期5-7年、可模組化擴建。COP28呼籲到2050年核能裝機增加三倍。',
+  tw:'台灣政府目前立場是非核家園，但民間討論日益熱烈。台電正研究SMR技術可行性，尚未做出政策決定。',
+  exam:'▸ SMR vs 大型核電（體積小/工廠預製/週期短）\n▸ COP28：核能增加三倍呼籲\n▸ 300MW以下定義為SMR',
+  num:'300MW以下 ／ 建設週期5-7年',
+  who:'電力業、AI資料中心業主、工業用熱需求',
+  rel:['egs','greenh2']},
+
+p2x:{zh:'Power-to-X',en:'P2X 綠能轉化技術',cat:'tech',
+  prob:'再生能源（太陽能、風能）是間歇性的——白天過剩、夜晚不足。P2X把過剩的綠電轉化成可儲存、可輸送的能源載體（氫、氨、甲醇等），解決再生能源的儲存和跨境輸送問題。',
+  how:'Power-to-X是綠氫的上位概念。X可以是：氫（P2H）、氨（P2A）、甲醇（P2M，航運燃料）、e-fuel（P2L，液態合成燃料，航空業）。技術鏈：再生能源→電解水→綠氫→合成各種X。適用於直接電氣化困難的場景（航運、航空、高溫工業）。',
+  tw:'台灣離岸風電過剩電力可用於P2H製造綠氫，再合成綠氨或e-fuel出口。台灣正評估P2X作為能源出口戰略。',
+  exam:'▸ P2X=Power-to-X（綠氫的上位概念）\n▸ P2H→P2A→P2M→P2L（轉化鏈）\n▸ 解決再生能源儲存+跨境輸送問題\n▸ 適用難以直接電氣化的行業',
+  num:'技術鏈：RE→電解→綠氫→合成X',
+  who:'能源業、航運業、航空業、化工業',
+  rel:['greenh2','greenamm','saf','imo']},
+
+// 台灣專區
+twlaw:{zh:'氣候變遷因應法',en:'Climate Change Response Act',cat:'tw',
+  prob:'台灣需要一個能涵蓋減碳、碳費、強制盤查、氣候調適的全面性氣候法律，同時明確設定2050淨零目標。',
+  how:'2023年修正通過，取代2015年《溫室氣體減量及管理法》。重大變化：①明訂2050淨零排放為國家目標 ②授權碳費徵收 ③強制盤查（年排放>2.5萬噸）④自願減量額度制度 ⑤碳費收入進「氣候基金」（專款）。三大子法：碳費收費辦法、自願減量辦法、減量額度認可辦法。',
+  tw:'台灣所有碳費、ETS、自願減量的法律依據就是這部法。企業需熟悉三大子法的規定，特別是碳費起徵門檻和費率。',
+  exam:'▸ 氣候法三大機制：碳費/強制盤查/減量額度\n▸ 2023年修正通過\n▸ 主管機關：行政院環境部\n▸ 2050淨零排放入法',
+  num:'2023年修正 ／ 三大機制 ／ 2050淨零入法',
+  who:'所有台灣企業（特別是高排放行業）',
+  rel:['twcf','tcex','twpath']},
+
+twpath:{zh:'台灣淨零路徑',en:'Taiwan 2050 Net Zero Roadmap',cat:'tw',
+  prob:'「2050淨零」是目標，但怎麼達到？台灣2022年公布的淨零路徑提供具體的行業策略和投資方向。',
+  how:'四大主軸×12項策略：能源轉型（風電、光電、氫能、地熱）× 節能（建築、運輸、工業）× 負碳技術（CCUS、自然碳匯）× 社會與治理（生活、金融、公正轉型）。2030短程目標：碳排減少24%（vs 2005）。能源結構：2025年再生能源佔20%、2050年達60-70%。',
+  tw:'12項策略是台灣企業轉型的政策路徑圖。每項策略背後都有政府補貼和法規要求。企業可對照找到最相關的策略申請補助或配合法規。',
+  exam:'▸ 四大主軸：能源/節能/負碳/社會治理（必背）\n▸ 12項策略細項\n▸ 2030目標：碳排-24%（vs 2005）\n▸ 2025年再生能源：20%電力',
+  num:'12項策略 ／ 2030年-24% ／ 2025年RE:20%',
+  who:'台灣政府、企業、金融業',
+  rel:['twlaw','twcf','trec','ccus','netzero']},
+
+trec:{zh:'T-REC',en:'台灣再生能源憑證',cat:'tw',
+  prob:'企業想讓Scope 2（購電）達到零碳，但台灣電力大部分仍是火力發電。T-REC提供一個機制，讓企業的用電可以「掛牌」為再生能源。',
+  how:'1張T-REC = 1,000度（1 MWh）再生能源電力。企業購買T-REC可作為Scope 2「市場基礎法」的零排放依據。取得途徑：①直接購買（台電T-REC交易平台）②搭配CPPA長期購電合約。台積電、鴻海等大廠大量購買T-REC以達成RE100目標。',
+  tw:'T-REC是目前台灣企業達成Scope 2零碳的主要工具（CPPA供應仍不足）。台灣T-REC需求快速增長，價格也持續上升。',
+  exam:'▸ 1張T-REC = 1,000度（1 MWh）再生能源\n▸ Scope 2市場基礎法的依據\n▸ T-REC vs CPPA差異（當期購買 vs 長期合約）\n▸ RE100達成的主要工具',
+  num:'1張 = 1 MWh ／ 市場基礎法依據',
+  who:'需要Scope 2零碳的台灣企業',
+  rel:['re100','cppa','scope','twpath']},
+
+cppa:{zh:'CPPA',en:'企業購電合約',cat:'tw',
+  prob:'T-REC是當期購買，價格波動。企業如果想鎖定長期綠電價格並確保穩定供應，需要直接與發電商簽長期合約。',
+  how:'Corporate Power Purchase Agreement，企業直接與再生能源發電商簽訂長期購電合約（通常10-20年），取得綠電及T-REC，鎖定電價並確保供應穩定性。台灣電業法2017年修正後開放CPPA。台積電已與沃旭（Ørsted）等離岸風電商簽訂大型CPPA。',
+  tw:'台積電是台灣CPPA最大買家。電網限制仍是主要障礙（綠電送不到需求端）。',
+  exam:'▸ CPPA vs T-REC差異（長期合約 vs 當期購買）\n▸ 台灣電業法2017年開放\n▸ 鎖定長期綠電價格+確保穩定供應',
+  num:'合約期通常10-20年',
+  who:'有長期大量綠電需求的企業（如台積電）',
+  rel:['trec','re100','scope','twpath']},
+
+re100:{zh:'RE100',en:'100%再生能源倡議',cat:'tw',
+  prob:'企業如何展示100%使用再生能源的承諾，並推動再生能源市場發展？RE100提供一個國際公認的倡議平台。',
+  how:'由氣候組織與CDP共同管理的全球企業倡議，承諾100%使用再生能源。達成路徑：自發自用太陽能、CPPA長期購電、T-REC購買、國際EAC（能源屬性憑證）。需每年向CDP報告進度。蘋果要求供應鏈加入RE100；台積電、台達電承諾2050年前100%RE。',
+  tw:'台灣超過20家企業加入RE100，推動本土綠電市場快速發展。RE100要求驅動了T-REC和CPPA的需求。',
+  exam:'▸ RE100達成途徑：自發自用/CPPA/T-REC/EAC\n▸ 蘋果要求供應鏈加入RE100\n▸ 每年向CDP報告進度',
+  num:'全球>400家企業加入',
+  who:'有公開承諾100%RE目標的企業',
+  rel:['trec','cppa','cdp','twpath']},
+
+esco:{zh:'ESCO',en:'能源服務公司',cat:'tw',
+  prob:'工廠知道節能可省錢，但沒有初期投資資金怎麼辦？ESCO模式讓企業不需自己出錢就能進行節能改造。',
+  how:'Energy Service Company。ESCO公司替企業執行節能改善，投資由ESCO預先墊付，再以節省下來的能源費用逐月回收成本（EPC合約，Energy Performance Contract）。M&V（測量與查核）驗證實際節能量。企業零初期成本、按期分享節能效益。',
+  tw:'台灣能源局推動ESCO保證節能量制度。台灣中小企業可申請綠色融資搭配ESCO服務。ISO 50001能源管理系統常配合ESCO導入。',
+  exam:'▸ ESCO核心：EPC合約（ESCO墊付投資，節能費回收）\n▸ M&V：測量與查核（驗證節能量）\n▸ 台灣能源局有ESCO補助計畫',
+  num:'企業零初期成本 ／ 節能費回收投資',
+  who:'有節能需求但缺乏初期投資資金的工廠',
+  rel:['twpath','iso50001']},
+
+iso50001:{zh:'ISO 50001',en:'能源管理系統',cat:'tw',
+  prob:'企業想系統性地管理能源使用，持續降低能耗，而不是碰到電費帳單才想到節能。ISO 50001提供一套PDCA循環的能源管理系統。',
+  how:'能源管理系統（EnMS）標準，採用PDCA循環：能源政策→能源規劃→實施→查核→管理審查。重要概念：EnB（能源基準線）、EnPI（能源績效指標）、SEU（顯著能源使用）。台灣工廠導入可申請能源局補助，部分法規要求列管工廠通過認證。',
+  tw:'台灣能源局已要求電力、鋼鐵、石化等能源密集行業建立EnMS，並以ISO 50001為依循標準。可結合ESCO服務降低導入成本。',
+  exam:'▸ ISO 50001採用PDCA循環\n▸ SEU=顯著能源使用（必記）\n▸ EnB=能源基準線；EnPI=能源績效指標\n▸ 台灣能源密集行業強制建立EnMS',
+  num:'PDCA循環 ／ SEU/EnB/EnPI三核心概念',
+  who:'能源密集行業（電力、鋼鐵、石化、半導體等）',
+  rel:['esco','twpath','scope']},
+
+supchain:{zh:'供應鏈減碳壓力',en:'Supply Chain Decarbonization',cat:'tw',
+  prob:'台灣是全球供應鏈的核心，蘋果、BMW、Nike等品牌對供應商的ESG要求越來越嚴格。不減碳，可能就失去訂單。',
+  how:'主要壓力來源：①蘋果（2030年100%RE + Scope 3減碳），要求台灣供應商加入RE100、設SBTi目標 ②BMW（2030年Scope 3減少40%），要求鑄造、鋼鐵供應商提供碳足跡 ③CSRD Scope 3揭露要求迫使歐洲品牌向台灣供應商要求碳數據 ④CSDDD要求人權盡職調查報告。',
+  tw:'台灣製造業（半導體、電子、鋼鐵、紡織）面臨的最直接ESG壓力就來自客戶。這是推動台灣企業做碳盤查、申請SBTi最強的外部動力。',
+  exam:'▸ 供應鏈減碳的主要驅動：客戶要求（蘋果/BMW等）\n▸ CSRD Scope 3揭露要求影響供應鏈\n▸ PACT框架：標準化PCF數據交換\n▸ SBTi是客戶要求的主要減碳承諾工具',
+  num:'蘋果2030年Scope 3目標 ／ BMW 2030年-40% Scope 3',
+  who:'台灣製造業的供應商（特別是歐美日大廠的一級供應商）',
+  rel:['sbti','csrd','csddd','iso14067','scope']}
+};
+
+/* ════════════════════════════════════════════
+   TREE STRUCTURE: main trunk + groups
+════════════════════════════════════════════ */
+const TRUNK = [
+  {id:'unfccc', children:[
+    {id:'kyoto', children:[{id:'cdm'}]},
+    {id:'paris', children:[
+      {id:'ndc'},
+      {id:'cop'},
+      {id:'ipcc'},
+      {id:'itmo', children:[{id:'pacm'}]}
+    ]}
+  ]}
 ];
-const CAT_NAMES={
-  iso:"ISO 標準系列",ghg:"溫室氣體盤查",disclosure:"揭露框架",
-  "intl-policy":"國際法規與政策",carbon:"碳市場與碳定價",
-  energy:"能源轉型",social:"人權與供應鏈",governance:"治理（G面）",
-  finance:"永續金融",taiwan:"台灣專區",biodiversity:"生態自然"
-};
 
-let DATA=[],currentCat="all",currentSearch="",dataLoaded=false;
+const GROUPS = [
+  {cat:'intl',  ids:['csrd','esrs','csddd','cbam','euets','eudr','ppwr','corsia','imo','ira','secrule','cap']},
+  {cat:'disc',  ids:['issb','gri','tcfd','tnfd','cdp','sasb','doubmat','scope','esma','sbtn']},
+  {cat:'carbon',ids:['vcm','ccp','eua','redd','sbti','netzero','twcf','tcex','cfvst','cdr']},
+  {cat:'social',ids:['ungp','ilo','rba','sa8000','uflpa','fpic','msa']},
+  {cat:'gov',   ids:['sdgs','ungc','oecd','clitigation','cbcr','equator']},
+  {cat:'nature',ids:['gbf','naturalcap','bluec','epr','fsc','circular']},
+  {cat:'finance',ids:['sfdr','eutax','greenbond','slb','transitfin','prisma','esgratin']},
+  {cat:'tech',  ids:['ghgpro','iso14064','iso14067','iso14068','dac','ccus','saf','greenh2','greenamm','egs','smr','p2x']},
+  {cat:'tw',    ids:['twlaw','twpath','trec','cppa','re100','esco','iso50001','supchain']},
+];
 
-function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
+/* ════════════════════════════════════════════
+   LAYOUT CONSTANTS
+════════════════════════════════════════════ */
+const NW=156, NH=48, VGAP=18, HGAP=40;
+const GROUP_ITEM_H=46, GROUP_ITEM_GAP=12;
+const GROUP_HEADER_H=44, GROUP_BRACE_PAD=20;
 
-function parseCSV(text){
-  const rows=[];
-  const lines=text.split(/\r?\n/);
-  for(let i=1;i<lines.length;i++){
-    const line=lines[i].trim(); if(!line) continue;
-    const cols=[];let cur="",inQ=false;
-    for(let j=0;j<line.length;j++){
-      const ch=line[j];
-      if(ch==='"'){if(inQ&&line[j+1]==='"'){cur+='"';j++;}else inQ=!inQ;}
-      else if(ch===','&&!inQ){cols.push(cur.trim());cur="";}
-      else cur+=ch;
+/* ── build trunk positions ── */
+function trunkLayout(nodes, x, y){
+  const out={};
+  nodes.forEach(n=>{
+    out[n.id]={x, y};
+    let cy=y+NH+VGAP;
+    (n.children||[]).forEach(c=>{
+      const sub=trunkLayout([c], x+NW+HGAP, cy);
+      Object.assign(out, sub);
+      cy+=sub[c.id].__h+(VGAP*0.5);
+    });
+    const childrenIds=(n.children||[]).map(c=>c.id);
+    let totalH=NH;
+    if(childrenIds.length){
+      const last=childrenIds[childrenIds.length-1];
+      totalH=Math.max(NH, (out[last].y+out[last].__h||NH)- y);
     }
-    cols.push(cur.trim());
-    if(cols.length>=10) rows.push({cat:cols[0],abbr:cols[1],zh:cols[2],en:cols[3],type:cols[4],def:cols[5],exam:cols[6],practice:cols[7],tw:cols[8],rel:cols[9]?cols[9].split("｜").map(s=>s.trim()).filter(Boolean):[]});
-  }
-  return rows;
-}
-
-async function loadData(){
-  document.getElementById("loading").style.display="flex";
-  document.getElementById("errorBox").style.display="none";
-  document.getElementById("glossaryMain").classList.remove("show");
-  try{
-    const res=await fetch(SHEET_CSV_URL);
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    const text=await res.text();
-    DATA=parseCSV(text);
-    dataLoaded=true;
-    document.getElementById("loading").style.display="none";
-    document.getElementById("glossaryMain").classList.add("show");
-    buildCatBar();
-    render();
-  }catch(e){
-    document.getElementById("loading").style.display="none";
-    document.getElementById("errorBox").style.display="block";
-    document.getElementById("errMsg").textContent=e.message;
-  }
-}
-
-function buildCatBar(){
-  const bar=document.getElementById("catBar");
-  bar.innerHTML="";
-  CATS.forEach(c=>{
-    const btn=document.createElement("button");
-    btn.className="cat-btn"+(c.id==="all"?" on":"");
-    btn.textContent=c.label;
-    btn.onclick=()=>{currentCat=c.id;document.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("on"));btn.classList.add("on");render();};
-    bar.appendChild(btn);
+    out[n.id].__h=totalH;
   });
+  return out;
 }
 
-document.getElementById("searchBox").addEventListener("input",e=>{currentSearch=e.target.value.trim().toLowerCase();render();});
+let trunkPos = trunkLayout(TRUNK, 40, 40);
+let trunkMaxX=0, trunkMaxY=0;
+Object.values(trunkPos).forEach(p=>{
+  trunkMaxX=Math.max(trunkMaxX, p.x+NW);
+  trunkMaxY=Math.max(trunkMaxY, p.y+NH+(p.__h||NH));
+});
 
-function getFiltered(){
-  return DATA.filter(item=>{
-    if(currentCat!=="all"&&item.cat!==currentCat) return false;
-    if(!currentSearch) return true;
-    const hay=[item.abbr,item.zh,item.en,item.def,item.type,...(item.rel||[])].join(" ").toLowerCase();
-    return hay.includes(currentSearch);
+/* ── build group positions ── */
+const groupPos={};
+const GROUPS_START_X = trunkMaxX + 80;
+const GROUPS_PER_ROW = 3;
+const GROUP_COL_W = NW + 90;
+const GROUP_START_Y = 40;
+
+GROUPS.forEach((g, gi)=>{
+  const col = gi % GROUPS_PER_ROW;
+  const row = Math.floor(gi / GROUPS_PER_ROW);
+  const gx = GROUPS_START_X + col * (GROUP_COL_W + 60);
+  // calculate Y offset from previous rows
+  let gy = GROUP_START_Y;
+  if(row > 0){
+    let prevRowMaxY = GROUP_START_Y;
+    for(let pi=0; pi < row * GROUPS_PER_ROW; pi++){
+      const pg = GROUPS[pi];
+      if(!pg) continue;
+      const pgCol = pi % GROUPS_PER_ROW;
+      if(pgCol === col){
+        const pgItems = pg.ids.length;
+        const pgH = GROUP_HEADER_H + GROUP_BRACE_PAD + pgItems*(GROUP_ITEM_H+GROUP_ITEM_GAP) + 30;
+        prevRowMaxY = Math.max(prevRowMaxY, GROUP_START_Y + pgH);
+      }
+    }
+    gy = prevRowMaxY + 40;
+  }
+  // recalculate properly per column
+  const prevColGroupsInSameCol = [];
+  for(let pi=0; pi < gi; pi++){
+    if(pi % GROUPS_PER_ROW === col) prevColGroupsInSameCol.push(GROUPS[pi]);
+  }
+  let gyFinal = GROUP_START_Y;
+  prevColGroupsInSameCol.forEach(pg=>{
+    const pgH = GROUP_HEADER_H + GROUP_BRACE_PAD + pg.ids.length*(GROUP_ITEM_H+GROUP_ITEM_GAP) + 30;
+    gyFinal += pgH + 40;
   });
+
+  groupPos[g.cat]={x: gx, y: gyFinal};
+  g.ids.forEach((id, ii)=>{
+    groupPos[id]={
+      x: gx + 30,
+      y: gyFinal + GROUP_HEADER_H + GROUP_BRACE_PAD + ii*(GROUP_ITEM_H+GROUP_ITEM_GAP)
+    };
+  });
+});
+
+/* total canvas size */
+let totalW=0, totalH=0;
+[...Object.values(trunkPos), ...Object.values(groupPos)].forEach(p=>{
+  totalW=Math.max(totalW, (p.x||0)+NW+60);
+  totalH=Math.max(totalH, (p.y||0)+GROUP_ITEM_H+60);
+});
+
+/* ════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════ */
+const svg=document.getElementById('svg');
+svg.setAttribute('width', totalW);
+svg.setAttribute('height', totalH);
+svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+
+function hex2rgba(hex, a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
 }
 
-function render(){
-  const filtered=getFiltered();
-  document.getElementById("stats").textContent=filtered.length+" 個名詞";
-  const gl=document.getElementById("glossaryList");
-  if(!filtered.length){gl.innerHTML='<div class="empty">沒有符合的結果</div>';return;}
-  const groups={};
-  filtered.forEach(item=>{if(!groups[item.cat])groups[item.cat]=[];groups[item.cat].push(item);});
-  let html="";
-  Object.keys(groups).forEach(cat=>{
-    html+=`<div class="sec-hdr">${esc(CAT_NAMES[cat]||cat)}</div>`;
-    groups[cat].forEach(item=>{
-      const relH=(item.rel||[]).map(r=>`<span class="rel-chip" data-q="${esc(r)}">${esc(r)}</span>`).join("");
-      html+=`<div class="card"><div class="card-hdr"><span class="abbr">${esc(item.abbr)}</span><div class="card-meta"><div class="card-zh">${esc(item.zh)}</div><div class="card-en">${esc(item.en)}</div><div class="card-tags"><span class="tag tag-type">${esc(item.type)}</span>${item.exam?'<span class="tag tag-exam">考試重點</span>':""}</div></div><span class="chev">⌄</span></div>
-<div class="card-body"><div class="blbl">定義</div><div class="btext">${esc(item.def)}</div><div class="dgrid"><div class="dcell"><div class="dlbl">🎓 考試重點</div><div class="dval">${esc(item.exam||"—")}</div></div><div class="dcell"><div class="dlbl">🇹🇼 台灣觀點</div><div class="dval">${esc(item.tw||"—")}</div></div><div class="dcell full"><div class="dlbl">🏢 實務應用</div><div class="dval">${esc(item.practice||"—")}</div></div></div>${relH?`<div class="blbl" style="margin-top:8px">🔗 關聯名詞</div><div class="rel-row">${relH}</div>`:""}</div></div>`;
+function el(tag, attrs={}, parent=svg){
+  const e=document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+  parent.appendChild(e);
+  return e;
+}
+
+function node(id, x, y, w, h, color, zhLabel, enLabel, selected=false){
+  const g=el('g');
+  g.classList.add('nd');
+  g.dataset.id=id;
+
+  const alpha = selected ? 0.9 : 0.18;
+  const strokeAlpha = selected ? 1 : 0.55;
+  const strokeW = selected ? 2 : 0.8;
+
+  el('rect',{x,y,width:w,height:h,rx:7,
+    fill:hex2rgba(color, alpha),
+    stroke:hex2rgba(color, strokeAlpha),
+    'stroke-width':strokeW}, g);
+
+  const zhEl=el('text',{
+    x: x+w/2, y: y+(enLabel ? h/2-7 : h/2),
+    'text-anchor':'middle','dominant-baseline':'central',
+    'font-family':'IBM Plex Sans TC, Noto Sans TC, sans-serif',
+    'font-size':'12','font-weight':'500',
+    fill: selected ? '#ffffff' : hex2rgba(color, 0.95)
+  }, g);
+  zhEl.textContent=zhLabel;
+
+  if(enLabel){
+    const enEl=el('text',{
+      x: x+w/2, y: y+h/2+8,
+      'text-anchor':'middle','dominant-baseline':'central',
+      'font-family':'IBM Plex Mono, monospace',
+      'font-size':'9','font-weight':'400',
+      fill: selected ? 'rgba(255,255,255,0.72)' : hex2rgba(color, 0.58)
+    }, g);
+    enEl.textContent=truncStr(enLabel, 26);
+  }
+
+  g.style.cursor='pointer';
+  g.addEventListener('click', ()=>selectNode(id));
+  return g;
+}
+
+function truncStr(s, maxLen){
+  return s && s.length > maxLen ? s.slice(0, maxLen-1)+'…' : (s||'');
+}
+
+function line(x1,y1,x2,y2,color,dasharray=''){
+  return el('line',{x1,y1,x2,y2,
+    stroke:hex2rgba(color,0.5),'stroke-width':0.9,
+    ...(dasharray?{'stroke-dasharray':dasharray}:{})});
+}
+
+function path(d, color, dasharray=''){
+  return el('path',{d, fill:'none',
+    stroke:hex2rgba(color,0.45),'stroke-width':0.9,
+    ...(dasharray?{'stroke-dasharray':dasharray}:{})});
+}
+
+function renderAll(selectedId=null){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+  /* ── trunk edges ── */
+  function drawTrunkEdges(nodes){
+    nodes.forEach(n=>{
+      const p=trunkPos[n.id];
+      (n.children||[]).forEach(c=>{
+        const cp=trunkPos[c.id];
+        if(!p||!cp) return;
+        const x1=p.x+NW, y1=p.y+NH/2;
+        const x2=cp.x, y2=cp.y+NH/2;
+        const mx=(x1+x2)/2;
+        path(`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`, CATS.climate.color);
+        drawTrunkEdges([c]);
+      });
+    });
+  }
+  drawTrunkEdges(TRUNK);
+
+  /* ── trunk nodes ── */
+  function drawTrunkNodes(nodes){
+    nodes.forEach(n=>{
+      const p=trunkPos[n.id];
+      const d=D[n.id];
+      if(!p||!d) return;
+      node(n.id, p.x, p.y, NW, NH, CATS[d.cat].color, d.zh, d.en, n.id===selectedId);
+      drawTrunkNodes(n.children||[]);
+    });
+  }
+  drawTrunkNodes(TRUNK);
+
+  /* ── group blocks ── */
+  GROUPS.forEach(g=>{
+    const cat=CATS[g.cat];
+    const gp=groupPos[g.cat];
+    if(!gp) return;
+
+    /* header */
+    node(g.cat+'_header', gp.x, gp.y, NW, GROUP_HEADER_H, cat.color,
+      cat.label, g.ids.length+' 個名詞');
+
+    /* brace spine */
+    const spineX = gp.x + 14;
+    const firstItemY = gp.y + GROUP_HEADER_H + GROUP_BRACE_PAD;
+    const lastItemY = firstItemY + (g.ids.length-1)*(GROUP_ITEM_H+GROUP_ITEM_GAP);
+    const connectorY = gp.y + GROUP_HEADER_H + GROUP_BRACE_PAD/2;
+
+    /* header → spine */
+    line(gp.x+NW/2, gp.y+GROUP_HEADER_H, gp.x+NW/2, connectorY, cat.color);
+    line(gp.x+NW/2, connectorY, spineX, connectorY, cat.color);
+    line(spineX, connectorY, spineX, lastItemY+GROUP_ITEM_H/2, cat.color);
+
+    /* ticks + items */
+    g.ids.forEach((id, ii)=>{
+      const ip=groupPos[id];
+      if(!ip) return;
+      const itemMidY=ip.y+GROUP_ITEM_H/2;
+      line(spineX, itemMidY, ip.x, itemMidY, cat.color);
+      const d2=D[id];
+      node(id, ip.x, ip.y, NW, GROUP_ITEM_H, cat.color, d2.zh, d2.en, id===selectedId);
     });
   });
-  gl.innerHTML=html;
-  gl.onclick=e=>{
-    const chip=e.target.closest(".rel-chip");
-    if(chip){currentSearch=(chip.dataset.q||"").toLowerCase();currentCat="all";document.getElementById("searchBox").value=chip.dataset.q||"";document.querySelectorAll(".cat-btn").forEach(b=>{b.classList.remove("on");if(b.textContent.includes("全部"))b.classList.add("on");});render();window.scrollTo({top:0,behavior:"smooth"});return;}
-    const card=e.target.closest(".card");
-    if(card){const was=card.classList.contains("open");document.querySelectorAll(".card.open").forEach(c=>c.classList.remove("open"));if(!was)card.classList.add("open");}
-  };
+
+  /* ── search dim ── */
+  const q=document.getElementById('srch').value.trim().toLowerCase();
+  if(q){
+    const matches=new Set(Object.keys(D).filter(id=>{
+      const d=D[id];
+      return (d.zh+d.en+(d.prob||'')+(d.how||'')).toLowerCase().includes(q);
+    }));
+    svg.querySelectorAll('.nd[data-id]').forEach(g=>{
+      const id=g.dataset.id;
+      if(id && !id.endsWith('_header') && !matches.has(id)){
+        g.classList.add('dim');
+      }
+    });
+  }
 }
+
+renderAll();
+
+/* ════════════════════════════════════════════
+   PANEL
+════════════════════════════════════════════ */
+let currentId=null;
+
+function selectNode(id){
+  if(id && id.endsWith('_header')) return;
+  if(!D[id]) return;
+  currentId=id;
+  renderAll(id);
+  showPanel(D[id]);
+}
+
+function showPanel(d){
+  const panel=document.getElementById('panel');
+  panel.classList.remove('closed');
+  const cat=CATS[d.cat];
+  const col=cat.color;
+  function h2r(hex,a){return hex2rgba(hex,a);}
+  document.getElementById('panel-inner').innerHTML=`
+    <div class="p-close"><button onclick="closePanel()">關閉 ×</button></div>
+    <span class="p-badge" style="background:${h2r(col,.18)};color:${col}">${cat.label}</span>
+    <div class="p-title">${d.zh}</div>
+    <div class="p-en">${d.en||''}</div>
+    <div class="p-sec">解決什麼問題</div>
+    <div class="p-box">${(d.prob||'').replace(/\n/g,'<br>')}</div>
+    <div class="p-sec">怎麼運作</div>
+    <div class="p-box">${(d.how||'').replace(/\n/g,'<br>')}</div>
+    <div class="p-grid">
+      <div class="p-cell"><div class="p-lbl">台灣影響</div><div class="p-val">${d.tw||''}</div></div>
+      <div class="p-cell"><div class="p-lbl">考試重點</div><div class="p-val">${d.exam||''}</div></div>
+      <div class="p-cell"><div class="p-lbl">關鍵數字</div><div class="p-val" style="color:${col};font-weight:500">${d.num||''}</div></div>
+      <div class="p-cell"><div class="p-lbl">適用對象</div><div class="p-val">${d.who||''}</div></div>
+    </div>
+    <div class="p-sec">關聯名詞</div>
+    <div class="p-chips">${(d.rel||[]).map(r=>D[r]?`<span class="chip" onclick="jumpTo('${r}')">${D[r].zh} <span style="opacity:.55;font-size:9px">${D[r].en}</span></span>`:'').join('')}</div>
+  `;
+}
+
+function jumpTo(id){
+  if(!D[id]) return;
+  currentId=id;
+  renderAll(id);
+  showPanel(D[id]);
+  /* scroll to node */
+  const p=groupPos[id]||trunkPos[id];
+  if(p){
+    const wrap=document.getElementById('map-wrap');
+    wrap.scrollTo({left:p.x-100, top:p.y-100, behavior:'smooth'});
+  }
+}
+
+function closePanel(){
+  document.getElementById('panel').classList.add('closed');
+  currentId=null;
+  renderAll(null);
+}
+
+/* ── search ── */
+document.getElementById('srch').addEventListener('input', ()=>renderAll(currentId));
+
+/* ── legend ── */
+const leg=document.getElementById('legend');
+Object.entries(CATS).forEach(([k,v])=>{
+  const d=document.createElement('div');
+  d.className='leg';
+  d.innerHTML=`<div class="leg-dot" style="background:${v.color}"></div>${v.label}`;
+  leg.appendChild(d);
+});
 </script>
 </body>
 </html>
