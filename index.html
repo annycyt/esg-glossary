@@ -327,7 +327,7 @@ async function loadData() {
   document.getElementById("errorBox").style.display = "none";
   document.getElementById("main").classList.remove("show");
 
-  if (SHEET_CSV_URL === "https://docs.google.com/spreadsheets/d/1YS8E7d2KVQw1MXdh_HPxUuvy1m5xMrjsYVBSc0BqSu0/export?format=csv") {
+  if (SHEET_CSV_URL === "YOUR_GOOGLE_SHEET_CSV_URL_HERE") {
     document.getElementById("loading").style.display = "none";
     document.getElementById("errorBox").style.display = "block";
     document.getElementById("errMsg").textContent = "尚未設定 Google Sheet 網址，請依說明完成設定。";
