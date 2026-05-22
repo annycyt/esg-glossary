@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>永續名詞速查 · iPAS對齊版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E1117;
+  --bg2: #161B25;
+  --bg3: #1E2535;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #E8EDF5;
+  --text2: #8B95A8;
+  --text3: #5A6270;
+  --accent: #3B82F6;
+  --accent2: #1D4ED8;
+  --green: #10B981;
+  --amber: #F59E0B;
+  --tag-bg: rgba(59,130,246,0.12);
+  --tag-color: #93C5FD;
+  --exam-bg: rgba(16,185,129,0.12);
+  --exam-color: #6EE7B7;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.6;
+}
+
+/* TOP BAR */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(14,17,23,0.92);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px 10px;
+}
+.app-name{
+  font-size:13px;font-weight:500;letter-spacing:.12em;
+  color:var(--text2);text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+#searchBox{
+  width:100%;padding:9px 12px 9px 36px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);font-size:14px;
+  font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+#searchBox:focus{border-color:var(--accent)}
+#searchBox::placeholder{color:var(--text3)}
+
+/* LOADING */
+#loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4rem 2rem;gap:16px;
+}
+.spinner{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2)}
+#errorBox{
+  display:none;text-align:center;padding:2rem;font-size:13px;color:#F87171;
+}
+.retry-btn{
+  margin-top:12px;padding:8px 20px;background:var(--bg3);
+  border:1px solid var(--border2);border-radius:var(--radius-sm);
+  color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;
+}
+
+/* CAT BAR */
+.cat-bar{
+  display:flex;gap:6px;overflow-x:auto;
+  padding:10px 16px;border-bottom:1px solid var(--border);
+  scrollbar-width:none;
+}
+.cat-bar::-webkit-scrollbar{display:none}
+.cat-btn{
+  white-space:nowrap;font-size:12px;padding:5px 12px;
+  border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);
+  cursor:pointer;flex-shrink:0;
+  transition:all .15s;font-family:inherit;
+}
+.cat-btn.on{
+  background:var(--accent);border-color:var(--accent);
+  color:#fff;font-weight:500;
+}
+.cat-btn:active{opacity:.7}
+
+/* STATS */
+.stats{
+  font-size:11px;color:var(--text3);
+  padding:6px 16px;
+  font-family:'DM Mono',monospace;
+  border-bottom:1px solid var(--border);
+}
+
+/* MAIN */
+#main{display:none}
+#main.show{display:block}
+
+.section{margin-bottom:0}
+.sec-hdr{
+  font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);padding:14px 16px 6px;
+  border-bottom:1px solid var(--border);
+  font-family:'DM Mono',monospace;
+}
+
+/* CARD */
+.card{
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  transition:background .1s;
+  position:relative;
+}
+.card:active{background:var(--bg3)}
+.card-hdr{
+  padding:12px 16px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.abbr{
+  font-size:11px;font-weight:500;
+  background:var(--tag-bg);color:var(--tag-color);
+  border-radius:4px;padding:3px 7px;
+  white-space:nowrap;flex-shrink:0;
+  font-family:'DM Mono',monospace;
+  margin-top:1px;
+}
+.card-meta{flex:1;min-width:0}
+.card-zh{font-size:14px;font-weight:500;line-height:1.4;color:var(--text)}
+.card-en{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.3}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:10px;padding:2px 6px;border-radius:3px}
+.tag-type{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.tag-exam{background:var(--exam-bg);color:var(--exam-color)}
+.chevron{
+  color:var(--text3);flex-shrink:0;margin-top:3px;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);font-size:16px;
+}
+.card.open .chevron{transform:rotate(180deg)}
+
+/* CARD BODY */
+.card-body{
+  display:none;
+  padding:0 16px 14px;
+  font-size:13px;line-height:1.7;
+  animation:slideDown .2s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.card.open .card-body{display:block}
+
+.body-sec{margin-bottom:12px}
+.body-lbl{
+  font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:5px;
+  font-family:'DM Mono',monospace;
+}
+.body-text{color:var(--text2)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.detail-cell{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:8px 10px;
+}
+.detail-cell.full{grid-column:1/-1}
+.dlbl{font-size:10px;color:var(--text3);margin-bottom:3px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.dval{font-size:12px;color:var(--text2)}
+.rel-row{display:flex;flex-wrap:wrap;gap:5px}
+.rel-chip{
+  font-size:11px;padding:3px 9px;
+  border-radius:4px;
+  background:rgba(59,130,246,0.1);
+  color:var(--tag-color);
+  border:1px solid rgba(59,130,246,0.2);
+  cursor:pointer;transition:all .15s;
+}
+.rel-chip:active{background:rgba(59,130,246,0.3)}
+
+/* EMPTY */
+.empty{
+  padding:3rem 1rem;text-align:center;
+  font-size:13px;color:var(--text3);
+}
+
+/* FOOTER */
+.footer{
+  padding:16px;text-align:center;
+  font-size:11px;color:var(--text3);
+  border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;
+}
+.footer a{color:var(--text2);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="app-name">
+    <span class="dot"></span>
+    永續名詞速查 · iPAS對齊版
+  </div>
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="searchBox" type="search" placeholder="搜尋縮寫、中文名稱、關鍵字…" autocomplete="off">
+  </div>
+</div>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">載入名詞資料庫…</div>
+</div>
+
+<div id="errorBox">
+  <div>無法載入資料</div>
+  <div style="margin-top:6px;font-size:12px;color:var(--text3)" id="errMsg"></div>
+  <button class="retry-btn" onclick="loadData()">重新載入</button>
+</div>
+
+<div id="main">
+  <div class="cat-bar" id="catBar"></div>
+  <div class="stats" id="stats"></div>
+  <div id="glossary"></div>
+  <div class="footer">
+    資料來源：Google Sheets · 每次開啟自動更新<br>
+    <a href="#" id="sheetLink">📊 查看原始資料表</a>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ★ 只需要修改這一行：換成你的 Google Sheet CSV 匯出網址
+// ============================================================
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1YS8E7d2KVQw1MXdh_HPxUuvy1m5xMrjsYVBSc0BqSu0/export?format=csv";
+// ============================================================
+
+const CATS = [
+  {id:"all",    label:"全部"},
+  {id:"iso",    label:"📐 ISO標準"},
+  {id:"ghg",    label:"🌡 溫室氣體"},
+  {id:"disclosure", label:"📋 揭露框架"},
+  {id:"intl-policy",label:"🌍 國際法規"},
+  {id:"carbon", label:"💨 碳市場"},
+  {id:"energy", label:"⚡ 能源"},
+  {id:"social", label:"⚖️ 人權社會"},
+  {id:"governance",label:"🏛 治理"},
+  {id:"finance",label:"💰 永續金融"},
+  {id:"taiwan", label:"🇹🇼 台灣"},
+  {id:"biodiversity",label:"🌿 生態自然"}
+];
+
+const CAT_NAMES = {
+  iso:"ISO 標準系列",ghg:"溫室氣體盤查",disclosure:"揭露框架",
+  "intl-policy":"國際法規與政策",carbon:"碳市場與碳定價",
+  energy:"能源轉型",social:"人權與供應鏈",governance:"治理（G面）",
+  finance:"永續金融",taiwan:"台灣專區",biodiversity:"生態自然"
+};
+
+let DATA = [];
+let currentCat = "all";
+let currentSearch = "";
+
+// ── CSV Parser ──────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split(/\r?\n/);
+  for (let i = 1; i < lines.length; i++) { // skip header row
+    const line = lines[i].trim();
+    if (!line) continue;
+    const cols = [];
+    let cur = "", inQ = false;
+    for (let j = 0; j < line.length; j++) {
+      const ch = line[j];
+      if (ch === '"') {
+        if (inQ && line[j+1] === '"') { cur += '"'; j++; }
+        else inQ = !inQ;
+      } else if (ch === ',' && !inQ) {
+        cols.push(cur.trim()); cur = "";
+      } else cur += ch;
+    }
+    cols.push(cur.trim());
+    if (cols.length >= 10) {
+      rows.push({
+        cat:        cols[0]  || "",
+        abbr:       cols[1]  || "",
+        zh:         cols[2]  || "",
+        en:         cols[3]  || "",
+        type:       cols[4]  || "",
+        def:        cols[5]  || "",
+        exam:       cols[6]  || "",
+        practice:   cols[7]  || "",
+        tw:         cols[8]  || "",
+        rel:        cols[9] ? cols[9].split("｜").map(s=>s.trim()).filter(Boolean) : []
+      });
+    }
+  }
+  return rows;
+}
+
+// ── Load Data ───────────────────────────────────────────────
+async function loadData() {
+  document.getElementById("loading").style.display = "flex";
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("main").classList.remove("show");
+
+  if (SHEET_CSV_URL === "YOUR_GOOGLE_SHEET_CSV_URL_HERE") {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("errorBox").style.display = "block";
+    document.getElementById("errMsg").textContent = "尚未設定 Google Sheet 網址，請依說明完成設定。";
+    return;
+  }
+
+  try {
+    const res = await fetch(SHEET_CSV_URL);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    DATA = parseCSV(text);
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main").classList.add("show");
+    buildCatBar();
+    render();
+  } catch (e) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("errorBox").style.display = "block";
+    document.getElementById("errMsg").textContent = e.message;
+  }
+}
+
+// ── Category Bar ─────────────────────────────────────────────
+function buildCatBar() {
+  const bar = document.getElementById("catBar");
+  bar.innerHTML = "";
+  CATS.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (c.id === "all" ? " on" : "");
+    btn.textContent = c.label;
+    btn.onclick = () => {
+      currentCat = c.id;
+      document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      render();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+// ── Search ───────────────────────────────────────────────────
+document.getElementById("searchBox").addEventListener("input", e => {
+  currentSearch = e.target.value.trim().toLowerCase();
+  render();
+});
+
+function getFiltered() {
+  return DATA.filter(item => {
+    if (currentCat !== "all" && item.cat !== currentCat) return false;
+    if (!currentSearch) return true;
+    const hay = [item.abbr, item.zh, item.en, item.def, item.type, ...(item.rel||[])].join(" ").toLowerCase();
+    return hay.includes(currentSearch);
+  });
+}
+
+// ── Render ───────────────────────────────────────────────────
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s || "";
+  return d.innerHTML;
+}
+
+function render() {
+  const filtered = getFiltered();
+  document.getElementById("stats").textContent = filtered.length + " 個名詞";
+
+  const gl = document.getElementById("glossary");
+  if (!filtered.length) {
+    gl.innerHTML = '<div class="empty">沒有符合「' + esc(currentSearch) + '」的結果</div>';
+    return;
+  }
+
+  const groups = {};
+  filtered.forEach(item => {
+    if (!groups[item.cat]) groups[item.cat] = [];
+    groups[item.cat].push(item);
+  });
+
+  let html = "";
+  Object.keys(groups).forEach(cat => {
+    html += `<div class="section">
+      <div class="sec-hdr">${esc(CAT_NAMES[cat] || cat)}</div>`;
+    groups[cat].forEach(item => {
+      const relHtml = (item.rel || []).map(r =>
+        `<span class="rel-chip" data-q="${esc(r)}">${esc(r)}</span>`
+      ).join("");
+      html += `<div class="card">
+        <div class="card-hdr">
+          <span class="abbr">${esc(item.abbr)}</span>
+          <div class="card-meta">
+            <div class="card-zh">${esc(item.zh)}</div>
+            <div class="card-en">${esc(item.en)}</div>
+            <div class="card-tags">
+              <span class="tag tag-type">${esc(item.type)}</span>
+              ${item.exam ? '<span class="tag tag-exam">考試重點</span>' : ""}
+            </div>
+          </div>
+          <span class="chevron">⌄</span>
+        </div>
+        <div class="card-body">
+          <div class="body-sec">
+            <div class="body-lbl">定義</div>
+            <div class="body-text">${esc(item.def)}</div>
+          </div>
+          <div class="detail-grid">
+            <div class="detail-cell">
+              <div class="dlbl">🎓 考試重點</div>
+              <div class="dval">${esc(item.exam || "—")}</div>
+            </div>
+            <div class="detail-cell">
+              <div class="dlbl">🇹🇼 台灣觀點</div>
+              <div class="dval">${esc(item.tw || "—")}</div>
+            </div>
+            <div class="detail-cell full">
+              <div class="dlbl">🏢 實務應用</div>
+              <div class="dval">${esc(item.practice || "—")}</div>
+            </div>
+          </div>
+          ${relHtml ? `<div class="body-sec" style="margin-top:10px">
+            <div class="body-lbl">🔗 關聯名詞</div>
+            <div class="rel-row">${relHtml}</div>
+          </div>` : ""}
+        </div>
+      </div>`;
+    });
+    html += "</div>";
+  });
+
+  gl.innerHTML = html;
+
+  // Event delegation
+  gl.onclick = e => {
+    const chip = e.target.closest(".rel-chip");
+    if (chip) {
+      currentSearch = (chip.dataset.q || "").toLowerCase();
+      currentCat = "all";
+      document.getElementById("searchBox").value = chip.dataset.q || "";
+      document.querySelectorAll(".cat-btn").forEach(b => {
+        b.classList.remove("on");
+        if (b.textContent.includes("全部")) b.classList.add("on");
+      });
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const card = e.target.closest(".card");
+    if (card) {
+      const wasOpen = card.classList.contains("open");
+      document.querySelectorAll(".card.open").forEach(c => c.classList.remove("open"));
+      if (!wasOpen) card.classList.add("open");
+    }
+  };
+}
+
+loadData();
+</script>
+</body>
+</html>
