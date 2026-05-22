@@ -9,7 +9,575 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
+:root {<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="永續速查">
+<title>永續名詞速查 · iPAS對齊版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1117;--bg2:#161B25;--bg3:#1E2535;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#E8EDF5;--text2:#8B95A8;--text3:#5A6270;
+  --accent:#3B82F6;--green:#10B981;--amber:#F59E0B;
+  --teal-fill:#0D4F3C;--teal-stroke:#1D9E75;--teal-text:#6EE7B7;
+  --blue-fill:#0C2A4A;--blue-stroke:#185FA5;--blue-text:#93C5FD;
+  --purple-fill:#1E1654;--purple-stroke:#534AB7;--purple-text:#C4B5FD;
+  --amber-fill:#3D2A0A;--amber-stroke:#854F0B;--amber-text:#FCD34D;
+  --gray-fill:#1A1F2B;--gray-stroke:#444441;--gray-text:#9CA3AF;
+  --radius:10px;--radius-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(14,17,23,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:10px 16px 0}
+.app-name{font-size:12px;font-weight:500;letter-spacing:.12em;color:var(--text2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border)}
+.tab{flex:1;text-align:center;padding:8px 0 10px;font-size:13px;font-weight:400;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:500}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── SEARCH (glossary) ── */
+.search-wrap{position:relative;padding:10px 16px 8px}
+.search-wrap svg{position:absolute;left:27px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+#searchBox{width:100%;padding:9px 12px 9px 36px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
+#searchBox:focus{border-color:var(--accent)}
+#searchBox::placeholder{color:var(--text3)}
+
+/* ── CAT BAR ── */
+.cat-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 16px 8px;scrollbar-width:none}
+.cat-bar::-webkit-scrollbar{display:none}
+.cat-btn{white-space:nowrap;font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;flex-shrink:0;transition:all .15s;font-family:inherit}
+.cat-btn.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+
+/* ── LOADING ── */
+#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;gap:16px}
+.spinner{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2)}
+#errorBox{display:none;text-align:center;padding:2rem;font-size:13px;color:#F87171}
+.retry-btn{margin-top:12px;padding:8px 20px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit}
+
+/* ── GLOSSARY ── */
+.stats{font-size:11px;color:var(--text3);padding:4px 16px 6px;font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)}
+#glossaryMain{display:none}
+#glossaryMain.show{display:block}
+.sec-hdr{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:12px 16px 5px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace}
+.card{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.card:active{background:var(--bg3)}
+.card-hdr{padding:11px 16px;display:flex;gap:10px;align-items:flex-start}
+.abbr{font-size:11px;font-weight:500;background:rgba(59,130,246,.12);color:#93C5FD;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;margin-top:1px}
+.card-meta{flex:1;min-width:0}
+.card-zh{font-size:14px;font-weight:500;line-height:1.4}
+.card-en{font-size:11px;color:var(--text3);margin-top:2px}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.tag{font-size:10px;padding:2px 6px;border-radius:3px}
+.tag-type{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.tag-exam{background:rgba(16,185,129,.12);color:#6EE7B7}
+.chev{color:var(--text3);flex-shrink:0;margin-top:3px;font-size:16px;transition:transform .2s}
+.card.open .chev{transform:rotate(180deg)}
+.card-body{display:none;padding:0 16px 12px;font-size:13px;line-height:1.7;animation:fadeUp .18s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.card.open .card-body{display:block}
+.blbl{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:8px 0 4px;font-family:'DM Mono',monospace}
+.btext{color:var(--text2)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.dcell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 9px}
+.dcell.full{grid-column:1/-1}
+.dlbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.dval{font-size:12px;color:var(--text2)}
+.rel-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.rel-chip{font-size:11px;padding:3px 9px;border-radius:4px;background:rgba(59,130,246,.1);color:#93C5FD;border:1px solid rgba(59,130,246,.2);cursor:pointer;transition:all .15s}
+.rel-chip:active{background:rgba(59,130,246,.3)}
+.empty{padding:3rem 1rem;text-align:center;font-size:13px;color:var(--text3)}
+
+/* ── MAP ── */
+.map-wrap{padding:12px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.map-hint{font-size:11px;color:var(--text3);text-align:center;padding:4px 0 8px}
+/* Map node hover */
+svg .node{cursor:pointer}
+svg .node:hover rect{opacity:.8}
+
+/* ── INFO PANEL ── */
+.info-panel{display:none;margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;animation:fadeUp .18s ease}
+.info-panel.show{display:block}
+.ip-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.ip-title{font-size:14px;font-weight:500}
+.ip-close{font-size:20px;color:var(--text2);cursor:pointer;line-height:1}
+.ip-body{padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text2)}
+.ip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ip-cell{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--border)}
+.ip-lbl{font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace}
+.ip-val{font-size:12px;color:var(--text)}
+
+/* ── FOOTER ── */
+.footer{padding:14px;text-align:center;font-size:11px;color:var(--text3);border-top:1px solid var(--border);font-family:'DM Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="app-name"><span class="dot"></span>永續速查 · iPAS對齊版</div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('map',this)">🗺 架構關係圖</div>
+    <div class="tab" onclick="switchTab('glossary',this)">📚 名詞速查</div>
+  </div>
+</div>
+
+<!-- ══ TAB 1: MAP ══ -->
+<div id="tab-map" class="tab-panel active">
+  <div class="map-hint">點擊任一節點查看詳細說明</div>
+  <div class="map-wrap">
+<svg width="100%" viewBox="0 0 680 820" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>永續領域架構關係圖</title>
+<desc>從國際氣候公約出發，往下分為歐盟法規與國際準則兩大分支，再延伸至台灣專區與工具機制</desc>
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<!-- 頂部標籤 -->
+<text x="340" y="20" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.1em;font-family:'DM Mono',monospace;text-transform:uppercase">氣候議題根源</text>
+
+<!-- UNFCCC -->
+<g class="node" onclick="showInfo('unfccc')">
+<rect x="28" y="28" width="108" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="82" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">UNFCCC</text>
+<text x="82" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">氣候框架公約</text>
+</g>
+<line x1="136" y1="51" x2="162" y2="51" stroke="#1D9E75" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- 巴黎協定 -->
+<g class="node" onclick="showInfo('paris')">
+<rect x="164" y="28" width="120" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="1.5"/>
+<text x="224" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">巴黎協定</text>
+<text x="224" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">Paris Agreement</text>
+</g>
+<line x1="284" y1="51" x2="312" y2="51" stroke="#1D9E75" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- NDC -->
+<g class="node" onclick="showInfo('ndc')">
+<rect x="314" y="28" width="100" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="364" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">NDC</text>
+<text x="364" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">各國承諾</text>
+</g>
+<line x1="414" y1="51" x2="440" y2="51" stroke="#1D9E75" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- COP -->
+<g class="node" onclick="showInfo('cop')">
+<rect x="442" y="28" width="100" height="46" rx="8" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="492" y="46" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#6EE7B7;font-family:'Noto Sans TC',sans-serif">COP</text>
+<text x="492" y="62" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#1D9E75;font-family:'Noto Sans TC',sans-serif">每年檢視</text>
+</g>
+
+<!-- 箭頭到全球減碳壓力 -->
+<line x1="340" y1="74" x2="340" y2="96" stroke="#5A6270" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- 全球減碳壓力 -->
+<g class="node" onclick="showInfo('pressure')">
+<rect x="210" y="98" width="260" height="40" rx="8" fill="#1A1F2B" stroke="#444441" stroke-width="0.5"/>
+<text x="340" y="118" text-anchor="middle" dominant-baseline="central" style="font-size:13px;font-weight:500;fill:#E8EDF5;font-family:'Noto Sans TC',sans-serif">全球減碳壓力</text>
+</g>
+
+<!-- 分叉箭頭 -->
+<line x1="280" y1="138" x2="194" y2="164" stroke="#5A6270" stroke-width="1" marker-end="url(#arr)"/>
+<line x1="400" y1="138" x2="486" y2="164" stroke="#5A6270" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- 左側標籤 -->
+<text x="148" y="162" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.08em;font-family:'DM Mono',monospace">歐盟法規</text>
+<!-- 右側標籤 -->
+<text x="532" y="162" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.08em;font-family:'DM Mono',monospace">國際準則</text>
+
+<!-- ═══ 左欄：歐盟法規 ═══ -->
+<!-- CSRD -->
+<g class="node" onclick="showInfo('csrd')">
+<rect x="44" y="170" width="148" height="46" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="188" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">CSRD</text>
+<text x="118" y="204" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">企業永續報告指令</text>
+</g>
+<line x1="118" y1="216" x2="118" y2="234" stroke="#185FA5" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+
+<!-- ESRS -->
+<g class="node" onclick="showInfo('esrs')">
+<rect x="44" y="236" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="254" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">ESRS</text>
+<text x="118" y="270" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">報告格式準則</text>
+</g>
+<line x1="118" y1="280" x2="118" y2="298" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- CSDDD -->
+<g class="node" onclick="showInfo('csddd')">
+<rect x="44" y="300" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="318" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">CSDDD</text>
+<text x="118" y="334" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">供應鏈盡職調查</text>
+</g>
+<line x1="118" y1="344" x2="118" y2="362" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- CBAM -->
+<g class="node" onclick="showInfo('cbam')">
+<rect x="44" y="364" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="382" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">CBAM</text>
+<text x="118" y="398" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">碳邊境調整機制</text>
+</g>
+<line x1="118" y1="408" x2="118" y2="426" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- EU ETS -->
+<g class="node" onclick="showInfo('euets')">
+<rect x="44" y="428" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="446" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">EU ETS</text>
+<text x="118" y="462" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">歐盟碳排放交易</text>
+</g>
+<line x1="118" y1="472" x2="118" y2="490" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- SFDR -->
+<g class="node" onclick="showInfo('sfdr')">
+<rect x="44" y="492" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="510" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">SFDR</text>
+<text x="118" y="526" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">永續金融揭露</text>
+</g>
+<line x1="118" y1="536" x2="118" y2="554" stroke="#185FA5" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- EU Taxonomy -->
+<g class="node" onclick="showInfo('eutax')">
+<rect x="44" y="556" width="148" height="44" rx="8" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="118" y="574" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#93C5FD;font-family:'Noto Sans TC',sans-serif">EU Taxonomy</text>
+<text x="118" y="590" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#185FA5;font-family:'Noto Sans TC',sans-serif">永續金融分類法</text>
+</g>
+
+<!-- ═══ 右欄：國際準則 ═══ -->
+<!-- IFRS/ISSB -->
+<g class="node" onclick="showInfo('issb')">
+<rect x="488" y="170" width="148" height="46" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="188" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">IFRS / ISSB</text>
+<text x="562" y="204" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">永續揭露準則</text>
+</g>
+<line x1="562" y1="216" x2="562" y2="234" stroke="#534AB7" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+
+<!-- S1/S2 -->
+<g class="node" onclick="showInfo('s1s2')">
+<rect x="488" y="236" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="254" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">S1 / S2</text>
+<text x="562" y="270" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">一般／氣候相關</text>
+</g>
+<line x1="562" y1="280" x2="562" y2="298" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- GRI -->
+<g class="node" onclick="showInfo('gri')">
+<rect x="488" y="300" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="318" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">GRI</text>
+<text x="562" y="334" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">社會視角準則</text>
+</g>
+<line x1="562" y1="344" x2="562" y2="362" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- TCFD -->
+<g class="node" onclick="showInfo('tcfd')">
+<rect x="488" y="364" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="382" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">TCFD</text>
+<text x="562" y="398" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">已併入 ISSB S2</text>
+</g>
+<line x1="562" y1="408" x2="562" y2="426" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- TNFD -->
+<g class="node" onclick="showInfo('tnfd')">
+<rect x="488" y="428" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="446" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">TNFD</text>
+<text x="562" y="462" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">自然相關風險揭露</text>
+</g>
+<line x1="562" y1="472" x2="562" y2="490" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- CDP -->
+<g class="node" onclick="showInfo('cdp')">
+<rect x="488" y="492" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="510" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">CDP</text>
+<text x="562" y="526" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">碳揭露評比平台</text>
+</g>
+<line x1="562" y1="536" x2="562" y2="554" stroke="#534AB7" stroke-width="1" marker-end="url(#arr)"/>
+
+<!-- SASB -->
+<g class="node" onclick="showInfo('sasb')">
+<rect x="488" y="556" width="148" height="44" rx="8" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="562" y="574" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#C4B5FD;font-family:'Noto Sans TC',sans-serif">SASB</text>
+<text x="562" y="590" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#534AB7;font-family:'Noto Sans TC',sans-serif">行業別揭露準則</text>
+</g>
+
+<!-- 連線到台灣專區 -->
+<line x1="192" y1="490" x2="260" y2="650" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="488" y1="490" x2="420" y2="650" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="192" y1="386" x2="280" y2="650" stroke="#F59E0B" stroke-width="0.5" stroke-dasharray="4 3"/>
+<line x1="488" y1="386" x2="400" y2="650" stroke="#F59E0B" stroke-width="0.5" stroke-dasharray="4 3"/>
+
+<!-- 台灣標籤 -->
+<text x="340" y="646" text-anchor="middle" style="fill:#5A6270;font-size:10px;letter-spacing:.08em;font-family:'DM Mono',monospace">台灣專區</text>
+
+<!-- 台灣碳費 -->
+<g class="node" onclick="showInfo('tw-carbon')">
+<rect x="172" y="654" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="232" y="672" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">台灣碳費</text>
+<text x="232" y="688" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">2025年起徵</text>
+</g>
+
+<!-- 氣候法 -->
+<g class="node" onclick="showInfo('tw-climate')">
+<rect x="300" y="654" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="360" y="672" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">氣候變遷因應法</text>
+<text x="360" y="688" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">2050淨零目標</text>
+</g>
+
+<!-- T-REC -->
+<g class="node" onclick="showInfo('tw-trec')">
+<rect x="172" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="232" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">T-REC</text>
+<text x="232" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">再生能源憑證</text>
+</g>
+
+<!-- TCEX -->
+<g class="node" onclick="showInfo('tw-tcex')">
+<rect x="300" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="360" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">TCEX</text>
+<text x="360" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">台灣碳交易所</text>
+</g>
+
+<!-- SBTi -->
+<g class="node" onclick="showInfo('sbti')">
+<rect x="428" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="488" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">SBTi</text>
+<text x="488" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">科學基礎減量目標</text>
+</g>
+
+<!-- RE100 -->
+<g class="node" onclick="showInfo('re100')">
+<rect x="44" y="706" width="120" height="44" rx="8" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="104" y="724" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:500;fill:#FCD34D;font-family:'Noto Sans TC',sans-serif">RE100</text>
+<text x="104" y="740" text-anchor="middle" dominant-baseline="central" style="font-size:10px;fill:#854F0B;font-family:'Noto Sans TC',sans-serif">再生能源100%倡議</text>
+</g>
+
+<!-- 圖例 -->
+<rect x="44" y="782" width="12" height="12" rx="2" fill="#0D4F3C" stroke="#1D9E75" stroke-width="0.5"/>
+<text x="62" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">國際公約</text>
+<rect x="130" y="782" width="12" height="12" rx="2" fill="#0C2A4A" stroke="#185FA5" stroke-width="0.5"/>
+<text x="148" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">歐盟法規</text>
+<rect x="216" y="782" width="12" height="12" rx="2" fill="#1E1654" stroke="#534AB7" stroke-width="0.5"/>
+<text x="234" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">國際準則</text>
+<rect x="302" y="782" width="12" height="12" rx="2" fill="#3D2A0A" stroke="#854F0B" stroke-width="0.5"/>
+<text x="320" y="792" style="font-size:10px;fill:#5A6270;font-family:'Noto Sans TC',sans-serif">台灣工具</text>
+</svg>
+  </div>
+
+  <!-- 說明面板 -->
+  <div class="info-panel" id="infoPanel">
+    <div class="ip-hdr">
+      <span class="ip-title" id="ipTitle"></span>
+      <span class="ip-close" onclick="closeInfo()">×</span>
+    </div>
+    <div class="ip-body">
+      <div id="ipDef"></div>
+      <div class="ip-grid" id="ipGrid"></div>
+    </div>
+  </div>
+  <div class="footer">點擊節點 → 定義 · 考試重點 · 台灣觀點</div>
+</div>
+
+<!-- ══ TAB 2: GLOSSARY ══ -->
+<div id="tab-glossary" class="tab-panel">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="searchBox" type="search" placeholder="搜尋縮寫、中文名稱、關鍵字…" autocomplete="off">
+  </div>
+  <div class="cat-bar" id="catBar"></div>
+  <div id="loading"><div class="spinner"></div><div class="loading-text">載入名詞資料庫…</div></div>
+  <div id="errorBox"><div>無法載入資料</div><div style="margin-top:6px;font-size:12px;color:var(--text3)" id="errMsg"></div><button class="retry-btn" onclick="loadData()">重試</button></div>
+  <div id="glossaryMain">
+    <div class="stats" id="stats"></div>
+    <div id="glossaryList"></div>
+    <div class="footer">資料來源：Google Sheets · 每次開啟自動更新</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// Google Sheet CSV URL
+// ═══════════════════════════════════════════════
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1YS8E7d2KVQw1MXdh_HPxUuvy1m5xMrjsYVBSc0BqSu0/export?format=csv";
+
+// ═══════════════════════════════════════════════
+// 架構圖資料
+// ═══════════════════════════════════════════════
+const MAP_INFO = {
+  unfccc:{t:"UNFCCC 聯合國氣候變化綱要公約",d:"1992年通過的國際環境公約，奠定全球氣候治理的法律基礎。幾乎所有國家都是締約方，每年召開締約方大會（COP）。",e:"UNFCCC是巴黎協定的母公約；COP與UNFCCC的關係是考點。",tw:"台灣非UN成員，但依照UNFCCC精神制定氣候政策。"},
+  paris:{t:"巴黎協定 Paris Agreement",d:"2015年COP21通過，目標將全球升溫控制在2°C以內（努力1.5°C）。各國提交自主貢獻（NDC）並每5年更新，是全球淨零目標的法律基礎。",e:"1.5°C vs 2°C目標；NDC定義；2050淨零的法律基礎，是必考核心。",tw:"台灣2050淨零排放路徑以巴黎協定精神為依據。"},
+  ndc:{t:"NDC 國家自主貢獻",d:"各國在巴黎協定下自行訂定並提交的減碳承諾，每5年必須更新且力道只能增強。與京都議定書自上而下不同，NDC是自下而上機制。",e:"NDC是自下而上的機制；與京都議定書的差異是考點。",tw:"台灣以「自願承諾」方式發布相當於NDC的2050淨零路徑。"},
+  cop:{t:"COP 締約方大會",d:"UNFCCC每年召開的最高決策機構。COP21通過巴黎協定（2015）、COP26達成格拉斯哥氣候公約（2021）、COP28審查1.5°C進展（2023）。",e:"COP21=巴黎協定（2015）；COP26=格拉斯哥（2021）；年份與決議是考點。",tw:"台灣以觀察員角色關注COP進展，並同步調整氣候法規。"},
+  pressure:{t:"全球減碳壓力",d:"巴黎協定確立的1.5°C目標，透過各國NDC承諾、歐盟法規（CBAM/CSRD）、國際準則（ISSB/GRI）、供應鏈要求等多元管道，形成對企業的全面減碳壓力。",e:"理解壓力來源的多元性：法規強制（CSRD/CBAM）＋市場自願（SBTi/CDP）＋供應鏈（Scope 3）。",tw:"台灣製造業面臨歐美客戶、CBAM、台灣碳費三重壓力。"},
+  csrd:{t:"CSRD 歐盟企業永續報告指令",d:"2024年起分階段取代NFRD，要求大型企業依ESRS準則揭露詳細ESG資訊，採雙重重大性評估，強制第三方查證。台灣有歐洲客戶的企業將受到影響。",e:"CSRD取代NFRD；ESRS是底層準則；雙重重大性定義是考點。",tw:"台灣有歐洲大客戶或子公司的企業，需提供CSRD所需的供應鏈ESG數據。"},
+  esrs:{t:"ESRS 歐洲永續報告準則",d:"CSRD底層的具體揭露準則，由EFRAG制定，涵蓋氣候（E1）、生物多樣性（E4）、供應鏈（S2）等12個主題準則，是CSRD的技術實施細節。",e:"ESRS是CSRD的執行準則；E1氣候準則與TCFD高度相似是考點。",tw:"台灣供應商須了解ESRS E1（氣候）與S2（供應鏈工作者）對自身的影響。"},
+  csddd:{t:"CSDDD 歐盟企業永續盡職調查指令",d:"要求大型企業識別、預防、減輕供應鏈中的人權與環境負面衝擊，並設立申訴機制。違規可處營業額1.5-5%的罰款。",e:"CSDDD是行動義務（要做）；CSRD是報告義務（要說）——兩者差異是考點。",tw:"台灣電子、紡織供應鏈首當其衝；RBA、SA8000等認證有助準備。"},
+  cbam:{t:"CBAM 歐盟碳邊境調整機制",d:"對進口到歐盟的高碳商品（水泥、鋼鐵、鋁、化肥、電力、氫）徵收碳費，依生產地內嵌碳排放計算，防止碳洩漏。2023年過渡期，2026年正式課費。",e:"iPAS核心。6大涵蓋產業；台灣受影響的出口項目；過渡期vs正式期時程必考。",tw:"台灣鋼鐵業（中鋼等）、鋁業首當其衝；須申報內嵌碳排放量（embedded emissions）。"},
+  euets:{t:"EU ETS 歐盟排放交易體系",d:"全球最大強制性碳市場，採總量管制與排放交易（cap-and-trade），涵蓋電力、航空、重工業。排放配額（EUA）在市場交易，當前碳價約60-80歐元/噸。",e:"EU ETS是全球最大強制性碳市場；cap-and-trade機制；與VCM（自願性）的差異是考點。",tw:"CBAM計算時會扣除出口商在本國已付的碳費；台灣碳費制度設計參考EU ETS。"},
+  sfdr:{t:"SFDR 永續金融揭露法規",d:"歐盟要求金融機構揭露永續相關風險的法規，將基金分為第6條（無永續主張）、第8條（促進環境/社會）、第9條（以永續為目標）三類。",e:"三類基金（6/8/9條）的差異；PAI（主要負面指標）揭露要求是考點。",tw:"台灣金管會參考SFDR制定本土永續金融分類指引；台灣金融業對歐盟客戶基金需符合SFDR。"},
+  eutax:{t:"EU Taxonomy 歐盟永續金融分類法",d:"定義哪些經濟活動可被視為「環境永續」，依六大環境目標評估，要求「不顯著損害」（DNSH）原則。是綠色金融產品定義的依據。",e:"六大環境目標名稱；DNSH原則定義；與SFDR的關係是考點。",tw:"台灣金融業參考EU Taxonomy建立本土永續金融分類架構。"},
+  issb:{t:"ISSB 國際永續揭露準則委員會",d:"IFRS基金會設立的永續揭露準則制定機構。S1規範一般永續揭露要求；S2規範氣候相關揭露（以TCFD為基礎），要求揭露Scope 1/2/3。整合了TCFD、SASB、CDSB。",e:"S1 vs S2的內容差異；ISSB整合了哪些框架；台灣金管會接軌路線是必考。",tw:"台灣IFRS永續揭露準則以ISSB為基礎，分階段強制適用。"},
+  s1s2:{t:"ISSB S1 / S2 準則",d:"S1：企業一般永續相關風險與機會的揭露要求。S2：氣候相關揭露，要求揭露Scope 1/2/3排放量、氣候情境分析、轉型計畫。S2基本上是TCFD的升級版。",e:"S1是通用框架；S2是氣候專門準則；S2要求Scope 3揭露（S1不要求）是考點。",tw:"台灣金管會要求特定規模上市公司依S1/S2編製永續報告書。"},
+  gri:{t:"GRI 全球報告倡議組織準則",d:"最廣泛使用的永續報告框架，採利害關係人導向的「雙重重大性」。通用準則GRI 1-3規範重大性評估流程，議題準則200-400系列涵蓋環境、社會、治理各面向。",e:"GRI vs SASB（雙重重大性vs財務重大性；通用vs行業別）；GRI三大揭露是高頻考點。",tw:"台灣上市公司永續報告書多依GRI準則；金管會要求揭露GRI對照表。"},
+  tcfd:{t:"TCFD 氣候相關財務揭露建議",d:"FSB設立的工作小組，提出四大支柱：治理（Governance）、策略（Strategy）、風險管理（Risk Management）、指標與目標（Metrics & Targets）。已正式併入ISSB S2。",e:"TCFD四大支柱名稱；實體風險vs轉型風險的差異是高頻考點。",tw:"台灣金管會要求特定規模上市公司揭露TCFD；現已要求依ISSB S2揭露。"},
+  tnfd:{t:"TNFD 自然相關財務揭露框架",d:"仿效TCFD建立的自然資本相關財務揭露框架，2023年發布v1.0。要求企業揭露對生態系統的依賴與衝擊，採用LEAP（定位、評估、量化、準備）方法。",e:"TCFD處理氣候；TNFD處理自然（生物多樣性）；LEAP方法論；兩者架構平行是考點。",tw:"台灣金管會已將TNFD納入永續報告書參考框架。"},
+  cdp:{t:"CDP 碳揭露項目",d:"全球最大的環境資訊自願揭露平台，企業回應氣候、水安全、森林三份問卷，由機構投資人驅動。評級從A到D-，A List是最高榮譽。",e:"CDP是自願揭露平台；投資人驅動機制；與TCFD/ISSB的關係是考點。",tw:"台灣有超過200家企業填報CDP；蘋果、NIKE等要求台灣供應商填報。"},
+  sasb:{t:"SASB 永續會計準則委員會",d:"依77個產業別制定的永續揭露準則，聚焦「財務重大性」。已整合入ISSB框架，但SASB行業分類仍是實務中最常用的行業別揭露工具。",e:"SASB vs GRI差異（行業別vs通用；投資人vs利害關係人）是最高頻考點。",tw:"台灣金管會永續藍圖鼓勵企業參考SASB依行業揭露財務重大性議題。"},
+  'tw-carbon':{t:"台灣碳費制度",d:"氣候法授權環境部對年排放量2.5萬噸CO₂e以上的工廠收取碳費。2025年起徵，初期費率一般行業300元/噸，高碳洩漏風險行業優惠費率50元/噸。約500家工廠為首批徵收對象。",e:"iPAS核心。碳費vs碳稅差異；一般費率300元vs優惠費率50元；門檻2.5萬噸；高碳洩漏風險定義。",tw:"碳費收入進入氣候基金，專款用於企業減碳補貼；2030年後費率將大幅調升至1,200-1,800元/噸。"},
+  'tw-climate':{t:"氣候變遷因應法",d:"台灣2023年修正通過，確立2050淨零排放為國家目標，授權三大機制：碳費徵收、強制盤查（2.5萬噸以上需申報）、減量額度制度（可申請碳權）。",e:"iPAS核心。三大機制名稱；主管機關（環境部）；三子法（碳費收費辦法、自願減量辦法、減量額度認可辦法）必考。",tw:"氣候法是台灣碳管理制度的最高法源，後續所有碳相關法規均依此授權。"},
+  'tw-trec':{t:"T-REC 台灣再生能源憑證",d:"1張T-REC代表1,000度（1 MWh）的再生能源電力。企業購買T-REC可作為Scope 2市場計算法的零排放依據，也是RE100承諾的認可工具。",e:"iPAS中級核心。T-REC vs CPPA的差異（當期購買vs長期合約）；市場計算法vs位置計算法概念。",tw:"台灣T-REC制度由能源局管理；台積電、鴻海等大廠大量購買T-REC以達成RE100目標。"},
+  'tw-tcex':{t:"TCEX 台灣碳交易所",d:"2023年成立於高雄，由台灣證交所與國發會合資設立。目前提供國際碳信用（VCM）交易，本土自願減量碳信用即將上架。依氣候法第36條唯一受託辦理。",e:"TCEX成立年份（2023）；功能（VCM平台）；與台灣碳費的關係；法定用途vs非法定用途額度差異。",tw:"TCEX是台灣唯一官方認可的碳信用交易平台；企業購買碳信用可用於ISO 14068碳中和。"},
+  sbti:{t:"SBTi 科學基礎減量目標",d:"企業依科學（IPCC 1.5°C路徑）設定減碳目標的國際倡議。目標需涵蓋Scope 1&2（近期，5-10年）與Scope 3（長期），並每5年更新。通過認證可對外公告。",e:"SBTi = 科學基礎；1.5°C路徑；Scope 3目標要求；與CDP的關係是考點。",tw:"台積電、台達電等大廠已通過SBTi認證；台灣SBTi認證企業數量快速增加。"},
+  re100:{t:"RE100 再生能源100%倡議",d:"由氣候組織與CDP共同管理，承諾100%使用再生能源。成員可透過自發自用、CPPA、T-REC等方式達成，需每年向CDP報告進度。",e:"RE100成員的達成路徑（自發自用/CPPA/T-REC/國際EAC）；台灣大廠參與狀況是考點。",tw:"台灣有超過20家企業加入RE100；蘋果要求供應鏈加入RE100，帶動台廠積極參與。"}
+};
+
+function showInfo(id){
+  const d=MAP_INFO[id]; if(!d) return;
+  document.getElementById('ipTitle').textContent=d.t;
+  document.getElementById('ipDef').textContent=d.d;
+  document.getElementById('ipGrid').innerHTML=
+    `<div class="ip-cell"><div class="ip-lbl">🎓 考試重點</div><div class="ip-val">${esc(d.e)}</div></div>`+
+    `<div class="ip-cell"><div class="ip-lbl">🇹🇼 台灣觀點</div><div class="ip-val">${esc(d.tw)}</div></div>`;
+  const p=document.getElementById('infoPanel');
+  p.classList.add('show');
+  setTimeout(()=>p.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+}
+function closeInfo(){document.getElementById('infoPanel').classList.remove('show')}
+
+// ═══════════════════════════════════════════════
+// TAB 切換
+// ═══════════════════════════════════════════════
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='glossary'&&!dataLoaded) loadData();
+}
+
+// ═══════════════════════════════════════════════
+// GLOSSARY
+// ═══════════════════════════════════════════════
+const CATS=[
+  {id:"all",label:"全部"},{id:"iso",label:"📐 ISO標準"},{id:"ghg",label:"🌡 溫室氣體"},
+  {id:"disclosure",label:"📋 揭露框架"},{id:"intl-policy",label:"🌍 國際法規"},
+  {id:"carbon",label:"💨 碳市場"},{id:"energy",label:"⚡ 能源"},
+  {id:"social",label:"⚖️ 人權社會"},{id:"governance",label:"🏛 治理"},
+  {id:"finance",label:"💰 永續金融"},{id:"taiwan",label:"🇹🇼 台灣"},
+  {id:"biodiversity",label:"🌿 生態自然"}
+];
+const CAT_NAMES={
+  iso:"ISO 標準系列",ghg:"溫室氣體盤查",disclosure:"揭露框架",
+  "intl-policy":"國際法規與政策",carbon:"碳市場與碳定價",
+  energy:"能源轉型",social:"人權與供應鏈",governance:"治理（G面）",
+  finance:"永續金融",taiwan:"台灣專區",biodiversity:"生態自然"
+};
+
+let DATA=[],currentCat="all",currentSearch="",dataLoaded=false;
+
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
+
+function parseCSV(text){
+  const rows=[];
+  const lines=text.split(/\r?\n/);
+  for(let i=1;i<lines.length;i++){
+    const line=lines[i].trim(); if(!line) continue;
+    const cols=[];let cur="",inQ=false;
+    for(let j=0;j<line.length;j++){
+      const ch=line[j];
+      if(ch==='"'){if(inQ&&line[j+1]==='"'){cur+='"';j++;}else inQ=!inQ;}
+      else if(ch===','&&!inQ){cols.push(cur.trim());cur="";}
+      else cur+=ch;
+    }
+    cols.push(cur.trim());
+    if(cols.length>=10) rows.push({cat:cols[0],abbr:cols[1],zh:cols[2],en:cols[3],type:cols[4],def:cols[5],exam:cols[6],practice:cols[7],tw:cols[8],rel:cols[9]?cols[9].split("｜").map(s=>s.trim()).filter(Boolean):[]});
+  }
+  return rows;
+}
+
+async function loadData(){
+  document.getElementById("loading").style.display="flex";
+  document.getElementById("errorBox").style.display="none";
+  document.getElementById("glossaryMain").classList.remove("show");
+  try{
+    const res=await fetch(SHEET_CSV_URL);
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const text=await res.text();
+    DATA=parseCSV(text);
+    dataLoaded=true;
+    document.getElementById("loading").style.display="none";
+    document.getElementById("glossaryMain").classList.add("show");
+    buildCatBar();
+    render();
+  }catch(e){
+    document.getElementById("loading").style.display="none";
+    document.getElementById("errorBox").style.display="block";
+    document.getElementById("errMsg").textContent=e.message;
+  }
+}
+
+function buildCatBar(){
+  const bar=document.getElementById("catBar");
+  bar.innerHTML="";
+  CATS.forEach(c=>{
+    const btn=document.createElement("button");
+    btn.className="cat-btn"+(c.id==="all"?" on":"");
+    btn.textContent=c.label;
+    btn.onclick=()=>{currentCat=c.id;document.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("on"));btn.classList.add("on");render();};
+    bar.appendChild(btn);
+  });
+}
+
+document.getElementById("searchBox").addEventListener("input",e=>{currentSearch=e.target.value.trim().toLowerCase();render();});
+
+function getFiltered(){
+  return DATA.filter(item=>{
+    if(currentCat!=="all"&&item.cat!==currentCat) return false;
+    if(!currentSearch) return true;
+    const hay=[item.abbr,item.zh,item.en,item.def,item.type,...(item.rel||[])].join(" ").toLowerCase();
+    return hay.includes(currentSearch);
+  });
+}
+
+function render(){
+  const filtered=getFiltered();
+  document.getElementById("stats").textContent=filtered.length+" 個名詞";
+  const gl=document.getElementById("glossaryList");
+  if(!filtered.length){gl.innerHTML='<div class="empty">沒有符合的結果</div>';return;}
+  const groups={};
+  filtered.forEach(item=>{if(!groups[item.cat])groups[item.cat]=[];groups[item.cat].push(item);});
+  let html="";
+  Object.keys(groups).forEach(cat=>{
+    html+=`<div class="sec-hdr">${esc(CAT_NAMES[cat]||cat)}</div>`;
+    groups[cat].forEach(item=>{
+      const relH=(item.rel||[]).map(r=>`<span class="rel-chip" data-q="${esc(r)}">${esc(r)}</span>`).join("");
+      html+=`<div class="card"><div class="card-hdr"><span class="abbr">${esc(item.abbr)}</span><div class="card-meta"><div class="card-zh">${esc(item.zh)}</div><div class="card-en">${esc(item.en)}</div><div class="card-tags"><span class="tag tag-type">${esc(item.type)}</span>${item.exam?'<span class="tag tag-exam">考試重點</span>':""}</div></div><span class="chev">⌄</span></div>
+<div class="card-body"><div class="blbl">定義</div><div class="btext">${esc(item.def)}</div><div class="dgrid"><div class="dcell"><div class="dlbl">🎓 考試重點</div><div class="dval">${esc(item.exam||"—")}</div></div><div class="dcell"><div class="dlbl">🇹🇼 台灣觀點</div><div class="dval">${esc(item.tw||"—")}</div></div><div class="dcell full"><div class="dlbl">🏢 實務應用</div><div class="dval">${esc(item.practice||"—")}</div></div></div>${relH?`<div class="blbl" style="margin-top:8px">🔗 關聯名詞</div><div class="rel-row">${relH}</div>`:""}</div></div>`;
+    });
+  });
+  gl.innerHTML=html;
+  gl.onclick=e=>{
+    const chip=e.target.closest(".rel-chip");
+    if(chip){currentSearch=(chip.dataset.q||"").toLowerCase();currentCat="all";document.getElementById("searchBox").value=chip.dataset.q||"";document.querySelectorAll(".cat-btn").forEach(b=>{b.classList.remove("on");if(b.textContent.includes("全部"))b.classList.add("on");});render();window.scrollTo({top:0,behavior:"smooth"});return;}
+    const card=e.target.closest(".card");
+    if(card){const was=card.classList.contains("open");document.querySelectorAll(".card.open").forEach(c=>c.classList.remove("open"));if(!was)card.classList.add("open");}
+  };
+}
+</script>
+</body>
+</html>
+
   --bg: #0E1117;
   --bg2: #161B25;
   --bg3: #1E2535;
