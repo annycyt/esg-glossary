@@ -1399,57 +1399,6 @@ loadCustomNodes();
 .saved-badge{display:inline-block;font-size:10px;background:rgba(29,158,117,.2);color:#1D9E75;border-radius:4px;padding:2px 7px;margin-left:8px;vertical-align:middle}
 </style>
 
-<button id="add-btn" title="新增名詞" onclick="openAddModal()">＋</button>
-
-<div id="add-modal" onclick="handleModalClick(event)">
-<div id="add-box">
-  <div class="add-drag"></div>
-  <div class="add-title">新增名詞 <span class="saved-badge" id="saved-count"></span></div>
-  <div class="add-row">
-    <div style="flex:1"><div class="add-label">縮寫 / 簡稱</div><input class="add-input" id="f-abbr" placeholder="例：TCFD、碳費、漂綠" autocomplete="off"></div>
-    <div style="flex:1"><div class="add-label">分類</div>
-      <select class="add-select" id="f-cat">
-        <option value="climate">🌐 氣候協議</option><option value="intl">🌍 國際法規</option>
-        <option value="disc">📋 揭露框架</option><option value="carbon">💱 碳市場</option>
-        <option value="social">🤝 社會面 S</option><option value="gov">⚖️ 治理面 G</option>
-        <option value="nature">🌿 自然生態</option><option value="finance">💰 永續金融</option>
-        <option value="tech">🔬 減碳技術</option><option value="tw">🇹🇼 台灣專區</option>
-      </select>
-    </div>
-  </div>
-  <div class="field-group"><div class="add-label">中文名稱</div><input class="add-input" id="f-zh" placeholder="例：氣候相關財務揭露"></div>
-  <div class="field-group"><div class="add-label">英文全名</div><input class="add-input" id="f-en" placeholder="例：Task Force on Climate-related Financial Disclosures"></div>
-  <button class="btn-ai" id="btn-gen" onclick="generateWithAI()"><span id="gen-icon">✦</span> AI 生成說明內容</button>
-  <div class="add-err" id="gen-err"></div>
-  <div class="add-section-title">說明內容（可手動調整）</div>
-  <div class="field-group"><div class="add-label">解決什麼問題</div><textarea class="add-textarea" id="f-prob" placeholder="這個機制/法規存在的原因是什麼？"></textarea></div>
-  <div class="field-group"><div class="add-label">怎麼運作</div><textarea class="add-textarea" id="f-how" placeholder="具體的運作方式、關鍵規定…"></textarea></div>
-  <div class="add-row">
-    <div style="flex:1" class="field-group"><div class="add-label">台灣影響</div><textarea class="add-textarea" id="f-tw" placeholder="對台灣企業的實際影響…" style="min-height:56px"></textarea></div>
-    <div style="flex:1" class="field-group"><div class="add-label">考試重點</div><textarea class="add-textarea" id="f-exam" placeholder="重要考點…" style="min-height:56px"></textarea></div>
-  </div>
-  <div class="add-row">
-    <div style="flex:1" class="field-group"><div class="add-label">關鍵數字</div><input class="add-input" id="f-num" placeholder="例：2026年生效 ／ 門檻€1.5億"></div>
-    <div style="flex:1" class="field-group"><div class="add-label">適用對象</div><input class="add-input" id="f-who" placeholder="例：歐盟大型企業"></div>
-  </div>
-  <div class="btn-row">
-    <button class="btn-cancel" onclick="closeAddModal()">取消</button>
-    <button class="btn-add" id="btn-add" onclick="addNode()">加入關係圖</button>
-  </div>
-  <div id="custom-list"></div>
-
-  <div class="add-section-title">備份與還原</div>
-  <div class="btn-row" style="margin-bottom:6px">
-    <button class="btn-cancel" style="flex:1;text-align:center" onclick="exportNodes()">⬇ 匯出備份 JSON</button>
-    <label class="btn-cancel" style="flex:1;text-align:center;cursor:pointer">
-      ⬆ 匯入備份 JSON
-      <input type="file" accept=".json" style="display:none" onchange="importNodes(event)">
-    </label>
-  </div>
-  <div style="font-size:10px;color:var(--text3);text-align:center;padding-bottom:4px">換裝置或清快取前請先匯出備份</div>
-</div>
-</div>
-
 <script>
 function openAddModal(){
   const modal = document.getElementById('add-modal');
@@ -1603,5 +1552,56 @@ function refreshCustomList(){
     custom.map(n=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div><span style="font-size:12px;color:#dde2f0;font-weight:500">${n.zh}</span><span style="font-size:10px;color:#4e5875;margin-left:6px">${CATS[n.cat]?.label||n.cat}</span></div><button onclick="deleteCustomNode('${n.id}')" style="background:rgba(226,75,74,.15);border:1px solid rgba(226,75,74,.3);color:#E24B4A;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans TC',sans-serif">刪除</button></div>`).join('');
 }
 </script>
+
+
+<button id="add-btn" title="新增名詞" onclick="openAddModal()">＋</button>
+<div id="add-modal" onclick="handleModalClick(event)">
+<div id="add-box">
+  <div class="add-drag"></div>
+  <div class="add-title">新增名詞 <span class="saved-badge" id="saved-count"></span></div>
+  <div class="add-row">
+    <div style="flex:1"><div class="add-label">縮寫 / 簡稱</div><input class="add-input" id="f-abbr" placeholder="例：TCFD、碳費、漂綠" autocomplete="off"></div>
+    <div style="flex:1"><div class="add-label">分類</div>
+      <select class="add-select" id="f-cat">
+        <option value="climate">🌐 氣候協議</option><option value="intl">🌍 國際法規</option>
+        <option value="disc">📋 揭露框架</option><option value="carbon">💱 碳市場</option>
+        <option value="social">🤝 社會面 S</option><option value="gov">⚖️ 治理面 G</option>
+        <option value="nature">🌿 自然生態</option><option value="finance">💰 永續金融</option>
+        <option value="tech">🔬 減碳技術</option><option value="tw">🇹🇼 台灣專區</option>
+      </select>
+    </div>
+  </div>
+  <div class="field-group"><div class="add-label">中文名稱</div><input class="add-input" id="f-zh" placeholder="例：氣候相關財務揭露"></div>
+  <div class="field-group"><div class="add-label">英文全名</div><input class="add-input" id="f-en" placeholder="例：Task Force on Climate-related Financial Disclosures"></div>
+  <button class="btn-ai" id="btn-gen" onclick="generateWithAI()"><span id="gen-icon">✦</span> AI 生成說明內容</button>
+  <div class="add-err" id="gen-err"></div>
+  <div class="add-section-title">說明內容（可手動調整）</div>
+  <div class="field-group"><div class="add-label">解決什麼問題</div><textarea class="add-textarea" id="f-prob" placeholder="這個機制/法規存在的原因是什麼？"></textarea></div>
+  <div class="field-group"><div class="add-label">怎麼運作</div><textarea class="add-textarea" id="f-how" placeholder="具體的運作方式、關鍵規定…"></textarea></div>
+  <div class="add-row">
+    <div style="flex:1" class="field-group"><div class="add-label">台灣影響</div><textarea class="add-textarea" id="f-tw" placeholder="對台灣企業的實際影響…" style="min-height:56px"></textarea></div>
+    <div style="flex:1" class="field-group"><div class="add-label">考試重點</div><textarea class="add-textarea" id="f-exam" placeholder="重要考點…" style="min-height:56px"></textarea></div>
+  </div>
+  <div class="add-row">
+    <div style="flex:1" class="field-group"><div class="add-label">關鍵數字</div><input class="add-input" id="f-num" placeholder="例：2026年生效 ／ 門檻€1.5億"></div>
+    <div style="flex:1" class="field-group"><div class="add-label">適用對象</div><input class="add-input" id="f-who" placeholder="例：歐盟大型企業"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-cancel" onclick="closeAddModal()">取消</button>
+    <button class="btn-add" id="btn-add" onclick="addNode()">加入關係圖</button>
+  </div>
+  <div id="custom-list"></div>
+
+  <div class="add-section-title">備份與還原</div>
+  <div class="btn-row" style="margin-bottom:6px">
+    <button class="btn-cancel" style="flex:1;text-align:center" onclick="exportNodes()">⬇ 匯出備份 JSON</button>
+    <label class="btn-cancel" style="flex:1;text-align:center;cursor:pointer">
+      ⬆ 匯入備份 JSON
+      <input type="file" accept=".json" style="display:none" onchange="importNodes(event)">
+    </label>
+  </div>
+  <div style="font-size:10px;color:var(--text3);text-align:center;padding-bottom:4px">換裝置或清快取前請先匯出備份</div>
+</div>
+</div>
 </body>
 </html>
