@@ -1271,6 +1271,195 @@ Object.entries(CATS).forEach(([k,v])=>{
   d.innerHTML=`<div class="leg-dot" style="background:${v.color}"></div>${v.label}`;
   leg.appendChild(d);
 });
+
+/* ════ LOAD CUSTOM NODES FROM LOCALSTORAGE ════ */
+function loadCustomNodes(){
+  try{
+    const saved=localStorage.getItem('esg_custom_nodes');
+    if(!saved) return;
+    const nodes=JSON.parse(saved);
+    nodes.forEach(n=>{
+      if(!D[n.id]){ D[n.id]=n; const g=GROUPS.find(g=>g.cat===n.cat); if(g&&!g.ids.includes(n.id)) g.ids.push(n.id); }
+    });
+    if(nodes.length) rebuildLayout();
+  }catch(e){console.warn('load error',e);}
+}
+
+function saveCustomNodes(){
+  const custom=Object.values(D).filter(n=>n._custom);
+  localStorage.setItem('esg_custom_nodes',JSON.stringify(custom));
+}
+
+function rebuildLayout(){
+  GROUPS.forEach((g,gi)=>{
+    const col=gi%GROUPS_PER_ROW;
+    const prevColGroups=[];
+    for(let pi=0;pi<gi;pi++){ if(pi%GROUPS_PER_ROW===col) prevColGroups.push(GROUPS[pi]); }
+    let gyFinal=GROUP_START_Y;
+    prevColGroups.forEach(pg=>{ const pgH=GROUP_HEADER_H+GROUP_BRACE_PAD+pg.ids.length*(GROUP_ITEM_H+GROUP_ITEM_GAP)+30; gyFinal+=pgH+40; });
+    const gx=GROUPS_START_X+col*(GROUP_COL_W+60);
+    groupPos[g.cat]={x:gx,y:gyFinal};
+    g.ids.forEach((id,ii)=>{ groupPos[id]={x:gx+30,y:gyFinal+GROUP_HEADER_H+GROUP_BRACE_PAD+ii*(GROUP_ITEM_H+GROUP_ITEM_GAP)}; });
+  });
+  let tw=0,th=0;
+  [...Object.values(trunkPos),...Object.values(groupPos)].forEach(p=>{ tw=Math.max(tw,(p.x||0)+NW+60); th=Math.max(th,(p.y||0)+GROUP_ITEM_H+60); });
+  svg.setAttribute('width',tw); svg.setAttribute('height',th); svg.setAttribute('viewBox',`0 0 ${tw} ${th}`);
+  renderAll(currentId);
+}
+
+loadCustomNodes();
+</script>
+
+<style>
+#add-btn{position:fixed;bottom:24px;right:24px;z-index:300;width:44px;height:44px;border-radius:50%;background:#378ADD;border:none;color:#fff;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s;}
+#add-btn:hover{background:#4a96e8;transform:scale(1.08)}
+@media(max-width:700px){#add-btn{bottom:16px;right:16px;width:40px;height:40px;font-size:20px}}
+#add-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+#add-modal.open{display:flex}
+#add-box{background:#161b27;border:1px solid rgba(255,255,255,.13);border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:20px 18px 36px;max-height:92vh;overflow-y:auto;}
+@media(min-width:700px){#add-modal{align-items:center}#add-box{border-radius:14px;max-height:88vh}}
+.add-drag{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 16px}
+.add-title{font-size:14px;font-weight:500;margin-bottom:14px;color:#dde2f0}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#4e5875;margin-bottom:4px}
+.add-input{width:100%;background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;font-size:13px;color:#dde2f0;font-family:'IBM Plex Sans TC',sans-serif;outline:none}
+.add-input:focus{border-color:rgba(55,138,221,.6)}
+.add-select{width:100%;background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;font-size:12px;color:#dde2f0;font-family:'IBM Plex Sans TC',sans-serif;outline:none;cursor:pointer}
+.add-textarea{width:100%;background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;font-size:12px;color:#dde2f0;font-family:'IBM Plex Sans TC',sans-serif;outline:none;resize:vertical;min-height:72px;line-height:1.65}
+.add-textarea:focus{border-color:rgba(55,138,221,.6)}
+.field-group{margin-bottom:8px}
+.btn-ai{width:100%;padding:9px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:linear-gradient(135deg,#1D9E75,#378ADD);color:#fff;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
+.btn-ai:disabled{opacity:.5;cursor:not-allowed}
+.spin{animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.btn-add{flex:1;padding:9px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:#378ADD;color:#fff;font-family:'IBM Plex Sans TC',sans-serif;}
+.btn-add:disabled{opacity:.4;cursor:not-allowed}
+.btn-cancel{padding:9px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.13);cursor:pointer;font-size:13px;background:transparent;color:#8e98b5;font-family:'IBM Plex Sans TC',sans-serif}
+.add-err{font-size:11px;color:#E24B4A;margin-top:4px;display:none;padding:4px 0}
+.add-section-title{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#378ADD;margin:14px 0 8px;font-weight:500;border-top:1px solid rgba(255,255,255,.06);padding-top:12px}
+.saved-badge{display:inline-block;font-size:10px;background:rgba(29,158,117,.2);color:#1D9E75;border-radius:4px;padding:2px 7px;margin-left:8px;vertical-align:middle}
+</style>
+
+<button id="add-btn" title="新增名詞" onclick="openAddModal()">＋</button>
+
+<div id="add-modal" onclick="handleModalClick(event)">
+<div id="add-box">
+  <div class="add-drag"></div>
+  <div class="add-title">新增名詞 <span class="saved-badge" id="saved-count"></span></div>
+  <div class="add-row">
+    <div style="flex:1"><div class="add-label">縮寫 / 簡稱</div><input class="add-input" id="f-abbr" placeholder="例：TCFD、碳費、漂綠" autocomplete="off"></div>
+    <div style="flex:1"><div class="add-label">分類</div>
+      <select class="add-select" id="f-cat">
+        <option value="climate">🌐 氣候協議</option><option value="intl">🌍 國際法規</option>
+        <option value="disc">📋 揭露框架</option><option value="carbon">💱 碳市場</option>
+        <option value="social">🤝 社會面 S</option><option value="gov">⚖️ 治理面 G</option>
+        <option value="nature">🌿 自然生態</option><option value="finance">💰 永續金融</option>
+        <option value="tech">🔬 減碳技術</option><option value="tw">🇹🇼 台灣專區</option>
+      </select>
+    </div>
+  </div>
+  <div class="field-group"><div class="add-label">中文名稱</div><input class="add-input" id="f-zh" placeholder="例：氣候相關財務揭露"></div>
+  <div class="field-group"><div class="add-label">英文全名</div><input class="add-input" id="f-en" placeholder="例：Task Force on Climate-related Financial Disclosures"></div>
+  <button class="btn-ai" id="btn-gen" onclick="generateWithAI()"><span id="gen-icon">✦</span> AI 生成說明內容</button>
+  <div class="add-err" id="gen-err"></div>
+  <div class="add-section-title">說明內容（可手動調整）</div>
+  <div class="field-group"><div class="add-label">解決什麼問題</div><textarea class="add-textarea" id="f-prob" placeholder="這個機制/法規存在的原因是什麼？"></textarea></div>
+  <div class="field-group"><div class="add-label">怎麼運作</div><textarea class="add-textarea" id="f-how" placeholder="具體的運作方式、關鍵規定…"></textarea></div>
+  <div class="add-row">
+    <div style="flex:1" class="field-group"><div class="add-label">台灣影響</div><textarea class="add-textarea" id="f-tw" placeholder="對台灣企業的實際影響…" style="min-height:56px"></textarea></div>
+    <div style="flex:1" class="field-group"><div class="add-label">考試重點</div><textarea class="add-textarea" id="f-exam" placeholder="重要考點…" style="min-height:56px"></textarea></div>
+  </div>
+  <div class="add-row">
+    <div style="flex:1" class="field-group"><div class="add-label">關鍵數字</div><input class="add-input" id="f-num" placeholder="例：2026年生效 ／ 門檻€1.5億"></div>
+    <div style="flex:1" class="field-group"><div class="add-label">適用對象</div><input class="add-input" id="f-who" placeholder="例：歐盟大型企業"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-cancel" onclick="closeAddModal()">取消</button>
+    <button class="btn-add" id="btn-add" onclick="addNode()">加入關係圖</button>
+  </div>
+  <div id="custom-list"></div>
+</div>
+</div>
+
+<script>
+function openAddModal(){ document.getElementById('add-modal').classList.add('open'); refreshCustomList(); updateSavedCount(); document.getElementById('f-abbr').focus(); }
+function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
+function handleModalClick(e){ if(e.target===document.getElementById('add-modal')) closeAddModal(); }
+function updateSavedCount(){ const c=Object.values(D).filter(n=>n._custom); document.getElementById('saved-count').textContent=c.length?`已有 ${c.length} 個自訂名詞`:''; }
+
+async function generateWithAI(){
+  const abbr=document.getElementById('f-abbr').value.trim();
+  const zh=document.getElementById('f-zh').value.trim();
+  const en=document.getElementById('f-en').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  const catLabel=CATS[cat]?.label||cat;
+  if(!abbr){ showErr('請先填入縮寫 / 簡稱'); return; }
+  const btn=document.getElementById('btn-gen'); const icon=document.getElementById('gen-icon');
+  btn.disabled=true; icon.textContent='↻'; icon.classList.add('spin'); hideErr();
+  const prompt=`你是ESG永續領域的專家教師。請針對以下名詞，用繁體中文生成結構化說明，輸出純 JSON 格式（不要加任何說明文字或 markdown）。\n\n名詞：${abbr}${zh?'（'+zh+'）':''}${en?'，英文全名：'+en:''}\n分類：${catLabel}\n\n請輸出以下 JSON 結構：\n{\n  "zh": "中文名稱（2-10字）",\n  "en": "英文全名或簡短英文描述",\n  "prob": "解決什麼問題（50-120字，白話描述這個機制存在的原因）",\n  "how": "怎麼運作（80-200字，具體說明機制內容，可用①②③分點）",\n  "tw": "台灣影響（40-100字，對台灣企業的實際影響，具體舉例）",\n  "exam": "考試重點（用▸開頭，列3-5個重點，每點一行）",\n  "num": "關鍵數字（用 ／ 分隔）",\n  "who": "適用對象（簡短說明）"\n}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('').trim();
+    if(!text) throw new Error('API沒有回應內容');
+    const jsonMatch=text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('無法解析 AI 回應');
+    const parsed=JSON.parse(jsonMatch[0]);
+    if(parsed.zh) document.getElementById('f-zh').value=parsed.zh;
+    if(parsed.en) document.getElementById('f-en').value=parsed.en;
+    if(parsed.prob) document.getElementById('f-prob').value=parsed.prob;
+    if(parsed.how) document.getElementById('f-how').value=parsed.how;
+    if(parsed.tw) document.getElementById('f-tw').value=parsed.tw;
+    if(parsed.exam) document.getElementById('f-exam').value=parsed.exam;
+    if(parsed.num) document.getElementById('f-num').value=parsed.num;
+    if(parsed.who) document.getElementById('f-who').value=parsed.who;
+  }catch(e){ showErr('AI 生成失敗：'+e.message+'。請手動填寫各欄位。'); }
+  finally{ btn.disabled=false; icon.classList.remove('spin'); icon.textContent='✦'; }
+}
+
+function showErr(msg){ const el=document.getElementById('gen-err'); el.textContent=msg; el.style.display='block'; }
+function hideErr(){ document.getElementById('gen-err').style.display='none'; }
+
+function addNode(){
+  const abbr=document.getElementById('f-abbr').value.trim();
+  const zh=document.getElementById('f-zh').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  if(!abbr){ showErr('縮寫 / 簡稱是必填的'); return; }
+  if(!zh && !document.getElementById('f-prob').value.trim()){ showErr('請填入中文名稱或說明（或先點 AI 生成）'); return; }
+  const id='custom_'+abbr.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now();
+  const node={id, zh:zh||abbr, en:document.getElementById('f-en').value.trim(), cat,
+    prob:document.getElementById('f-prob').value.trim()||'（使用者新增）',
+    how:document.getElementById('f-how').value.trim(),
+    tw:document.getElementById('f-tw').value.trim(),
+    exam:document.getElementById('f-exam').value.trim(),
+    num:document.getElementById('f-num').value.trim(),
+    who:document.getElementById('f-who').value.trim(),
+    rel:[], _custom:true};
+  D[id]=node;
+  const g=GROUPS.find(g=>g.cat===cat); if(g&&!g.ids.includes(id)) g.ids.push(id);
+  saveCustomNodes(); rebuildLayout();
+  ['f-abbr','f-zh','f-en','f-prob','f-how','f-tw','f-exam','f-num','f-who'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
+  hideErr(); refreshCustomList(); updateSavedCount();
+  setTimeout(()=>{ currentId=id; renderAll(id); showPanel(D[id]); },100);
+  closeAddModal();
+}
+
+function deleteCustomNode(id){
+  if(!confirm('確定要刪除「'+(D[id]?.zh||id)+'」嗎？')) return;
+  delete D[id];
+  GROUPS.forEach(g=>{ const i=g.ids.indexOf(id); if(i>-1) g.ids.splice(i,1); });
+  saveCustomNodes(); rebuildLayout(); refreshCustomList(); updateSavedCount();
+  if(currentId===id) closePanel();
+}
+
+function refreshCustomList(){
+  const custom=Object.values(D).filter(n=>n._custom);
+  const el=document.getElementById('custom-list');
+  if(!custom.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="add-section-title">已新增的名詞（${custom.length} 個）</div>`+
+    custom.map(n=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div><span style="font-size:12px;color:#dde2f0;font-weight:500">${n.zh}</span><span style="font-size:10px;color:#4e5875;margin-left:6px">${CATS[n.cat]?.label||n.cat}</span></div><button onclick="deleteCustomNode('${n.id}')" style="background:rgba(226,75,74,.15);border:1px solid rgba(226,75,74,.3);color:#E24B4A;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans TC',sans-serif">刪除</button></div>`).join('');
+}
 </script>
 </body>
 </html>
