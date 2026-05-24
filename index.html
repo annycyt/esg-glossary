@@ -1145,7 +1145,7 @@ function renderAll(selectedId=null){
       const p=trunkPos[n.id];
       const d=D[n.id];
       if(!p||!d) return;
-      node(n.id, p.x, p.y, NW, NH, CATS[d.cat].color, d.abbr||d.zh, d.zh, n.id===selectedId);
+      node(n.id, p.x, p.y, NW, NH, CATS[d.cat].color, d.abbr||d.zh, d.en||d.zh, n.id===selectedId);
       drawTrunkNodes(n.children||[]);
     });
   }
@@ -1179,7 +1179,7 @@ function renderAll(selectedId=null){
       const itemMidY=ip.y+GROUP_ITEM_H/2;
       line(spineX, itemMidY, ip.x, itemMidY, cat.color);
       const d2=D[id];
-      node(id, ip.x, ip.y, NW, GROUP_ITEM_H, cat.color, d2.abbr||d2.zh, d2.zh, id===selectedId);
+      node(id, ip.x, ip.y, NW, GROUP_ITEM_H, cat.color, d2.abbr||d2.zh, d2.en||d2.zh, id===selectedId);
     });
   });
 
