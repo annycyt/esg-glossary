@@ -1240,9 +1240,22 @@ function showPanel(d, id){
     </div>
     <div class="p-sec">關聯名詞</div>
     <div class="p-chips">${(d.rel||[]).map(r=>D[r]?`<span class="chip" onclick="jumpTo('${r}')">${D[r].zh} <span style="opacity:.55;font-size:9px">${D[r].en}</span></span>`:'').join('')}</div>
-    ${d._custom?`<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)"><button onclick="deleteCustomNode('${id}')" style="width:100%;padding:8px;border-radius:7px;border:1px solid rgba(226,75,74,.4);background:rgba(226,75,74,.1);color:#E24B4A;font-size:12px;cursor:pointer;font-family:sans-serif">🗑 刪除此名詞</button></div>`:''}
+    ${d._custom?`<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)"><button id="del-node-btn" data-del-id="${id}" style="width:100%;padding:8px;border-radius:7px;border:1px solid rgba(226,75,74,.4);background:rgba(226,75,74,.1);color:#E24B4A;font-size:12px;cursor:pointer;font-family:sans-serif">🗑 刪除此名詞</button></div>`:''}
   `;
 }
+
+// Delete button uses event delegation to avoid inline onclick escaping issues
+document.getElementById('panel').addEventListener('click', function(e){
+  const btn = e.target.closest('#del-node-btn');
+  if(!btn) return;
+  const delId = btn.dataset.delId;
+  if(!delId || !D[delId] || !D[delId]._custom) return;
+  if(!confirm('確定要刪除「'+(D[delId].zh||delId)+'」嗎？')) return;
+  delete D[delId];
+  GROUPS.forEach(g=>{ const i=g.ids.indexOf(delId); if(i>-1) g.ids.splice(i,1); });
+  saveCustomNodes(); rebuildLayout();
+  closePanel();
+});
 
 function jumpTo(id){
   if(!D[id]) return;
@@ -1439,12 +1452,12 @@ loadCustomNodes();
 
 <script>
 function openAddModal(){
-  try{
-    document.getElementById('add-modal').classList.add('open');
-    refreshCustomList();
-    updateSavedCount();
-    setTimeout(()=>document.getElementById('f-abbr').focus(), 100);
-  }catch(e){ console.error('openAddModal error:',e); }
+  const modal = document.getElementById('add-modal');
+  if(!modal){ console.error('add-modal not found'); return; }
+  modal.classList.add('open');
+  try{ refreshCustomList(); }catch(e){ console.warn(e); }
+  try{ updateSavedCount(); }catch(e){ console.warn(e); }
+  setTimeout(()=>{ const el=document.getElementById('f-abbr'); if(el) el.focus(); }, 150);
 }
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 function handleModalClick(e){ if(e.target===document.getElementById('add-modal')) closeAddModal(); }
