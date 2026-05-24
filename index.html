@@ -1352,7 +1352,6 @@ const ABBR_MAP={
 };
 Object.entries(D).forEach(([key, val])=>{ val.abbr = ABBR_MAP[key]||val.zh; });
 loadCustomNodes(); // load from localStorage cache immediately
-cloudLoad();      // then sync from cloud (may add more nodes)
 </script>
 
 <style>
@@ -1584,6 +1583,9 @@ function refreshCustomList(){
   el.innerHTML=`<div class="add-section-title">已新增的名詞（${custom.length} 個）</div>`+
     custom.map(n=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div><span style="font-size:12px;color:#dde2f0;font-weight:500">${n.zh}</span><span style="font-size:10px;color:#4e5875;margin-left:6px">${CATS[n.cat]?.label||n.cat}</span></div><button onclick="deleteCustomNode('${n.id}')" style="background:rgba(226,75,74,.15);border:1px solid rgba(226,75,74,.3);color:#E24B4A;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans TC',sans-serif">刪除</button></div>`).join('');
 }
+
+// Start cloud sync after all functions are defined
+cloudLoad();
 </script>
 
 <button id="add-btn" title="新增名詞">＋</button>
