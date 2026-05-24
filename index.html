@@ -1279,20 +1279,7 @@ function closePanel(){
 }
 
 /* ── search ── */
-let searchTimer=null;
-document.getElementById('srch').addEventListener('input', ()=>{
-  clearTimeout(searchTimer);
-  searchTimer=setTimeout(()=>renderAll(currentId), 200);
-});
-
-/* ── legend ── */
-const leg=document.getElementById('legend');
-Object.entries(CATS).forEach(([k,v])=>{
-  const d=document.createElement('div');
-  d.className='leg';
-  d.innerHTML=`<div class="leg-dot" style="background:${v.color}"></div>${v.label}`;
-  leg.appendChild(d);
-});
+// search and legend bound in final script block
 
 /* ════ LOAD CUSTOM NODES FROM LOCALSTORAGE ════ */
 function loadCustomNodes(){
@@ -1553,15 +1540,14 @@ function refreshCustomList(){
 }
 </script>
 
-
-<button id="add-btn" title="新增名詞" onclick="openAddModal()">＋</button>
-<div id="add-modal" onclick="handleModalClick(event)">
+<button id="add-btn" title="新增名詞">＋</button>
+<div id="add-modal">
 <div id="add-box">
   <div class="add-drag"></div>
   <div class="add-title">新增名詞 <span class="saved-badge" id="saved-count"></span></div>
   <div class="add-row">
-    <div style="flex:1"><div class="add-label">縮寫 / 簡稱</div><input class="add-input" id="f-abbr" placeholder="例：TCFD、碳費、漂綠" autocomplete="off"></div>
-    <div style="flex:1"><div class="add-label">分類</div>
+    <div style="flex:1"><div class="add-label">縮寫 / 簡稱（必填）</div><input class="add-input" id="f-abbr" placeholder="例：PCAF、碳費" autocomplete="off"></div>
+    <div style="flex:1"><div class="add-label">分類（AI 自動判斷）</div>
       <select class="add-select" id="f-cat">
         <option value="climate">🌐 氣候協議</option><option value="intl">🌍 國際法規</option>
         <option value="disc">📋 揭露框架</option><option value="carbon">💱 碳市場</option>
@@ -1571,9 +1557,9 @@ function refreshCustomList(){
       </select>
     </div>
   </div>
-  <div class="field-group"><div class="add-label">中文名稱</div><input class="add-input" id="f-zh" placeholder="例：氣候相關財務揭露"></div>
-  <div class="field-group"><div class="add-label">英文全名</div><input class="add-input" id="f-en" placeholder="例：Task Force on Climate-related Financial Disclosures"></div>
-  <button class="btn-ai" id="btn-gen" onclick="generateWithAI()"><span id="gen-icon">✦</span> AI 生成說明內容</button>
+  <div class="field-group"><div class="add-label">中文名稱</div><input class="add-input" id="f-zh" placeholder="例：碳會計金融合作夥伴"></div>
+  <div class="field-group"><div class="add-label">英文全名</div><input class="add-input" id="f-en" placeholder="例：Partnership for Carbon Accounting Financials"></div>
+  <button class="btn-ai" id="btn-gen"><span id="gen-icon">✦</span> AI 生成說明內容</button>
   <div class="add-err" id="gen-err"></div>
   <div class="add-section-title">說明內容（可手動調整）</div>
   <div class="field-group"><div class="add-label">解決什麼問題</div><textarea class="add-textarea" id="f-prob" placeholder="這個機制/法規存在的原因是什麼？"></textarea></div>
@@ -1587,21 +1573,54 @@ function refreshCustomList(){
     <div style="flex:1" class="field-group"><div class="add-label">適用對象</div><input class="add-input" id="f-who" placeholder="例：歐盟大型企業"></div>
   </div>
   <div class="btn-row">
-    <button class="btn-cancel" onclick="closeAddModal()">取消</button>
-    <button class="btn-add" id="btn-add" onclick="addNode()">加入關係圖</button>
+    <button id="btn-cancel-modal" class="btn-cancel">取消</button>
+    <button class="btn-add" id="btn-add">加入關係圖</button>
   </div>
   <div id="custom-list"></div>
-
   <div class="add-section-title">備份與還原</div>
   <div class="btn-row" style="margin-bottom:6px">
-    <button class="btn-cancel" style="flex:1;text-align:center" onclick="exportNodes()">⬇ 匯出備份 JSON</button>
+    <button id="btn-export" class="btn-cancel" style="flex:1;text-align:center">⬇ 匯出備份 JSON</button>
     <label class="btn-cancel" style="flex:1;text-align:center;cursor:pointer">
       ⬆ 匯入備份 JSON
-      <input type="file" accept=".json" style="display:none" onchange="importNodes(event)">
+      <input type="file" id="import-file" accept=".json" style="display:none">
     </label>
   </div>
   <div style="font-size:10px;color:var(--text3);text-align:center;padding-bottom:4px">換裝置或清快取前請先匯出備份</div>
 </div>
 </div>
+
+<script>
+// ── Bind all add-modal interactions via addEventListener (no inline onclick) ──
+(function(){
+  function $(id){ return document.getElementById(id); }
+
+  // Open / close
+  $('add-btn').addEventListener('click', function(){ openAddModal(); });
+  $('add-modal').addEventListener('click', function(e){
+    if(e.target === $('add-modal')) closeAddModal();
+  });
+  $('btn-cancel-modal').addEventListener('click', function(){ closeAddModal(); });
+  $('btn-gen').addEventListener('click', function(){ generateWithAI(); });
+  $('btn-add').addEventListener('click', function(){ addNode(); });
+  $('btn-export').addEventListener('click', function(){ exportNodes(); });
+  $('import-file').addEventListener('change', function(e){ importNodes(e); });
+
+  // Search debounce
+  var searchTimer;
+  $('srch').addEventListener('input', function(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function(){ renderAll(currentId); }, 200);
+  });
+
+  // Legend
+  var leg = $('legend');
+  Object.entries(CATS).forEach(function(kv){
+    var d = document.createElement('div');
+    d.className = 'leg';
+    d.innerHTML = '<div class="leg-dot" style="background:'+kv[1].color+'"></div>'+kv[1].label;
+    leg.appendChild(d);
+  });
+})();
+</script>
 </body>
 </html>
