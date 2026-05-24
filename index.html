@@ -1392,7 +1392,11 @@ const WORKER_URL = 'https://esg-ai-proxy.annycyt.workers.dev';
 // ── Cloud sync: load custom nodes from KV on startup ──
 async function cloudLoad(){
   try{
-    const res = await fetch(WORKER_URL, { headers:{'X-Action':'get-nodes'} });
+    const res = await fetch(WORKER_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Action':'get-nodes'},
+      body:'{}'
+    });
     if(!res.ok) throw new Error('fetch failed');
     const nodes = await res.json();
     if(!Array.isArray(nodes) || nodes.length===0) return;
