@@ -1075,24 +1075,25 @@ function node(id, x, y, w, h, color, zhLabel, enLabel, selected=false){
     stroke:hex2rgba(color, strokeAlpha),
     'stroke-width':strokeW}, g);
 
-  const zhEl=el('text',{
+  // line1 = zhLabel (abbr or category name), line2 = enLabel (zh name)
+  const line1El=el('text',{
     x: x+w/2, y: y+(enLabel ? h/2-7 : h/2),
     'text-anchor':'middle','dominant-baseline':'central',
-    'font-family':'IBM Plex Sans TC, Noto Sans TC, sans-serif',
-    'font-size':'12','font-weight':'500',
+    'font-family':'IBM Plex Mono, IBM Plex Sans TC, sans-serif',
+    'font-size':'11','font-weight':'600',
     fill: selected ? '#ffffff' : hex2rgba(color, 0.95)
   }, g);
-  zhEl.textContent=zhLabel;
+  line1El.textContent=truncStr(zhLabel, 20);
 
   if(enLabel){
-    const enEl=el('text',{
+    const line2El=el('text',{
       x: x+w/2, y: y+h/2+8,
       'text-anchor':'middle','dominant-baseline':'central',
-      'font-family':'IBM Plex Mono, monospace',
+      'font-family':'IBM Plex Sans TC, Noto Sans TC, sans-serif',
       'font-size':'9','font-weight':'400',
-      fill: selected ? 'rgba(255,255,255,0.72)' : hex2rgba(color, 0.58)
+      fill: selected ? 'rgba(255,255,255,0.72)' : hex2rgba(color, 0.65)
     }, g);
-    enEl.textContent=truncStr(enLabel, 26);
+    line2El.textContent=truncStr(enLabel, 28);
   }
 
   g.style.cursor='pointer';
@@ -1142,7 +1143,7 @@ function renderAll(selectedId=null){
       const p=trunkPos[n.id];
       const d=D[n.id];
       if(!p||!d) return;
-      node(n.id, p.x, p.y, NW, NH, CATS[d.cat].color, d.zh, d.en, n.id===selectedId);
+      node(n.id, p.x, p.y, NW, NH, CATS[d.cat].color, d.abbr||d.zh, d.zh, n.id===selectedId);
       drawTrunkNodes(n.children||[]);
     });
   }
@@ -1176,7 +1177,7 @@ function renderAll(selectedId=null){
       const itemMidY=ip.y+GROUP_ITEM_H/2;
       line(spineX, itemMidY, ip.x, itemMidY, cat.color);
       const d2=D[id];
-      node(id, ip.x, ip.y, NW, GROUP_ITEM_H, cat.color, d2.zh, d2.en, id===selectedId);
+      node(id, ip.x, ip.y, NW, GROUP_ITEM_H, cat.color, d2.abbr||d2.zh, d2.zh, id===selectedId);
     });
   });
 
@@ -1261,7 +1262,11 @@ function closePanel(){
 }
 
 /* ── search ── */
-document.getElementById('srch').addEventListener('input', ()=>renderAll(currentId));
+let searchTimer=null;
+document.getElementById('srch').addEventListener('input', ()=>{
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>renderAll(currentId), 200);
+});
 
 /* ── legend ── */
 const leg=document.getElementById('legend');
@@ -1307,6 +1312,32 @@ function rebuildLayout(){
   renderAll(currentId);
 }
 
+// Explicit abbr map for all nodes
+const ABBR_MAP={
+  unfccc:'UNFCCC', kyoto:'京都議定書', cdm:'CDM/JI/ET', paris:'巴黎協定',
+  ndc:'NDC', cop:'COP', ipcc:'IPCC', itmo:'ITMO', pacm:'PACM',
+  csrd:'CSRD', esrs:'ESRS', csddd:'CSDDD', cbam:'CBAM', euets:'EU ETS',
+  eudr:'EUDR', ppwr:'PPWR', corsia:'CORSIA', imo:'IMO 2050',
+  ira:'IRA', secrule:'SEC規則', cap:'Cap-and-Trade',
+  issb:'ISSB S1/S2', gri:'GRI', tcfd:'TCFD', tnfd:'TNFD', cdp:'CDP',
+  sasb:'SASB', doubmat:'雙重重大性', scope:'Scope 1/2/3', esma:'ESMA', sbtn:'SBTN',
+  vcm:'VCM', ccp:'CCP', eua:'EUA', redd:'REDD+', sbti:'SBTi',
+  netzero:'Net Zero', twcf:'台灣碳費', tcex:'TCEX', cfvst:'碳費vs碳稅', cdr:'CDR',
+  ungp:'UNGP', ilo:'ILO核心公約', rba:'RBA', sa8000:'SA8000',
+  uflpa:'UFLPA', fpic:'FPIC', msa:'現代奴隸法',
+  sdgs:'SDGs', ungc:'UNGC', oecd:'OECD指導方針', clitigation:'氣候訴訟',
+  cbcr:'CbCR', equator:'赤道原則',
+  gbf:'GBF 30x30', naturalcap:'自然資本', bluec:'藍碳',
+  epr:'EPR', fsc:'FSC', circular:'循環經濟',
+  sfdr:'SFDR', eutax:'EU Taxonomy', greenbond:'綠色債券',
+  slb:'SLB', transitfin:'轉型金融', prisma:'PRI', esgratin:'ESG評級',
+  ghgpro:'GHG Protocol', iso14064:'ISO 14064', iso14067:'ISO 14067',
+  iso14068:'ISO 14068-1', dac:'DAC', ccus:'CCUS', saf:'SAF',
+  greenh2:'綠氫/藍氫', greenamm:'綠氨', egs:'EGS', smr:'SMR', p2x:'P2X',
+  twlaw:'氣候變遷因應法', twpath:'台灣淨零路徑', trec:'T-REC',
+  cppa:'CPPA', re100:'RE100', esco:'ESCO', iso50001:'ISO 50001', supchain:'供應鏈減碳'
+};
+Object.entries(D).forEach(([key, val])=>{ if(!val.abbr) val.abbr = ABBR_MAP[key]||val.zh; });
 loadCustomNodes();
 </script>
 
