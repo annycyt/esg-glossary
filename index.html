@@ -1211,10 +1211,11 @@ function selectNode(id){
   if(!D[id]) return;
   currentId=id;
   renderAll(id);
-  showPanel(D[id]);
+  showPanel(D[id], id);
 }
 
-function showPanel(d){
+function showPanel(d, id){
+  id = id || currentId;
   const panel=document.getElementById('panel');
   const isMobile=window.innerWidth<=700;
   if(isMobile){panel.classList.remove('closed');panel.classList.add('open');}
@@ -1239,6 +1240,7 @@ function showPanel(d){
     </div>
     <div class="p-sec">關聯名詞</div>
     <div class="p-chips">${(d.rel||[]).map(r=>D[r]?`<span class="chip" onclick="jumpTo('${r}')">${D[r].zh} <span style="opacity:.55;font-size:9px">${D[r].en}</span></span>`:'').join('')}</div>
+    ${d._custom?`<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)"><button onclick="deleteCustomNode('${id}')" style="width:100%;padding:8px;border-radius:7px;border:1px solid rgba(226,75,74,.4);background:rgba(226,75,74,.1);color:#E24B4A;font-size:12px;cursor:pointer;font-family:sans-serif">🗑 刪除此名詞</button></div>`:''}
   `;
 }
 
@@ -1246,7 +1248,7 @@ function jumpTo(id){
   if(!D[id]) return;
   currentId=id;
   renderAll(id);
-  showPanel(D[id]);
+  showPanel(D[id], id);
   /* scroll to node */
   const p=groupPos[id]||trunkPos[id];
   if(p){
@@ -1285,11 +1287,19 @@ function loadCustomNodes(){
     const saved=localStorage.getItem('esg_custom_nodes');
     if(!saved) return;
     const nodes=JSON.parse(saved);
+    if(!Array.isArray(nodes)) return;
     nodes.forEach(n=>{
-      if(!D[n.id]){ D[n.id]=n; const g=GROUPS.find(g=>g.cat===n.cat); if(g&&!g.ids.includes(n.id)) g.ids.push(n.id); }
+      if(!n||!n.id||!n.cat) return;
+      if(!D[n.id]){
+        // ensure abbr field exists
+        if(!n.abbr) n.abbr = n.zh||n.id;
+        D[n.id]=n;
+        const g=GROUPS.find(g=>g.cat===n.cat);
+        if(g&&!g.ids.includes(n.id)) g.ids.push(n.id);
+      }
     });
     if(nodes.length) rebuildLayout();
-  }catch(e){console.warn('load error',e);}
+  }catch(e){ console.warn('loadCustomNodes error:',e); }
 }
 
 function saveCustomNodes(){
@@ -1428,7 +1438,14 @@ loadCustomNodes();
 </div>
 
 <script>
-function openAddModal(){ document.getElementById('add-modal').classList.add('open'); refreshCustomList(); updateSavedCount(); document.getElementById('f-abbr').focus(); }
+function openAddModal(){
+  try{
+    document.getElementById('add-modal').classList.add('open');
+    refreshCustomList();
+    updateSavedCount();
+    setTimeout(()=>document.getElementById('f-abbr').focus(), 100);
+  }catch(e){ console.error('openAddModal error:',e); }
+}
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 function handleModalClick(e){ if(e.target===document.getElementById('add-modal')) closeAddModal(); }
 function updateSavedCount(){ const c=Object.values(D).filter(n=>n._custom); document.getElementById('saved-count').textContent=c.length?`已有 ${c.length} 個自訂名詞`:''; }
@@ -1449,7 +1466,7 @@ async function generateWithAI(){
 
 請輸出以下 JSON 結構（cat 請從以下選項選一個最合適的值：${catOptions}）：
 {
-  "zh": "中文名稱（2-10字）",
+  "abbr": "英文縮寫或簡稱（如 CBAM、SBTi、ISO 14064，若無英文縮寫則填中文簡稱2-6字）",\n  "zh": "中文名稱（2-10字）",
   "en": "英文全名或簡短英文描述",
   "cat": "最合適的分類代碼（如 intl、disc、carbon 等）",
   "prob": "解決什麼問題（50-120字，白話描述這個機制存在的原因）",
@@ -1468,6 +1485,8 @@ async function generateWithAI(){
     if(!jsonMatch) throw new Error('無法解析 AI 回應');
     const parsed=JSON.parse(jsonMatch[0]);
     if(parsed.cat && CATS[parsed.cat]) document.getElementById('f-cat').value=parsed.cat;
+    // abbr field: use parsed.abbr if available, else keep what user typed
+    if(parsed.abbr && !document.getElementById('f-abbr').value.trim()) document.getElementById('f-abbr').value=parsed.abbr;
     if(parsed.zh) document.getElementById('f-zh').value=parsed.zh;
     if(parsed.en) document.getElementById('f-en').value=parsed.en;
     if(parsed.prob) document.getElementById('f-prob').value=parsed.prob;
@@ -1490,7 +1509,11 @@ function addNode(){
   if(!abbr){ showErr('縮寫 / 簡稱是必填的'); return; }
   if(!zh && !document.getElementById('f-prob').value.trim()){ showErr('請填入中文名稱或說明（或先點 AI 生成）'); return; }
   const id='custom_'+abbr.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now();
-  const node={id, zh:zh||abbr, en:document.getElementById('f-en').value.trim(), cat,
+  const node={id,
+    abbr: abbr,
+    zh: abbr,
+    en: zh||document.getElementById('f-en').value.trim()||abbr,
+    cat,
     prob:document.getElementById('f-prob').value.trim()||'（使用者新增）',
     how:document.getElementById('f-how').value.trim(),
     tw:document.getElementById('f-tw').value.trim(),
