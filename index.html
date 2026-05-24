@@ -1397,15 +1397,32 @@ async function generateWithAI(){
   if(!abbr){ showErr('請先填入縮寫 / 簡稱'); return; }
   const btn=document.getElementById('btn-gen'); const icon=document.getElementById('gen-icon');
   btn.disabled=true; icon.textContent='↻'; icon.classList.add('spin'); hideErr();
-  const prompt=`你是ESG永續領域的專家教師。請針對以下名詞，用繁體中文生成結構化說明，輸出純 JSON 格式（不要加任何說明文字或 markdown）。\n\n名詞：${abbr}${zh?'（'+zh+'）':''}${en?'，英文全名：'+en:''}\n分類：${catLabel}\n\n請輸出以下 JSON 結構：\n{\n  "zh": "中文名稱（2-10字）",\n  "en": "英文全名或簡短英文描述",\n  "prob": "解決什麼問題（50-120字，白話描述這個機制存在的原因）",\n  "how": "怎麼運作（80-200字，具體說明機制內容，可用①②③分點）",\n  "tw": "台灣影響（40-100字，對台灣企業的實際影響，具體舉例）",\n  "exam": "考試重點（用▸開頭，列3-5個重點，每點一行）",\n  "num": "關鍵數字（用 ／ 分隔）",\n  "who": "適用對象（簡短說明）"\n}`;
+  const catOptions='climate=氣候協議,intl=國際法規,disc=揭露框架,carbon=碳市場,social=社會面S,gov=治理面G,nature=自然生態,finance=永續金融,tech=減碳技術,tw=台灣專區';
+  const prompt=`你是ESG永續領域的專家教師。請針對以下名詞，用繁體中文生成結構化說明，輸出純 JSON 格式（不要加任何說明文字或 markdown）。
+
+名詞：${abbr}${zh?'（'+zh+'）':''}${en?'，英文全名：'+en:''}
+
+請輸出以下 JSON 結構（cat 請從以下選項選一個最合適的值：${catOptions}）：
+{
+  "zh": "中文名稱（2-10字）",
+  "en": "英文全名或簡短英文描述",
+  "cat": "最合適的分類代碼（如 intl、disc、carbon 等）",
+  "prob": "解決什麼問題（50-120字，白話描述這個機制存在的原因）",
+  "how": "怎麼運作（80-200字，具體說明機制內容，可用①②③分點）",
+  "tw": "台灣影響（40-100字，對台灣企業的實際影響，具體舉例）",
+  "exam": "考試重點（用▸開頭，列3-5個重點，每點一行）",
+  "num": "關鍵數字（用 ／ 分隔）",
+  "who": "適用對象（簡短說明）"
+}`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('https://esg-ai-proxy.annycyt.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const text=data.content?.map(c=>c.text||'').join('').trim();
     if(!text) throw new Error('API沒有回應內容');
     const jsonMatch=text.match(/\{[\s\S]*\}/);
     if(!jsonMatch) throw new Error('無法解析 AI 回應');
     const parsed=JSON.parse(jsonMatch[0]);
+    if(parsed.cat && CATS[parsed.cat]) document.getElementById('f-cat').value=parsed.cat;
     if(parsed.zh) document.getElementById('f-zh').value=parsed.zh;
     if(parsed.en) document.getElementById('f-en').value=parsed.en;
     if(parsed.prob) document.getElementById('f-prob').value=parsed.prob;
