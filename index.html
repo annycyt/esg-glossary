@@ -118,16 +118,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
    DATA
 ════════════════════════════════════════════ */
 const CATS={
-  'climate': {label:'氣候協議',    color:'#1D9E75', dimColor:'#0a4530'},
-  'intl':    {label:'國際法規',    color:'#378ADD', dimColor:'#0c2d52'},
-  'disc':    {label:'揭露框架',    color:'#7F77DD', dimColor:'#221e52'},
-  'carbon':  {label:'碳市場',      color:'#BA7517', dimColor:'#3d2508'},
-  'social':  {label:'社會面 S',    color:'#D85A30', dimColor:'#471a0a'},
-  'gov':     {label:'治理面 G',    color:'#888780', dimColor:'#282826'},
-  'nature':  {label:'自然生態',    color:'#639922', dimColor:'#1c300a'},
-  'finance': {label:'永續金融',    color:'#D4537E', dimColor:'#451829'},
-  'tech':    {label:'減碳技術',    color:'#5DCAA5', dimColor:'#0d3d30'},
-  'tw':      {label:'台灣專區',    color:'#E24B4A', dimColor:'#441515'},
+  'climate': {label:'🌐 氣候協議', color:'#1D9E75', dimColor:'#0a4530'},
+  'intl':    {label:'🌍 國際法規', color:'#378ADD', dimColor:'#0c2d52'},
+  'disc':    {label:'📋 揭露框架', color:'#7F77DD', dimColor:'#221e52'},
+  'tech':    {label:'🔬 減碳技術', color:'#5DCAA5', dimColor:'#0d3d30'},
 };
 
 const D={
@@ -149,7 +143,7 @@ kyoto:{zh:'京都議定書',en:'Kyoto Protocol',cat:'climate',
   who:'UNFCCC附件一已開發國家（具法律約束力）',
   rel:['cdm','paris','unfccc']},
 
-cdm:{zh:'CDM / JI / ET',en:'京都三彈性機制',cat:'climate',
+cdm:{voluntary:true,zh:'CDM / JI / ET',en:'京都三彈性機制',cat:'climate',
   prob:'已開發國家在自己國內減碳成本很高，但在開發中國家做同樣減碳便宜很多。有沒有辦法讓錢花在最有效率的地方？',
   how:'CDM（清潔發展機制）：日本出資在印尼建太陽能，減了100噸算給日本。核發CER碳信用。JI（共同執行）：已開發國家互助。ET（排放交易）：已開發國家直接買賣碳配額。EU ETS就是ET邏輯的延伸。CDM 2026年正式落日，被巴黎協定第6條（ITMO/PACM）取代。',
   tw:'CDM時代台灣有部分企業參與林業碳匯專案。VCM的運作邏輯直接繼承自CDM。',
@@ -331,7 +325,7 @@ issb:{zh:'ISSB S1/S2',en:'國際永續揭露準則',cat:'disc',
   who:'各司法管轄區採納後，轄區內上市公司',
   rel:['tcfd','sasb','gri','csrd','scope']},
 
-gri:{zh:'GRI',en:'全球報告倡議組織準則',cat:'disc',
+gri:{voluntary:true,zh:'GRI',en:'全球報告倡議組織準則',cat:'disc',
   prob:'企業對社會和環境的影響很廣，僅聚焦財務影響不夠。GRI從「所有利害關係人」的角度，要求企業揭露對社會、環境的衝擊。',
   how:'最廣泛使用的永續報告框架，採「雙重重大性」。架構：GRI 1（基礎）、GRI 2（一般揭露）、GRI 3（重大性評估）+ 200-400系列議題準則（環境/社會/經濟）。企業需執行重大性評估決定揭露主題。',
   tw:'台灣上市公司永續報告書多依GRI準則。金管會要求上市公司揭露GRI對照表；GRI 3重大性評估流程是合規重點。',
@@ -349,7 +343,7 @@ tcfd:{zh:'TCFD',en:'氣候相關財務揭露',cat:'disc',
   who:'自願採用（各地漸強制），台灣特定規模上市公司',
   rel:['issb','gri','cdp','sbti']},
 
-tnfd:{zh:'TNFD',en:'自然相關財務揭露框架',cat:'disc',
+tnfd:{voluntary:true,zh:'TNFD',en:'自然相關財務揭露框架',cat:'disc',
   prob:'TCFD處理氣候風險，但企業對自然（土地、水、海洋、生物多樣性）的依賴和衝擊也是重大財務風險。TNFD就是「自然版的TCFD」。',
   how:'2023年正式發布v1.0。架構仿效TCFD四大支柱，使用LEAP方法論（Locate, Evaluate, Assess, Prepare）評估對生態系統的依賴與衝擊。',
   tw:'台灣金管會已將TNFD納入永續報告書參考框架。農業、採礦、食品等行業自然依賴度高。',
@@ -358,7 +352,7 @@ tnfd:{zh:'TNFD',en:'自然相關財務揭露框架',cat:'disc',
   who:'農業、採礦、食品、基礎設施等自然依賴行業',
   rel:['tcfd','gbf','sbtn','naturalcap']},
 
-cdp:{zh:'CDP',en:'碳揭露評比平台',cat:'disc',
+cdp:{voluntary:true,zh:'CDP',en:'碳揭露評比平台',cat:'disc',
   prob:'機構投資人想知道企業的環境表現，但沒有統一平台蒐集這些資訊。CDP提供一個由投資人驅動的自願揭露系統。',
   how:'全球最大環境資訊揭露平台。企業自願回應CDP問卷（氣候、水安全、森林），由管理超過100兆美元資產的機構投資人驅動。評分從D-到A（Leadership）。',
   tw:'台灣超過200家企業填報CDP。蘋果、BMW等要求供應商填CDP，是驅動台灣廠商參與的主要動力。',
@@ -367,7 +361,7 @@ cdp:{zh:'CDP',en:'碳揭露評比平台',cat:'disc',
   who:'自願企業（但供應鏈客戶要求者視同強制）',
   rel:['tcfd','issb','gri','sbti']},
 
-sasb:{zh:'SASB',en:'永續會計準則委員會',cat:'disc',
+sasb:{voluntary:true,zh:'SASB',en:'永續會計準則委員會',cat:'disc',
   prob:'不同行業面對的ESG重大議題完全不同——銀行業和採礦業截然不同。GRI的通用框架無法做到行業別的財務重大性分析。',
   how:'依產業別制定77個行業別準則，聚焦「財務重大性」（對投資人有財務影響的ESG議題）。已整合入ISSB框架。與GRI差異：SASB=行業別+投資人+財務重大性；GRI=通用+利害關係人+雙重重大性。',
   tw:'台灣金管會藍圖鼓勵企業參考SASB依行業揭露。台積電、聯發科等適用「半導體行業準則」。',
@@ -403,7 +397,7 @@ esma:{zh:'ESMA',en:'歐盟ESG評級監管',cat:'disc',
   who:'在歐盟提供ESG評級服務的評級機構',
   rel:['issb','sfdr','gri']},
 
-sbtn:{zh:'SBTN',en:'Science Based Targets Network',cat:'disc',
+sbtn:{voluntary:true,zh:'SBTN',en:'Science Based Targets Network',cat:'disc',
   prob:'SBTi處理氣候減碳目標，但自然（土地、水、海洋、生物多樣性）的目標呢？SBTN是「自然版的SBTi」。',
   how:'2023年發布企業框架。要求企業針對自然設定科學基礎目標：陸地、淡水、海洋、生物多樣性四大系統。五步驟：評估→解讀→衡量→設定→揭露。',
   tw:'農業、採礦、食品等行業台灣企業需關注SBTN要求。目前仍為自願性，但趨勢向強制化發展。',
@@ -413,7 +407,7 @@ sbtn:{zh:'SBTN',en:'Science Based Targets Network',cat:'disc',
   rel:['tnfd','gbf','sbti','naturalcap']},
 
 // 碳市場
-vcm:{zh:'VCM',en:'自願性碳市場',cat:'carbon',
+vcm:{voluntary:true,zh:'VCM',en:'自願性碳市場',cat:'tech',
   prob:'企業想宣稱「碳中和」，但自己的減碳還不夠。可以購買別人的碳信用來抵換——但哪些碳信用是真實有效的？VCM就是這個市場加上品質管控機制。',
   how:'企業或個人自願購買碳信用以抵換排放的市場。碳信用來源：再生能源、植林、CCUS、藍碳等。主要認證機構：Verra（VCS標準）、Gold Standard。ICVCM制定CCP標籤，識別高品質碳信用。',
   tw:'TCEX（台灣碳交易所）是本土VCM平台，2023年成立。目前以國際碳信用交易為主，本土碳信用（自願減量額度）即將上路。',
@@ -422,7 +416,7 @@ vcm:{zh:'VCM',en:'自願性碳市場',cat:'carbon',
   who:'自願購買碳信用的企業和個人',
   rel:['ccp','eua','redd','itmo','tcex','iso14068']},
 
-ccp:{zh:'CCP',en:'碳信用核心原則',cat:'carbon',
+ccp:{zh:'CCP',en:'碳信用核心原則',cat:'tech',
   prob:'VCM充斥低品質甚至造假的碳信用——企業買了，但碳排根本沒有真正被抵消。CCP是用來識別「真正有效」碳信用的品質標章。',
   how:'ICVCM（完整性理事會）制定的10項核心原則，包含：真實性、額外性（沒有這個計畫就不會減碳）、永久性、無雙重計算等。通過CCP認定的碳信用可獲CCP標籤，交易價格更高、更受機構投資人認可。',
   tw:'TCEX已開始引進CCP認可的碳信用，確保交易品質。台灣企業購買CCP碳信用用於ISO 14068碳中和聲明。',
@@ -431,7 +425,7 @@ ccp:{zh:'CCP',en:'碳信用核心原則',cat:'carbon',
   who:'碳信用買家（企業）和賣家（項目開發商）',
   rel:['vcm','pacm','cdm']},
 
-eua:{zh:'EUA',en:'歐洲排放配額',cat:'carbon',
+eua:{zh:'EUA',en:'歐洲排放配額',cat:'tech',
   prob:'EU ETS要運作，需要有一個可以交易的具體單位。EUA就是這個單位——可以買賣的一噸CO₂排放權。',
   how:'EU ETS的基本交易單位，1 EUA = 1噸CO₂e。企業每年清繳等量EUA抵消實際排放量。獲取途徑：①免費分配（逐年減少）②市場購買 ③政府拍賣。碳價€60-80/噸，波動受能源價格、天氣、政策影響。',
   tw:'CBAM的收費基準就是EU ETS碳價。台灣碳費（300元≈€9）遠低於EUA（€65），這個差距就是台灣出口商在CBAM上的額外成本。',
@@ -440,7 +434,7 @@ eua:{zh:'EUA',en:'歐洲排放配額',cat:'carbon',
   who:'EU ETS管制範圍內的歐洲企業',
   rel:['euets','vcm','cbam','cap']},
 
-redd:{zh:'REDD+',en:'減少森林砍伐碳匯',cat:'carbon',
+redd:{voluntary:true,zh:'REDD+',en:'減少森林砍伐碳匯',cat:'tech',
   prob:'全球森林砍伐佔全球排碳約10-15%，如何用市場機制讓開發中國家有動力保護森林而不砍伐變現？',
   how:'聯合國REDD+框架：開發中國家透過保護森林或減少砍伐，獲得以森林碳匯為基礎的碳信用。主要挑戰：基準線設定、洩漏（這片不砍換到別片砍）、永久性（砍了怎辦）。',
   tw:'台灣企業可購買REDD+碳信用（經VCS認證的林業碳匯）用於自願碳中和。',
@@ -449,7 +443,7 @@ redd:{zh:'REDD+',en:'減少森林砍伐碳匯',cat:'carbon',
   who:'開發中國家政府 + 購買林業碳信用的企業',
   rel:['vcm','ccp','cdr','fsc']},
 
-sbti:{zh:'SBTi',en:'科學基礎減量目標倡議',cat:'carbon',
+sbti:{voluntary:true,zh:'SBTi',en:'科學基礎減量目標倡議',cat:'tech',
   prob:'企業宣稱「2050年碳中和」，但說說而已，沒有具體時程。SBTi要求企業設定與IPCC 1.5°C路徑一致的「科學基礎」減碳目標，並提交認證。',
   how:'由CDP、UN Global Compact、WRI、WWF四大組織聯合發起。企業設定Scope 1&2近期目標（5-10年）、Scope 3長期目標（必要時）。申請五步驟：承諾→發展→提交→認證→揭露。通過認證後每5年更新。蘋果要求整個供應鏈設定SBTi目標。',
   tw:'台積電、台達電等大廠已通過SBTi認證。台灣SBTi認證企業數量快速成長，供應鏈壓力是主要驅動力。',
@@ -458,7 +452,7 @@ sbti:{zh:'SBTi',en:'科學基礎減量目標倡議',cat:'carbon',
   who:'自願企業（但供應鏈客戶要求者視同強制）',
   rel:['paris','scope','netzero','tcfd']},
 
-netzero:{zh:'Net Zero / 淨零',en:'淨零排放目標',cat:'carbon',
+netzero:{voluntary:true,zh:'Net Zero / 淨零',en:'淨零排放目標',cat:'tech',
   prob:'碳中和只需要把剩餘排放用碳信用抵換，但如果碳信用品質不好，等於白說。淨零要求先大幅削減（>90%），再用碳移除（CDR）抵銷剩餘。',
   how:'企業或國家的GHG排放量，在大幅削減後（通常≥90%），剩餘排放被碳移除（CDR）所抵銷，達到排放與移除的淨平衡。IPCC要求全球2050年達到淨零。SBTi淨零標準要求：Scope 1&2削減≥90%、Scope 3削減≥90%，然後才能用高品質CDR抵銷。',
   tw:'台灣「2050淨零排放路徑」是國家目標，12項關鍵策略為執行架構。台灣碳費、ETS、能源轉型都是達成淨零的政策工具。',
@@ -467,7 +461,7 @@ netzero:{zh:'Net Zero / 淨零',en:'淨零排放目標',cat:'carbon',
   who:'設定淨零目標的企業和國家政府',
   rel:['sbti','cdr','paris','twpath']},
 
-twcf:{zh:'台灣碳費',en:'Taiwan Carbon Fee',cat:'carbon',
+twcf:{zh:'台灣碳費',en:'Taiwan Carbon Fee',cat:'tech',
   prob:'台灣需要把碳排放的外部成本（氣候損害）內部化，讓高碳排企業承擔責任，同時籌措綠色轉型資金。',
   how:'氣候變遷因應法授權環境部對年排放量>2.5萬噸CO₂e的工廠收取碳費。費率：初期300元/噸（2025）；2030後預計調升至1,200-1,800元/噸。收入進入「氣候基金」，用於補貼企業減碳及調適。首批約500家廠商（鋼鐵、石化、水泥、電力為主）。',
   tw:'台灣碳費（300元/噸≈€9）遠低於EU ETS（€65/噸）。這個差距意味著台灣鋼鐵業在CBAM上還有大量額外費用要付。未來費率調升是必然趨勢。',
@@ -476,7 +470,7 @@ twcf:{zh:'台灣碳費',en:'Taiwan Carbon Fee',cat:'carbon',
   who:'年排放>2.5萬噸CO₂e的台灣工廠（約500家）',
   rel:['euets','cbam','tcex','cfvst']},
 
-tcex:{zh:'TCEX',en:'台灣碳交易所',cat:'carbon',
+tcex:{zh:'TCEX',en:'台灣碳交易所',cat:'tech',
   prob:'台灣企業想購買碳信用用於碳中和聲明，但沒有官方認可的交易平台，碳信用品質無法保證。',
   how:'2023年成立於高雄，由台灣證交所與國發會合資設立。目前提供國際碳信用（CCP認可）交易平台；未來將整合本土自願減量碳信用；長期目標銜接台灣ETS。是台灣唯一官方認可的碳信用交易平台。',
   tw:'TCEX是台灣碳市場的基礎設施。企業購買TCEX碳信用可用於ISO 14068碳中和聲明，未來也可能用於抵減部分碳費。',
@@ -485,7 +479,7 @@ tcex:{zh:'TCEX',en:'台灣碳交易所',cat:'carbon',
   who:'台灣企業（購買碳信用）',
   rel:['vcm','twcf','itmo','iso14068']},
 
-cfvst:{zh:'碳費 vs 碳稅',en:'Carbon Fee vs Carbon Tax',cat:'carbon',
+cfvst:{zh:'碳費 vs 碳稅',en:'Carbon Fee vs Carbon Tax',cat:'tech',
   prob:'「碳費」和「碳稅」聽起來很像，但法律性質、收入用途、靈活性都不一樣。台灣採碳費而非碳稅，這個選擇有重要含義。',
   how:'碳稅：透過立法課稅，收入進一般財政，法律效力強，修改需立法院通過，難度高。碳費：行政收費，由主管機關（環境部）收取，收入進氣候基金（專款），調整費率較靈活，但法律效力稍弱。台灣選擇碳費，主要考量政治可行性和政策靈活性。',
   tw:'台灣採碳費（而非碳稅），環境部可較靈活調整費率。但費率低（300元≈€9）仍是主要批評。碳費只是第一步，未來ETS才是主要工具。',
@@ -494,7 +488,7 @@ cfvst:{zh:'碳費 vs 碳稅',en:'Carbon Fee vs Carbon Tax',cat:'carbon',
   who:'了解碳定價機制的企業和從業者',
   rel:['twcf','euets','cap']},
 
-cdr:{zh:'CDR',en:'碳移除技術',cat:'carbon',
+cdr:{zh:'CDR',en:'碳移除技術',cat:'tech',
   prob:'即使全力節能減碳，部分行業（如鋼鐵、水泥、航空）仍有「難以消除的剩餘排放」。淨零的最後一塊拼圖，就是把這些CO₂從大氣中移除掉。',
   how:'自然移除：植林造林、土壤碳匯、藍碳（紅樹林、海草床）——成本低但永久性較弱。工程移除：DAC（直接空氣捕捉）、BECCS（生物能源+碳捕捉）——成本高但永久性強。CDR是淨零達成的必要補充，但不能取代實質減碳。',
   tw:'台灣林業碳匯、海洋藍碳（大肚溪口濕地）是本土CDR重要來源，可申請TCEX的碳信用。台灣2050淨零路徑將CDR列為必要技術。',
@@ -504,7 +498,7 @@ cdr:{zh:'CDR',en:'碳移除技術',cat:'carbon',
   rel:['netzero','dac','ccus','bluec','vcm']},
 
 // 社會面S
-ungp:{zh:'UNGP',en:'聯合國工商業與人權指導原則',cat:'social',
+ungp:{zh:'UNGP',en:'聯合國工商業與人權指導原則',cat:'disc',
   prob:'企業在全球各地運營，可能在知情或不知情的情況下侵害人權（使用強迫勞動的供應商、污染原住民土地等）。需要一個全球性框架規範企業對人權的責任。',
   how:'2011年聯合國通過，「保護、尊重、救濟」三支柱框架：①國家保護人權（制定法律）②企業尊重人權（盡職調查）③提供救濟機制（申訴管道）。是CSDDD和各國人權盡職調查立法的理念基礎。',
   tw:'台灣國家人權行動計畫（2022）以UNGP為基礎。台灣外貿協會協助廠商建立人權盡職調查能力以應對CSDDD。',
@@ -513,7 +507,7 @@ ungp:{zh:'UNGP',en:'聯合國工商業與人權指導原則',cat:'social',
   who:'所有企業（跨國企業為主要對象）',
   rel:['csddd','rba','ilo','sa8000']},
 
-ilo:{zh:'ILO 核心公約',en:'Intl Labour Organization Core Conventions',cat:'social',
+ilo:{zh:'ILO 核心公約',en:'Intl Labour Organization Core Conventions',cat:'disc',
   prob:'全球各地勞工標準差異巨大——有的地方允許童工、強迫勞動、禁止工會。ILO核心公約設定了全球最低勞工標準底線。',
   how:'8項核心公約：禁止童工（138號年齡、182號最惡劣形式）、禁止強迫勞動（29號、105號）、結社自由（87號）、集體協商（98號）、同等報酬（100號）、反就業歧視（111號）。供應鏈稽核（RBA、SA8000）均以ILO核心公約為標準。',
   tw:'台灣已批准部分ILO公約（精神），並在勞基法中落實。台灣外銷歐洲的企業，客戶會稽核ILO核心公約的遵循情況。',
@@ -522,7 +516,7 @@ ilo:{zh:'ILO 核心公約',en:'Intl Labour Organization Core Conventions',cat:'s
   who:'ILO成員國及在其境內運營的企業',
   rel:['csddd','rba','sa8000','ungp']},
 
-rba:{zh:'RBA',en:'責任商業聯盟',cat:'social',
+rba:{zh:'RBA',en:'責任商業聯盟',cat:'disc',
   prob:'電子供應鏈（蘋果、戴爾到台積電）遍佈全球，如何確保整條供應鏈都符合勞工、環境、道德標準？RBA提供電子業專屬的統一稽核標準。',
   how:'前身EICC，涵蓋：勞工（工時、工資、強迫勞動、童工）、健康安全、環境、管理體系、道德（反貪腐）。要求第三方VAP（驗證稽核程序）稽核，分為公告和未公告稽核。稽核結果分：符合、輕微不符合、主要不符合、關鍵不符合。',
   tw:'台灣電子業是全球RBA參與最密集的地區之一。台積電、鴻海、廣達等要求供應商通過RBA VAP稽核。台灣供應商每年接受大量RBA稽核。',
@@ -531,7 +525,7 @@ rba:{zh:'RBA',en:'責任商業聯盟',cat:'social',
   who:'電子供應鏈企業（台積電、鴻海的供應商）',
   rel:['csddd','ungp','ilo','sa8000','uflpa']},
 
-sa8000:{zh:'SA8000',en:'Social Accountability 8000',cat:'social',
+sa8000:{zh:'SA8000',en:'Social Accountability 8000',cat:'disc',
   prob:'電子業有RBA，但紡織、食品、化工等其他行業的供應鏈勞工標準呢？SA8000提供跨產業的第三方認證標準。',
   how:'由SAI制定，涵蓋9大標準：童工、強迫勞動、健康安全、結社自由與集體協商、歧視、懲戒措施、工時、薪酬、管理體系。需第三方機構（如SGS、Bureau Veritas）現場稽核並頒發認證證書，有效期3年。',
   tw:'台灣紡織、製鞋、食品等產業的歐洲客戶常要求SA8000認證。與RBA不同，SA8000是認證（發證書），RBA是稽核（出報告）。',
@@ -540,7 +534,7 @@ sa8000:{zh:'SA8000',en:'Social Accountability 8000',cat:'social',
   who:'紡織、食品、化工等非電子業供應鏈企業',
   rel:['rba','ungp','ilo','csddd']},
 
-uflpa:{zh:'UFLPA',en:'維吾爾強迫勞動防止法',cat:'social',
+uflpa:{zh:'UFLPA',en:'維吾爾強迫勞動防止法',cat:'disc',
   prob:'新疆生產的商品（多晶矽、棉花等）可能涉及強迫勞動，但企業難以追溯供應鏈。美國UFLPA採取「推定有罪」的極強硬立場。',
   how:'2022年美國通過。推定原則：凡是來自新疆的商品，一律推定涉及強迫勞動，禁止進口，除非企業能「清楚且有說服力地」舉證清白（舉證責任倒置）。要求全面供應鏈溯源。',
   tw:'台灣太陽能業：使用中國多晶矽的模組被美國海關扣押（多起案例）。台灣紡織業：棉花溯源要求。台灣業者需建立全面的供應鏈溯源體系。',
@@ -549,7 +543,7 @@ uflpa:{zh:'UFLPA',en:'維吾爾強迫勞動防止法',cat:'social',
   who:'向美國出口含新疆原料商品的所有企業',
   rel:['csddd','rba','ungp']},
 
-fpic:{zh:'FPIC',en:'自由事先知情同意',cat:'social',
+fpic:{zh:'FPIC',en:'自由事先知情同意',cat:'disc',
   prob:'採礦、農業開發常常在原住民傳統領地上進行，造成土地被剝奪、文化被破壞。FPIC要求在動土前必須獲得原住民族的真實同意。',
   how:'Free, Prior and Informed Consent。三個要素：①Free（無脅迫、無壓力）②Prior（計畫開始前，有充分諮詢時間）③Informed（提供完整、真實資訊）。採礦、農業、林業、基礎設施開發的國際項目必須遵守。',
   tw:'台灣原住民族基本法已包含FPIC精神。台灣企業在東南亞、非洲投資採礦、農業時面臨FPIC要求。',
@@ -558,7 +552,7 @@ fpic:{zh:'FPIC',en:'自由事先知情同意',cat:'social',
   who:'在原住民傳統領地進行開發的採礦、農業、基礎設施企業',
   rel:['ungp','csddd','gbf']},
 
-msa:{zh:'現代奴隸法',en:'Modern Slavery Act (UK/Aus)',cat:'social',
+msa:{zh:'現代奴隸法',en:'Modern Slavery Act (UK/Aus)',cat:'disc',
   prob:'強迫勞動不只是發展中國家的問題，企業供應鏈中可能在任何地方存在現代奴隸制。英國和澳洲率先立法要求企業披露風險。',
   how:'英國《現代奴隸法》（2015）：年營業額>3,600萬英鎊的企業每年須發布《現代奴隸聲明》。澳洲《現代奴隸法》（2018）：年營業額>1億澳幣。與CSDDD不同，英澳現代奴隸法只要求「報告」不要求「行動」。',
   tw:'台灣在英澳有客戶關係的企業，需配合英澳客戶的現代奴隸調查。長期趨勢：從「報告義務」走向CSDDD式的「行動義務」。',
@@ -568,7 +562,7 @@ msa:{zh:'現代奴隸法',en:'Modern Slavery Act (UK/Aus)',cat:'social',
   rel:['csddd','rba','ungp','uflpa']},
 
 // 治理面G
-sdgs:{zh:'SDGs',en:'聯合國永續發展目標',cat:'gov',
+sdgs:{zh:'SDGs',en:'聯合國永續發展目標',cat:'disc',
   prob:'全球面對的問題——貧窮、氣候、不平等、海洋污染——互相關聯，需要一個整合性的全球目標框架來引導各國和企業的行動。',
   how:'聯合國2030議程的17項目標、169項細項指標。與氣候相關的重點目標：SDG7（清潔能源）、SDG13（氣候行動）、SDG12（負責任消費）、SDG14（海洋）、SDG15（陸地生態）。企業常對照SDGs說明永續策略和貢獻。',
   tw:'台灣政院已訂定永續發展目標台灣版本（對標UN SDGs）。台灣上市公司永續報告書普遍對照SDGs揭露貢獻。',
@@ -577,7 +571,7 @@ sdgs:{zh:'SDGs',en:'聯合國永續發展目標',cat:'gov',
   who:'所有UN成員國政府及企業（自願對標）',
   rel:['ungc','gri','paris']},
 
-ungc:{zh:'UNGC',en:'聯合國全球盟約',cat:'gov',
+ungc:{voluntary:true,zh:'UNGC',en:'聯合國全球盟約',cat:'disc',
   prob:'企業如何展示對永續發展和人權的承諾？UNGC提供一個全球最大的企業永續倡議平台，10項原則涵蓋人權、勞工、環境、反貪腐。',
   how:'10項原則：人權（1-2條）、勞工（3-6條）、環境（7-9條）、反貪腐（10條）。加入後每年需提交「進度通報（CoP）」，否則被移出。目前全球超過20,000家企業加入。',
   tw:'台灣超過100家企業加入UNGC。加入UNGC是展示國際ESG承諾的重要方式，對台灣想進入歐洲市場的企業尤其重要。',
@@ -586,7 +580,7 @@ ungc:{zh:'UNGC',en:'聯合國全球盟約',cat:'gov',
   who:'自願加入的企業（任何規模皆可）',
   rel:['sdgs','gri','ungp']},
 
-oecd:{zh:'OECD 指導方針',en:'OECD Guidelines for MNEs',cat:'gov',
+oecd:{zh:'OECD 指導方針',en:'OECD Guidelines for MNEs',cat:'disc',
   prob:'跨國企業在東道國可能鑽法律漏洞，規避環保和勞工標準。OECD指導方針要求跨國企業在全球保持一致的負責任行為標準。',
   how:'OECD多國企業指導方針，適用於在OECD成員國和合作國境內或從事商業活動的跨國企業。2023年更新版加入氣候和生物多樣性章節。涵蓋信息披露、人權、就業與勞工、環境、反腐敗、消費者利益、科學技術、競爭、稅務。設有「國家聯絡點（NCP）」處理企業申訴。',
   tw:'台灣雖非OECD成員，但台灣企業在OECD成員國（美、歐、日、澳）的投資須遵守。荷蘭NCP曾處理涉台企業投訴案。',
@@ -595,7 +589,7 @@ oecd:{zh:'OECD 指導方針',en:'OECD Guidelines for MNEs',cat:'gov',
   who:'在OECD成員國營業的跨國企業',
   rel:['ungp','ungc','csddd']},
 
-clitigation:{zh:'氣候訴訟',en:'Climate Litigation',cat:'gov',
+clitigation:{zh:'氣候訴訟',en:'Climate Litigation',cat:'disc',
   prob:'各國政府和企業在氣候上的承諾跟實際行動有巨大落差。NGO、受氣候影響的民眾開始透過法庭強制執行氣候責任——這是全新的法律風險類別。',
   how:'全球氣候訴訟案件超過2,300件（2023年）。代表性案例：①Shell荷蘭案（2021）：法院要求Shell遵守巴黎協定，2030年Scope 1/2/3減45% ②澳洲案：政府批准煤礦時須評估氣候衝擊 ③德國案：政府氣候政策不足違憲。趨勢：從「政府被告」轉向「企業被告」。',
   tw:'台灣雖無代表性案例，但隨台灣加入全球供應鏈的深度加深，氣候訴訟風險上升。企業的氣候資訊揭露不實可能成訴訟標的。',
@@ -604,7 +598,7 @@ clitigation:{zh:'氣候訴訟',en:'Climate Litigation',cat:'gov',
   who:'高碳排企業、化石燃料公司、漂綠企業',
   rel:['paris','csrd','tcfd']},
 
-cbcr:{zh:'稅務透明 CbCR',en:'Country-by-Country Reporting',cat:'gov',
+cbcr:{zh:'稅務透明 CbCR',en:'Country-by-Country Reporting',cat:'disc',
   prob:'跨國企業透過移轉定價把利潤轉移到低稅地區（如開曼群島），逃避在真正創造價值地點的納稅義務。',
   how:'OECD要求全球營業額>7.5億歐元的跨國企業逐國提交「國別報告（CbCR）」，揭露各國的利潤、稅款、員工數、資產等資訊。是BEPS（稅基侵蝕與利潤移轉）行動計畫的一部分。',
   tw:'台灣已要求符合規模門檻的跨國企業提交CbCR。台積電、台達電等大型跨國集團已建立CbCR合規系統。',
@@ -613,7 +607,7 @@ cbcr:{zh:'稅務透明 CbCR',en:'Country-by-Country Reporting',cat:'gov',
   who:'全球營業額>7.5億歐元的跨國企業',
   rel:['oecd','ungc']},
 
-equator:{zh:'赤道原則',en:'Equator Principles',cat:'gov',
+equator:{voluntary:true,zh:'赤道原則',en:'Equator Principles',cat:'disc',
   prob:'銀行資助大型基礎設施（水壩、礦山、化工廠）時，這些項目可能造成嚴重的環境破壞和人權侵害。赤道原則讓銀行把環境社會標準納入放貸決策。',
   how:'自願性的金融業框架（目前140家銀行採用）。適用於融資金額>1,000萬美元的大型專案（含採礦、基礎設施、能源）。要求銀行評估專案的環境社會風險，分為三類：A類（高風險）、B類（中）、C類（低）。高風險專案需第三方獨立評估，並建立申訴機制。',
   tw:'台灣多家大型銀行（如玉山、台灣銀行）已簽署赤道原則。影響台灣銀行業的海外大型專案融資決策。',
@@ -623,7 +617,7 @@ equator:{zh:'赤道原則',en:'Equator Principles',cat:'gov',
   rel:['ungp','sfdr','greenbond']},
 
 // 自然生態
-gbf:{zh:'GBF 30x30',en:'全球生物多樣性框架',cat:'nature',
+gbf:{zh:'GBF 30x30',en:'全球生物多樣性框架',cat:'tech',
   prob:'全球生物多樣性危機：物種滅絕速度是自然速度的100倍，生態系統服務（水源、授粉、糧食）面臨崩潰風險。需要一個像巴黎協定一樣的全球框架。',
   how:'2022年COP15（昆明-蒙特婁）通過。核心目標「30x30」：到2030年保護30%陸地和30%海洋。23個目標涵蓋：減少生物多樣性有害補貼、減少農藥污染、恢復退化生態系。要求企業揭露對生物多樣性的依賴和衝擊（TNFD是企業層面工具）。',
   tw:'台灣農業部推動生態系統服務評估與棲地保育。台灣珊瑚礁、濕地、山地森林是重要生物多樣性熱點。',
@@ -632,7 +626,7 @@ gbf:{zh:'GBF 30x30',en:'全球生物多樣性框架',cat:'nature',
   who:'UN成員國政府 + 農業、採礦、食品等依賴自然的企業',
   rel:['tnfd','sbtn','bluec','naturalcap']},
 
-naturalcap:{zh:'自然資本',en:'Natural Capital',cat:'nature',
+naturalcap:{voluntary:true,zh:'自然資本',en:'Natural Capital',cat:'tech',
   prob:'企業在財務報表上看不到森林、地下水、土壤的價值，所以決策時常常忽視對這些資源的破壞。自然資本把生態系統服務轉化成可評估的財務語言。',
   how:'將生態系統提供的服務（潔淨水源、授粉、氣候調節、糧食生產）視為具有經濟價值的資本，進行量化評估。評估方法：TEEB（生態系統和生物多樣性經濟學）、ENCORE（自然資本風險工具）。',
   tw:'台灣農業部推動生態系統服務評估。濕地、森林碳匯在台灣是重要自然資本，也是CDR的潛在來源。',
@@ -641,7 +635,7 @@ naturalcap:{zh:'自然資本',en:'Natural Capital',cat:'nature',
   who:'農業、採礦、食品、基礎設施等高自然依賴行業',
   rel:['tnfd','gbf','cdr','bluec']},
 
-bluec:{zh:'藍碳',en:'Blue Carbon',cat:'nature',
+bluec:{voluntary:true,zh:'藍碳',en:'Blue Carbon',cat:'tech',
   prob:'陸地森林碳匯已廣為人知，但海洋生態系統（紅樹林、海草床、鹽沼）的固碳能力更強、更持久，卻常被忽視。',
   how:'藍碳=海洋生態系統固碳。特點：①固碳速率是陸地森林的3-5倍 ②碳儲存在沉積物中，永久性強 ③單位面積固碳量遠高於陸地森林。生態復育（恢復紅樹林）可申請VCM碳信用。主要藍碳生態系：紅樹林、海草床、鹽沼。',
   tw:'台灣濕地（大肚溪口、台江國家公園等）具有重要藍碳潛力。農業部正評估藍碳核算方法，未來可申請TCEX碳信用。',
@@ -650,7 +644,7 @@ bluec:{zh:'藍碳',en:'Blue Carbon',cat:'nature',
   who:'濕地管理機構、沿海城市、購買藍碳碳信用的企業',
   rel:['cdr','vcm','naturalcap','gbf']},
 
-epr:{zh:'EPR',en:'延伸生產者責任',cat:'nature',
+epr:{zh:'EPR',en:'延伸生產者責任',cat:'tech',
   prob:'廢棄物（廢電子、廢電池、廢包裝）的處理成本目前主要由社會承擔，製造商卻不用負責。EPR把這個責任轉回給製造商，驅動更環保的產品設計。',
   how:'Extended Producer Responsibility：製造商對產品整個生命週期（包含廢棄階段）負責。實施方式：①強制回收比例 ②回收費用（含在產品價格中）③再生材料使用要求。PPWR的核心機制之一。',
   tw:'台灣資源回收費已是EPR的實踐。廢電子、廢電池的EPR制度讓台灣電子業承擔回收責任，推動了更易拆解、回收的產品設計。',
@@ -659,7 +653,7 @@ epr:{zh:'EPR',en:'延伸生產者責任',cat:'nature',
   who:'製造商、進口商（特別是電子、包裝、電池業）',
   rel:['ppwr','circular']},
 
-fsc:{zh:'FSC',en:'森林管理委員會認證',cat:'nature',
+fsc:{voluntary:true,zh:'FSC',en:'森林管理委員會認證',cat:'tech',
   prob:'全球木材和紙漿市場充斥非永續砍伐的木材，消費者和企業難以區分哪些木材來自永續管理的森林。',
   how:'FSC認證確保木材、紙漿、木質包材來自符合環境和社會標準的永續管理森林。認證分：FSC 100%、FSC Mix（混合）、FSC Recycled（回收）。企業使用FSC認證材料可降低EUDR合規風險（但FSC不等於EUDR合規，仍需盡職調查）。',
   tw:'台灣紙業、木材業需關注FSC認證，特別是出口歐盟的產品。IKEA等歐洲品牌要求供應商使用FSC木材。',
@@ -668,7 +662,7 @@ fsc:{zh:'FSC',en:'森林管理委員會認證',cat:'nature',
   who:'木材、紙漿、木質包材製造商和進口商',
   rel:['eudr','redd','gbf']},
 
-circular:{zh:'循環經濟',en:'Circular Economy',cat:'nature',
+circular:{zh:'循環經濟',en:'Circular Economy',cat:'tech',
   prob:'現代工業是線性的：取用原料→製造→使用→丟棄，大量消耗資源、產生廢棄物。循環經濟要把這個線圈起來，讓廢棄物變成原料。',
   how:'三大原則（3R→5R）：Reduce（減量）、Reuse（再使用）、Recycle（回收）、Repair（修復）、Recover（再生）。應用：產品設計易拆解、廢舊品回收再製造、商業模式從「賣產品」變成「賣服務」（租賃模式）。EU循環經濟行動計畫、PPWR是立法推動工具。',
   tw:'台灣循環經濟政策由環境部推動。電動車電池回收、太陽能板回收是近期重點。台灣化學業、塑膠業面臨循環設計轉型壓力。',
@@ -678,7 +672,7 @@ circular:{zh:'循環經濟',en:'Circular Economy',cat:'nature',
   rel:['ppwr','epr','naturalcap']},
 
 // 永續金融
-sfdr:{zh:'SFDR',en:'永續金融揭露法規',cat:'finance',
+sfdr:{zh:'SFDR',en:'永續金融揭露法規',cat:'disc',
   prob:'金融機構大量推出「ESG基金」、「永續投資」，但標準不一，投資人無法判斷哪個真正有永續效益（綠色洗白）。SFDR提供統一分類。',
   how:'歐盟要求金融機構揭露永續相關風險和衝擊的法規。三類基金：第6條（無特定永續主張）、第8條（促進環境/社會特性）、第9條（以永續為投資目標）。要求揭露PAI（主要負面指標，14項強制+2項自選）。',
   tw:'台灣金管會參考SFDR制定本土永續金融分類指引。台灣金融業對歐盟客戶的基金銷售需符合SFDR分類。',
@@ -687,7 +681,7 @@ sfdr:{zh:'SFDR',en:'永續金融揭露法規',cat:'finance',
   who:'在歐盟市場提供金融產品服務的資產管理人',
   rel:['eutax','greenbond','esma','prisma']},
 
-eutax:{zh:'EU Taxonomy',en:'歐盟永續金融分類法',cat:'finance',
+eutax:{zh:'EU Taxonomy',en:'歐盟永續金融分類法',cat:'disc',
   prob:'什麼是「永續投資」？天然氣算不算？核能算不算？沒有統一定義，各方都有自己的說法。EU Taxonomy提供官方的「環境永續」定義。',
   how:'六大環境目標：①氣候變遷減緩 ②氣候變遷調適 ③水資源永續 ④循環經濟 ⑤污染防治 ⑥生物多樣性。任何活動被認定為「永續」必須：對至少一項目標有實質貢獻（TSC）、不顯著損害其他五項目標（DNSH）、遵守最低社會保障標準。',
   tw:'台灣金融業參考EU Taxonomy建立本土永續金融分類架構。影響台灣企業的綠色融資、綠色債券認定標準。',
@@ -696,7 +690,7 @@ eutax:{zh:'EU Taxonomy',en:'歐盟永續金融分類法',cat:'finance',
   who:'歐盟金融機構 + CSRD適用企業',
   rel:['sfdr','greenbond','csrd','circular']},
 
-greenbond:{zh:'綠色債券',en:'Green Bond',cat:'finance',
+greenbond:{zh:'綠色債券',en:'Green Bond',cat:'disc',
   prob:'企業需要大量資金投入再生能源、節能建築等綠色計畫，但一般債券的資金流向不受限制。綠色債券確保資金專用於綠色用途。',
   how:'募集資金專門用於符合環境效益的計畫（再生能源、節能建築、清潔交通）的債券，需符合ICMA《綠色債券原則》，並進行第三方驗證。與SLB的差異：綠色債券限定資金用途，SLB限定績效指標但資金不限用途。',
   tw:'台灣2023年綠色債券發行規模超過700億台幣。台積電、元大金等已發行綠色債券。台灣證交所設有綠色債券平台。',
@@ -705,7 +699,7 @@ greenbond:{zh:'綠色債券',en:'Green Bond',cat:'finance',
   who:'需要綠色計畫融資的企業和政府',
   rel:['slb','eutax','sfdr','transitfin']},
 
-slb:{zh:'SLB',en:'永續連結債券',cat:'finance',
+slb:{zh:'SLB',en:'永續連結債券',cat:'disc',
   prob:'綠色債券只適合有明確綠色投資計畫的企業。如果企業想整體轉型（如鋼廠要綠化），資金用途難以明確區分。SLB讓績效指標掛鉤利率，更靈活。',
   how:'利率與企業永續績效指標（SPT，如減碳目標達成率、再生能源使用比例）掛鉤的債券。若未達目標，利率加碼（懲罰機制）；達標維持原利率。資金用途不限。ICMA《SLB原則》提供指引。',
   tw:'台灣環境部、部分上市公司已發行SLB。SLB適合資金用途難以拆分的企業（零售業、食品業）。',
@@ -714,7 +708,7 @@ slb:{zh:'SLB',en:'永續連結債券',cat:'finance',
   who:'希望整體轉型但資金用途難以明確的企業',
   rel:['greenbond','sbti','transitfin']},
 
-transitfin:{zh:'轉型金融',en:'Transition Finance',cat:'finance',
+transitfin:{zh:'轉型金融',en:'Transition Finance',cat:'disc',
   prob:'綠色債券和SLB主要服務已經很「綠」的企業，但最需要資金的是高碳排行業（鋼鐵、水泥、化工）的轉型。轉型金融就是專為這些「棕色」企業設計的。',
   how:'協助高碳排行業（鋼鐵、航空、石化、水泥）走向低碳的金融產品和服務。包含轉型債券。GFANZ（格拉斯哥金融聯盟，130兆美元）是主要推動機構。轉型計畫必須可信、有時間表且符合巴黎協定路徑。',
   tw:'台灣鋼鐵業（中鋼）、石化業（台塑）是轉型金融的潛在受益者。台灣金融業正研究如何設計符合國際標準的轉型金融產品。',
@@ -723,7 +717,7 @@ transitfin:{zh:'轉型金融',en:'Transition Finance',cat:'finance',
   who:'高碳排行業（鋼鐵、水泥、航空、石化）的融資需求',
   rel:['greenbond','slb','paris','sbti']},
 
-prisma:{zh:'PRI',en:'責任投資原則',cat:'finance',
+prisma:{voluntary:true,zh:'PRI',en:'責任投資原則',cat:'disc',
   prob:'機構投資人管理的資金龐大，他們的投資決策直接影響企業的ESG表現。PRI建立一套框架，讓機構投資人把ESG因素納入投資分析和決策。',
   how:'UN-supported Principles for Responsible Investment，聯合國主導。六項原則：納入ESG因素進入投資分析、實踐負責任的所有權、要求被投資企業揭露ESG、推廣PRI在投資業的實踐等。目前超過5,000家機構投資人簽署，管理資產超過130兆美元。',
   tw:'台灣退休基金（勞退、公退）已開始將ESG因素納入投資評估。台灣金融業簽署PRI數量快速增加。',
@@ -732,7 +726,7 @@ prisma:{zh:'PRI',en:'責任投資原則',cat:'finance',
   who:'機構投資人（資產管理公司、退休基金、保險公司）',
   rel:['sfdr','cdp','issb','greenbond']},
 
-esgratin:{zh:'ESG評級',en:'ESG Rating (MSCI/Sustainalytics)',cat:'finance',
+esgratin:{zh:'ESG評級',en:'ESG Rating (MSCI/Sustainalytics)',cat:'disc',
   prob:'投資人想快速評估企業ESG表現，但閱讀每份永續報告書耗時費力。ESG評級機構提供綜合評分，但方法論不透明、各機構之間評分差異巨大。',
   how:'主要評級機構：MSCI（最廣泛，A-AAA等級）、Sustainalytics（以風險分數衡量）、富時羅素、標普全球。評分影響：進入ESG指數（如MSCI ESG Leaders）→吸引被動型基金資金流入。2026年ESMA開始監管評級機構。',
   tw:'台灣上市公司越來越重視MSCI ESG評級。台積電MSCI評級AA，在台灣企業中屬最高等級。金管會永續藍圖鼓勵改善評級。',
@@ -851,7 +845,7 @@ p2x:{zh:'Power-to-X',en:'P2X 綠能轉化技術',cat:'tech',
   rel:['greenh2','greenamm','saf','imo']},
 
 // 台灣專區
-twlaw:{zh:'氣候變遷因應法',en:'Climate Change Response Act',cat:'tw',
+twlaw:{zh:'氣候變遷因應法',en:'Climate Change Response Act',cat:'intl',
   prob:'台灣需要一個能涵蓋減碳、碳費、強制盤查、氣候調適的全面性氣候法律，同時明確設定2050淨零目標。',
   how:'2023年修正通過，取代2015年《溫室氣體減量及管理法》。重大變化：①明訂2050淨零排放為國家目標 ②授權碳費徵收 ③強制盤查（年排放>2.5萬噸）④自願減量額度制度 ⑤碳費收入進「氣候基金」（專款）。三大子法：碳費收費辦法、自願減量辦法、減量額度認可辦法。',
   tw:'台灣所有碳費、ETS、自願減量的法律依據就是這部法。企業需熟悉三大子法的規定，特別是碳費起徵門檻和費率。',
@@ -860,7 +854,7 @@ twlaw:{zh:'氣候變遷因應法',en:'Climate Change Response Act',cat:'tw',
   who:'所有台灣企業（特別是高排放行業）',
   rel:['twcf','tcex','twpath']},
 
-twpath:{zh:'台灣淨零路徑',en:'Taiwan 2050 Net Zero Roadmap',cat:'tw',
+twpath:{zh:'台灣淨零路徑',en:'Taiwan 2050 Net Zero Roadmap',cat:'intl',
   prob:'「2050淨零」是目標，但怎麼達到？台灣2022年公布的淨零路徑提供具體的行業策略和投資方向。',
   how:'四大主軸×12項策略：能源轉型（風電、光電、氫能、地熱）× 節能（建築、運輸、工業）× 負碳技術（CCUS、自然碳匯）× 社會與治理（生活、金融、公正轉型）。2030短程目標：碳排減少24%（vs 2005）。能源結構：2025年再生能源佔20%、2050年達60-70%。',
   tw:'12項策略是台灣企業轉型的政策路徑圖。每項策略背後都有政府補貼和法規要求。企業可對照找到最相關的策略申請補助或配合法規。',
@@ -869,7 +863,7 @@ twpath:{zh:'台灣淨零路徑',en:'Taiwan 2050 Net Zero Roadmap',cat:'tw',
   who:'台灣政府、企業、金融業',
   rel:['twlaw','twcf','trec','ccus','netzero']},
 
-trec:{zh:'T-REC',en:'台灣再生能源憑證',cat:'tw',
+trec:{zh:'T-REC',en:'台灣再生能源憑證',cat:'intl',
   prob:'企業想讓Scope 2（購電）達到零碳，但台灣電力大部分仍是火力發電。T-REC提供一個機制，讓企業的用電可以「掛牌」為再生能源。',
   how:'1張T-REC = 1,000度（1 MWh）再生能源電力。企業購買T-REC可作為Scope 2「市場基礎法」的零排放依據。取得途徑：①直接購買（台電T-REC交易平台）②搭配CPPA長期購電合約。台積電、鴻海等大廠大量購買T-REC以達成RE100目標。',
   tw:'T-REC是目前台灣企業達成Scope 2零碳的主要工具（CPPA供應仍不足）。台灣T-REC需求快速增長，價格也持續上升。',
@@ -878,7 +872,7 @@ trec:{zh:'T-REC',en:'台灣再生能源憑證',cat:'tw',
   who:'需要Scope 2零碳的台灣企業',
   rel:['re100','cppa','scope','twpath']},
 
-cppa:{zh:'CPPA',en:'企業購電合約',cat:'tw',
+cppa:{zh:'CPPA',en:'企業購電合約',cat:'intl',
   prob:'T-REC是當期購買，價格波動。企業如果想鎖定長期綠電價格並確保穩定供應，需要直接與發電商簽長期合約。',
   how:'Corporate Power Purchase Agreement，企業直接與再生能源發電商簽訂長期購電合約（通常10-20年），取得綠電及T-REC，鎖定電價並確保供應穩定性。台灣電業法2017年修正後開放CPPA。台積電已與沃旭（Ørsted）等離岸風電商簽訂大型CPPA。',
   tw:'台積電是台灣CPPA最大買家。電網限制仍是主要障礙（綠電送不到需求端）。',
@@ -887,7 +881,7 @@ cppa:{zh:'CPPA',en:'企業購電合約',cat:'tw',
   who:'有長期大量綠電需求的企業（如台積電）',
   rel:['trec','re100','scope','twpath']},
 
-re100:{zh:'RE100',en:'100%再生能源倡議',cat:'tw',
+re100:{voluntary:true,zh:'RE100',en:'100%再生能源倡議',cat:'intl',
   prob:'企業如何展示100%使用再生能源的承諾，並推動再生能源市場發展？RE100提供一個國際公認的倡議平台。',
   how:'由氣候組織與CDP共同管理的全球企業倡議，承諾100%使用再生能源。達成路徑：自發自用太陽能、CPPA長期購電、T-REC購買、國際EAC（能源屬性憑證）。需每年向CDP報告進度。蘋果要求供應鏈加入RE100；台積電、台達電承諾2050年前100%RE。',
   tw:'台灣超過20家企業加入RE100，推動本土綠電市場快速發展。RE100要求驅動了T-REC和CPPA的需求。',
@@ -896,7 +890,7 @@ re100:{zh:'RE100',en:'100%再生能源倡議',cat:'tw',
   who:'有公開承諾100%RE目標的企業',
   rel:['trec','cppa','cdp','twpath']},
 
-esco:{zh:'ESCO',en:'能源服務公司',cat:'tw',
+esco:{zh:'ESCO',en:'能源服務公司',cat:'intl',
   prob:'工廠知道節能可省錢，但沒有初期投資資金怎麼辦？ESCO模式讓企業不需自己出錢就能進行節能改造。',
   how:'Energy Service Company。ESCO公司替企業執行節能改善，投資由ESCO預先墊付，再以節省下來的能源費用逐月回收成本（EPC合約，Energy Performance Contract）。M&V（測量與查核）驗證實際節能量。企業零初期成本、按期分享節能效益。',
   tw:'台灣能源局推動ESCO保證節能量制度。台灣中小企業可申請綠色融資搭配ESCO服務。ISO 50001能源管理系統常配合ESCO導入。',
@@ -905,7 +899,7 @@ esco:{zh:'ESCO',en:'能源服務公司',cat:'tw',
   who:'有節能需求但缺乏初期投資資金的工廠',
   rel:['twpath','iso50001']},
 
-iso50001:{zh:'ISO 50001',en:'能源管理系統',cat:'tw',
+iso50001:{zh:'ISO 50001',en:'能源管理系統',cat:'intl',
   prob:'企業想系統性地管理能源使用，持續降低能耗，而不是碰到電費帳單才想到節能。ISO 50001提供一套PDCA循環的能源管理系統。',
   how:'能源管理系統（EnMS）標準，採用PDCA循環：能源政策→能源規劃→實施→查核→管理審查。重要概念：EnB（能源基準線）、EnPI（能源績效指標）、SEU（顯著能源使用）。台灣工廠導入可申請能源局補助，部分法規要求列管工廠通過認證。',
   tw:'台灣能源局已要求電力、鋼鐵、石化等能源密集行業建立EnMS，並以ISO 50001為依循標準。可結合ESCO服務降低導入成本。',
@@ -914,7 +908,7 @@ iso50001:{zh:'ISO 50001',en:'能源管理系統',cat:'tw',
   who:'能源密集行業（電力、鋼鐵、石化、半導體等）',
   rel:['esco','twpath','scope']},
 
-supchain:{zh:'供應鏈減碳壓力',en:'Supply Chain Decarbonization',cat:'tw',
+supchain:{zh:'供應鏈減碳壓力',en:'Supply Chain Decarbonization',cat:'intl',
   prob:'台灣是全球供應鏈的核心，蘋果、BMW、Nike等品牌對供應商的ESG要求越來越嚴格。不減碳，可能就失去訂單。',
   how:'主要壓力來源：①蘋果（2030年100%RE + Scope 3減碳），要求台灣供應商加入RE100、設SBTi目標 ②BMW（2030年Scope 3減少40%），要求鑄造、鋼鐵供應商提供碳足跡 ③CSRD Scope 3揭露要求迫使歐洲品牌向台灣供應商要求碳數據 ④CSDDD要求人權盡職調查報告。',
   tw:'台灣製造業（半導體、電子、鋼鐵、紡織）面臨的最直接ESG壓力就來自客戶。這是推動台灣企業做碳盤查、申請SBTi最強的外部動力。',
@@ -940,15 +934,38 @@ const TRUNK = [
 ];
 
 const GROUPS = [
-  {cat:'intl',  ids:['csrd','esrs','csddd','cbam','euets','eudr','ppwr','corsia','imo','ira','secrule','cap']},
-  {cat:'disc',  ids:['issb','gri','tcfd','tnfd','cdp','sasb','doubmat','scope','esma','sbtn']},
-  {cat:'carbon',ids:['vcm','ccp','eua','redd','sbti','netzero','twcf','tcex','cfvst','cdr']},
-  {cat:'social',ids:['ungp','ilo','rba','sa8000','uflpa','fpic','msa']},
-  {cat:'gov',   ids:['sdgs','ungc','oecd','clitigation','cbcr','equator']},
-  {cat:'nature',ids:['gbf','naturalcap','bluec','epr','fsc','circular']},
-  {cat:'finance',ids:['sfdr','eutax','greenbond','slb','transitfin','prisma','esgratin']},
-  {cat:'tech',  ids:['ghgpro','iso14064','iso14067','iso14068','dac','ccus','saf','greenh2','greenamm','egs','smr','p2x']},
-  {cat:'tw',    ids:['twlaw','twpath','trec','cppa','re100','esco','iso50001','supchain']},
+  // 氣候協議
+  {cat:'climate', subLabel:'目標承諾', ids:['ndc','sbti','netzero','gbf']},
+  // 國際法規 - 歐盟
+  {cat:'intl', subLabel:'歐盟法規', ids:['csrd','esrs','csddd','cbam','euets','eudr','ppwr','sfdr','eutax']},
+  // 國際法規 - 美國/國際
+  {cat:'intl', subLabel:'美國/國際法規', ids:['ira','secrule','corsia','imo']},
+  // 國際法規 - 台灣
+  {cat:'intl', subLabel:'台灣法規', ids:['twlaw','twcf','tcex','twpath','trec','cppa','re100','supchain']},
+  // 揭露框架 - 報告準則
+  {cat:'disc', subLabel:'報告準則', ids:['issb','gri','tcfd','sasb','esma','esgratin']},
+  // 揭露框架 - 碳盤查
+  {cat:'disc', subLabel:'碳盤查', ids:['ghgpro','scope','iso14064','iso14067','iso14068','doubmat']},
+  // 揭露框架 - 自然揭露
+  {cat:'disc', subLabel:'自然揭露', ids:['tnfd','sbtn','cdp']},
+  // 揭露框架 - 人權社會
+  {cat:'disc', subLabel:'人權社會', ids:['ungp','ilo','rba','sa8000','uflpa','fpic','msa']},
+  // 揭露框架 - 治理
+  {cat:'disc', subLabel:'治理', ids:['sdgs','ungc','oecd','clitigation','cbcr']},
+  // 揭露框架 - 金融
+  {cat:'disc', subLabel:'永續金融', ids:['greenbond','slb','transitfin','prisma','equator']},
+  // 減碳技術 - 碳市場工具
+  {cat:'tech', subLabel:'碳市場工具', ids:['vcm','ccp','eua','cap','cfvst','cdm']},
+  // 減碳技術 - 碳機制
+  {cat:'tech', subLabel:'碳機制', ids:['itmo','pacm','redd']},
+  // 減碳技術 - 負碳技術
+  {cat:'tech', subLabel:'負碳技術', ids:['dac','ccus','cdr','bluec']},
+  // 減碳技術 - 能源技術
+  {cat:'tech', subLabel:'能源技術', ids:['saf','greenh2','greenamm','egs','smr','p2x']},
+  // 減碳技術 - 節能工具
+  {cat:'tech', subLabel:'節能工具', ids:['esco','iso50001']},
+  // 減碳技術 - 自然生態
+  {cat:'tech', subLabel:'自然生態', ids:['naturalcap','circular','epr','fsc']},
 ];
 
 /* ════════════════════════════════════════════
@@ -1076,6 +1093,9 @@ function node(id, x, y, w, h, color, zhLabel, enLabel, selected=false){
     'stroke-width':strokeW}, g);
 
   // line1 = abbr/English code (bold), line2 = Chinese name (light)
+  // Check voluntary status from D
+  const nodeData = id && D[id];
+  const isVoluntary = nodeData && nodeData.voluntary;
   const hasTwo = enLabel && enLabel.trim();
   const line1El=el('text',{
     x: x+w/2, y: y+(hasTwo ? h/2-7 : h/2),
@@ -1096,6 +1116,17 @@ function node(id, x, y, w, h, color, zhLabel, enLabel, selected=false){
       fill: selected ? 'rgba(255,255,255,0.75)' : hex2rgba(color, 0.7)
     }, g);
     line2El.textContent=truncStr(enLabel, 26);
+  }
+
+  // Voluntary badge
+  if(isVoluntary){
+    el('text',{
+      x: x+w-4, y: y+5,
+      'text-anchor':'end','dominant-baseline':'hanging',
+      'font-family':'IBM Plex Sans TC, sans-serif',
+      'font-size':'7','font-weight':'400',
+      fill: selected ? 'rgba(255,255,255,0.6)' : hex2rgba(color, 0.55)
+    }, g).textContent='自願';
   }
 
   g.style.cursor='pointer';
@@ -1158,8 +1189,10 @@ function renderAll(selectedId=null){
     if(!gp) return;
 
     /* header */
+    const headerLabel = g.subLabel ? g.subLabel : cat.label;
+    const headerSub = g.subLabel ? (cat.label.replace(/^[^ ]+ /,'') + ' · ' + g.ids.length+'項') : g.ids.length+' 個名詞';
     node(g.cat+'_header', gp.x, gp.y, NW, GROUP_HEADER_H, cat.color,
-      cat.label, g.ids.length+' 個名詞');
+      headerLabel, headerSub);
 
     /* brace spine */
     const spineX = gp.x + 14;
@@ -1224,7 +1257,13 @@ function showPanel(d, id){
   const col=cat.color;
   function h2r(hex,a){return hex2rgba(hex,a);}
   document.getElementById('panel-inner').innerHTML=`
-    <div class="p-close"><button onclick="closePanel()">關閉 ×</button></div>
+    <div class="p-close" style="justify-content:space-between">
+      <div style="display:flex;gap:6px">
+        <button id="btn-edit-node" data-edit-id="\${id}" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:var(--font)">✏ 編輯</button>
+        <button id="btn-ai-regen" data-regen-id="\${id}" style="background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.4);color:#1D9E75;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:var(--font)">✦ AI 重新生成</button>
+      </div>
+      <button onclick="closePanel()">關閉 ×</button>
+    </div>
     <span class="p-badge" style="background:${h2r(col,.18)};color:${col}">${cat.label}</span>
     <div class="p-title">${d.zh}</div>
     <div class="p-en">${d.en||''}</div>
@@ -1585,6 +1624,106 @@ function refreshCustomList(){
 }
 
 // Start cloud sync after all functions are defined
+
+/* ══ EDIT NODE ══ */
+function openEditModal(id){
+  const d=D[id]; if(!d) return;
+  const modal=document.getElementById('edit-modal'); if(!modal) return;
+  document.getElementById('ef-abbr').value=d.abbr||d.zh||'';
+  document.getElementById('ef-zh').value=d.en||'';
+  document.getElementById('ef-cat').value=d.cat||'climate';
+  document.getElementById('ef-prob').value=d.prob||'';
+  document.getElementById('ef-how').value=d.how||'';
+  document.getElementById('ef-tw').value=d.tw||'';
+  document.getElementById('ef-exam').value=d.exam||'';
+  document.getElementById('ef-num').value=d.num||'';
+  document.getElementById('ef-who').value=d.who||'';
+  document.getElementById('ef-voluntary').checked=!!d.voluntary;
+  modal.dataset.editId=id; modal.classList.add('open');
+}
+function closeEditModal(){ document.getElementById('edit-modal').classList.remove('open'); }
+function saveEdit(){
+  const modal=document.getElementById('edit-modal');
+  const id=modal.dataset.editId; if(!id||!D[id]) return;
+  const abbr=document.getElementById('ef-abbr').value.trim();
+  if(!abbr){ alert('縮寫不能為空'); return; }
+  D[id].abbr=abbr; D[id].zh=abbr;
+  D[id].en=document.getElementById('ef-zh').value.trim()||D[id].en;
+  const newCat=document.getElementById('ef-cat').value;
+  if(newCat!==D[id].cat){
+    GROUPS.forEach(g=>{const i=g.ids.indexOf(id);if(i>-1)g.ids.splice(i,1);});
+    D[id].cat=newCat;
+    const g=GROUPS.find(g=>g.cat===newCat);
+    if(g&&!g.ids.includes(id)) g.ids.push(id);
+  }
+  D[id].prob=document.getElementById('ef-prob').value.trim();
+  D[id].how=document.getElementById('ef-how').value.trim();
+  D[id].tw=document.getElementById('ef-tw').value.trim();
+  D[id].exam=document.getElementById('ef-exam').value.trim();
+  D[id].num=document.getElementById('ef-num').value.trim();
+  D[id].who=document.getElementById('ef-who').value.trim();
+  D[id].voluntary=document.getElementById('ef-voluntary').checked;
+  if(D[id]._custom) cloudSave();
+  rebuildLayout(); closeEditModal();
+  currentId=id; showPanel(D[id],id);
+}
+
+/* ══ AI REGEN ══ */
+function openRegenModal(id){
+  const d=D[id]; if(!d) return;
+  const modal=document.getElementById('regen-modal'); if(!modal) return;
+  modal.dataset.regenId=id;
+  document.getElementById('regen-title').textContent=(d.abbr||d.zh)+' — AI 重新生成';
+  document.getElementById('regen-prompt').value='';
+  document.getElementById('regen-result').style.display='none';
+  document.getElementById('regen-err').style.display='none';
+  modal.classList.add('open');
+}
+function closeRegenModal(){ document.getElementById('regen-modal').classList.remove('open'); }
+async function runRegen(){
+  const modal=document.getElementById('regen-modal');
+  const id=modal.dataset.regenId; const d=D[id]; if(!d) return;
+  const prompt=document.getElementById('regen-prompt').value.trim();
+  const btn=document.getElementById('btn-do-regen');
+  btn.disabled=true; btn.textContent='生成中…';
+  document.getElementById('regen-err').style.display='none';
+  const fullPrompt='你是ESG永續領域的專家教師。名詞「'+(d.abbr||d.zh)+'」，根據以下指示重新生成說明，輸出純 JSON 不要加 markdown。\n\n現有內容：\n解決問題：'+(d.prob||'')+'\n怎麼運作：'+(d.how||'')+'\n台灣影響：'+(d.tw||'')+'\n考試重點：'+(d.exam||'')+'\n關鍵數字：'+(d.num||'')+'\n適用對象：'+(d.who||'')+'\n\n使用者指示：'+(prompt||'請全面更新確保準確完整')+'\n\n輸出JSON格式：{"prob":"...","how":"...","tw":"...","exam":"...","num":"...","who":"..."}';
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Action':'ai'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:fullPrompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('').trim();
+    if(!text) throw new Error('API沒有回應');
+    const m=text.match(/\{[\s\S]*\}/); if(!m) throw new Error('無法解析');
+    const parsed=JSON.parse(m[0]);
+    document.getElementById('regen-preview-prob').textContent=parsed.prob||'';
+    document.getElementById('regen-preview-how').textContent=parsed.how||'';
+    document.getElementById('regen-preview-tw').textContent=parsed.tw||'';
+    document.getElementById('regen-preview-exam').textContent=parsed.exam||'';
+    document.getElementById('regen-preview-num').textContent=parsed.num||'';
+    document.getElementById('regen-preview-who').textContent=parsed.who||'';
+    document.getElementById('regen-result').style.display='block';
+    document.getElementById('btn-apply-regen').dataset.regenParsed=JSON.stringify(parsed);
+  }catch(e){
+    document.getElementById('regen-err').textContent='生成失敗：'+e.message;
+    document.getElementById('regen-err').style.display='block';
+  }
+  btn.disabled=false; btn.textContent='重新生成';
+}
+function applyRegen(){
+  const modal=document.getElementById('regen-modal');
+  const id=modal.dataset.regenId; if(!id||!D[id]) return;
+  const btn=document.getElementById('btn-apply-regen');
+  const parsed=JSON.parse(btn.dataset.regenParsed||'{}');
+  if(parsed.prob) D[id].prob=parsed.prob;
+  if(parsed.how) D[id].how=parsed.how;
+  if(parsed.tw) D[id].tw=parsed.tw;
+  if(parsed.exam) D[id].exam=parsed.exam;
+  if(parsed.num) D[id].num=parsed.num;
+  if(parsed.who) D[id].who=parsed.who;
+  if(D[id]._custom) cloudSave();
+  closeRegenModal(); currentId=id; showPanel(D[id],id);
+}
+
 cloudLoad();
 </script>
 
@@ -1667,6 +1806,121 @@ cloudLoad();
     d.className = 'leg';
     d.innerHTML = '<div class="leg-dot" style="background:'+kv[1].color+'"></div>'+kv[1].label;
     leg.appendChild(d);
+  });
+})();
+</script>
+
+<style>
+/* Edit + Regen Modals */
+#edit-modal,#regen-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+#edit-modal.open,#regen-modal.open{display:flex}
+#edit-box,#regen-box{background:#161b27;border:1px solid rgba(255,255,255,.13);border-radius:16px 16px 0 0;width:100%;max-width:540px;padding:20px 18px 36px;max-height:92vh;overflow-y:auto;}
+@media(min-width:700px){#edit-modal,#regen-modal{align-items:center}#edit-box,#regen-box{border-radius:14px;max-height:88vh}}
+.edit-drag{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 14px}
+.edit-title{font-size:14px;font-weight:500;margin-bottom:14px;color:#dde2f0}
+.edit-row{display:flex;gap:8px;margin-bottom:8px}
+.edit-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#4e5875;margin-bottom:3px}
+.edit-input{width:100%;background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:12px;color:#dde2f0;font-family:'IBM Plex Sans TC',sans-serif;outline:none}
+.edit-input:focus{border-color:rgba(55,138,221,.6)}
+.edit-select{width:100%;background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:12px;color:#dde2f0;font-family:'IBM Plex Sans TC',sans-serif;outline:none}
+.edit-textarea{width:100%;background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:12px;color:#dde2f0;font-family:'IBM Plex Sans TC',sans-serif;outline:none;resize:vertical;min-height:64px;line-height:1.65}
+.edit-textarea:focus{border-color:rgba(55,138,221,.6)}
+.ef-group{margin-bottom:8px}
+.btn-save-edit{flex:1;padding:9px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:#378ADD;color:#fff;font-family:'IBM Plex Sans TC',sans-serif}
+.btn-cancel-edit{padding:9px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.13);cursor:pointer;font-size:13px;background:transparent;color:#8e98b5;font-family:'IBM Plex Sans TC',sans-serif}
+.regen-preview{background:#1e2535;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:11px;line-height:1.7;color:#8e98b5}
+.regen-preview-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#4e5875;margin-top:8px;margin-bottom:2px}
+.btn-do-regen{width:100%;padding:9px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:linear-gradient(135deg,#1D9E75,#378ADD);color:#fff;margin-bottom:8px;font-family:'IBM Plex Sans TC',sans-serif}
+.btn-do-regen:disabled{opacity:.5;cursor:not-allowed}
+.btn-apply-regen{flex:1;padding:9px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:#1D9E75;color:#fff;font-family:'IBM Plex Sans TC',sans-serif}
+.regen-err{font-size:11px;color:#E24B4A;padding:4px 0}
+.voluntary-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.voluntary-row input[type=checkbox]{width:14px;height:14px;cursor:pointer}
+.voluntary-row label{font-size:12px;color:#8e98b5;cursor:pointer}
+</style>
+
+<!-- Edit Modal -->
+<div id="edit-modal">
+<div id="edit-box">
+  <div class="edit-drag"></div>
+  <div class="edit-title">✏ 編輯名詞</div>
+  <div class="edit-row">
+    <div style="flex:1"><div class="edit-label">縮寫</div><input class="edit-input" id="ef-abbr"></div>
+    <div style="flex:1"><div class="edit-label">分類</div>
+      <select class="edit-select" id="ef-cat">
+        <option value="climate">🌐 氣候協議</option>
+        <option value="intl">🌍 國際法規</option>
+        <option value="disc">📋 揭露框架</option>
+        <option value="tech">🔬 減碳技術</option>
+      </select>
+    </div>
+  </div>
+  <div class="ef-group"><div class="edit-label">中文名稱</div><input class="edit-input" id="ef-zh"></div>
+  <div class="voluntary-row">
+    <input type="checkbox" id="ef-voluntary">
+    <label for="ef-voluntary">自願性（不採用無法律後果）</label>
+  </div>
+  <div class="ef-group"><div class="edit-label">解決什麼問題</div><textarea class="edit-textarea" id="ef-prob"></textarea></div>
+  <div class="ef-group"><div class="edit-label">怎麼運作</div><textarea class="edit-textarea" id="ef-how"></textarea></div>
+  <div class="edit-row">
+    <div style="flex:1" class="ef-group"><div class="edit-label">台灣影響</div><textarea class="edit-textarea" id="ef-tw" style="min-height:52px"></textarea></div>
+    <div style="flex:1" class="ef-group"><div class="edit-label">考試重點</div><textarea class="edit-textarea" id="ef-exam" style="min-height:52px"></textarea></div>
+  </div>
+  <div class="edit-row">
+    <div style="flex:1" class="ef-group"><div class="edit-label">關鍵數字</div><input class="edit-input" id="ef-num"></div>
+    <div style="flex:1" class="ef-group"><div class="edit-label">適用對象</div><input class="edit-input" id="ef-who"></div>
+  </div>
+  <div class="edit-row">
+    <button id="btn-cancel-edit" class="btn-cancel-edit">取消</button>
+    <button id="btn-save-edit" class="btn-save-edit">儲存</button>
+  </div>
+</div>
+</div>
+
+<!-- AI Regen Modal -->
+<div id="regen-modal">
+<div id="regen-box">
+  <div class="edit-drag"></div>
+  <div class="edit-title" id="regen-title">✦ AI 重新生成</div>
+  <div class="ef-group">
+    <div class="edit-label">補充說明或問題（可空白）</div>
+    <textarea class="edit-textarea" id="regen-prompt" placeholder="例：請加強台灣影響的部分&#10;例：這個名詞最近有新發展，請更新&#10;例：請讓說明更淺顯易懂" style="min-height:80px"></textarea>
+  </div>
+  <button class="btn-do-regen" id="btn-do-regen">✦ 重新生成</button>
+  <div class="regen-err" id="regen-err" style="display:none"></div>
+  <div id="regen-result" style="display:none">
+    <div class="regen-preview-lbl">解決什麼問題</div><div class="regen-preview" id="regen-preview-prob"></div>
+    <div class="regen-preview-lbl">怎麼運作</div><div class="regen-preview" id="regen-preview-how"></div>
+    <div class="regen-preview-lbl">台灣影響</div><div class="regen-preview" id="regen-preview-tw"></div>
+    <div class="regen-preview-lbl">考試重點</div><div class="regen-preview" id="regen-preview-exam"></div>
+    <div class="regen-preview-lbl">關鍵數字</div><div class="regen-preview" id="regen-preview-num"></div>
+    <div class="regen-preview-lbl">適用對象</div><div class="regen-preview" id="regen-preview-who"></div>
+    <div class="edit-row" style="margin-top:12px">
+      <button id="btn-cancel-regen" class="btn-cancel-edit">取消</button>
+      <button id="btn-apply-regen" class="btn-apply-regen">套用此版本</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// Bind Edit + Regen modals
+(function(){
+  // Edit modal
+  document.getElementById('edit-modal').addEventListener('click',function(e){ if(e.target===this) closeEditModal(); });
+  document.getElementById('btn-cancel-edit').addEventListener('click', closeEditModal);
+  document.getElementById('btn-save-edit').addEventListener('click', saveEdit);
+  // Regen modal
+  document.getElementById('regen-modal').addEventListener('click',function(e){ if(e.target===this) closeRegenModal(); });
+  document.getElementById('btn-cancel-regen').addEventListener('click', closeRegenModal);
+  document.getElementById('btn-do-regen').addEventListener('click', runRegen);
+  document.getElementById('btn-apply-regen').addEventListener('click', applyRegen);
+  // Panel edit/regen buttons via delegation
+  document.getElementById('panel').addEventListener('click',function(e){
+    const editBtn = e.target.closest('#btn-edit-node');
+    if(editBtn){ openEditModal(editBtn.dataset.editId); return; }
+    const regenBtn = e.target.closest('#btn-ai-regen');
+    if(regenBtn){ openRegenModal(regenBtn.dataset.regenId); return; }
   });
 })();
 </script>
