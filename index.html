@@ -1522,7 +1522,7 @@ function importNodes(event){
       rebuildLayout();
       refreshCustomList();
       updateSavedCount();
-      alert(`成功匯入 ${added} 個名詞！${nodes.length-added>0?'（'+（nodes.length-added)+'個已存在，略過）':''}`);
+      alert(`成功匯入 ${added} 個名詞！${nodes.length-added>0?'（'+(nodes.length-added)+'個已存在，略過）':''}`);
     }catch(err){
       alert('匯入失敗：'+err.message+'\n請確認是由本工具匯出的 JSON 檔案');
     }
