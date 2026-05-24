@@ -1415,7 +1415,7 @@ async function generateWithAI(){
   "who": "適用對象（簡短說明）"
 }`;
   try{
-    const res=await fetch('https://esg-ai-proxy.annycyt.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('https://esg-ai-proxy.annycyt.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const text=data.content?.map(c=>c.text||'').join('').trim();
     if(!text) throw new Error('API沒有回應內容');
