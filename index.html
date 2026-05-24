@@ -1253,7 +1253,7 @@ document.getElementById('panel').addEventListener('click', function(e){
   if(!confirm('確定要刪除「'+(D[delId].zh||delId)+'」嗎？')) return;
   delete D[delId];
   GROUPS.forEach(g=>{ const i=g.ids.indexOf(delId); if(i>-1) g.ids.splice(i,1); });
-  saveCustomNodes(); rebuildLayout();
+  cloudSave(); rebuildLayout();
   closePanel();
 });
 
@@ -1303,8 +1303,7 @@ function loadCustomNodes(){
 }
 
 function saveCustomNodes(){
-  const custom=Object.values(D).filter(n=>n._custom);
-  localStorage.setItem('esg_custom_nodes',JSON.stringify(custom));
+  cloudSave();
 }
 
 function rebuildLayout(){
@@ -1352,7 +1351,8 @@ const ABBR_MAP={
   cppa:'CPPA', re100:'RE100', esco:'ESCO', iso50001:'ISO 50001', supchain:'供應鏈減碳'
 };
 Object.entries(D).forEach(([key, val])=>{ val.abbr = ABBR_MAP[key]||val.zh; });
-loadCustomNodes();
+loadCustomNodes(); // load from localStorage cache immediately
+cloudLoad();      // then sync from cloud (may add more nodes)
 </script>
 
 <style>
@@ -1387,6 +1387,48 @@ loadCustomNodes();
 </style>
 
 <script>
+const WORKER_URL = 'https://esg-ai-proxy.annycyt.workers.dev';
+
+// ── Cloud sync: load custom nodes from KV on startup ──
+async function cloudLoad(){
+  try{
+    const res = await fetch(WORKER_URL, { headers:{'X-Action':'get-nodes'} });
+    if(!res.ok) throw new Error('fetch failed');
+    const nodes = await res.json();
+    if(!Array.isArray(nodes) || nodes.length===0) return;
+    let added=0;
+    nodes.forEach(n=>{
+      if(!n||!n.id||!n.cat) return;
+      if(!n.abbr) n.abbr=n.zh||n.id;
+      if(!D[n.id]){
+        D[n.id]=n;
+        const g=GROUPS.find(g=>g.cat===n.cat);
+        if(g&&!g.ids.includes(n.id)) g.ids.push(n.id);
+        added++;
+      }
+    });
+    if(added>0) rebuildLayout();
+    // also sync to localStorage as cache
+    localStorage.setItem('esg_custom_nodes', JSON.stringify(nodes));
+  }catch(e){ console.warn('cloudLoad error:',e); }
+}
+
+// ── Cloud sync: save custom nodes to KV ──
+async function cloudSave(){
+  const custom = Object.values(D).filter(n=>n._custom);
+  const json = JSON.stringify(custom);
+  // save to localStorage immediately
+  localStorage.setItem('esg_custom_nodes', json);
+  // save to KV in background
+  try{
+    await fetch(WORKER_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Action':'save-nodes'},
+      body: json
+    });
+  }catch(e){ console.warn('cloudSave error:',e); }
+}
+
 function openAddModal(){
   const modal = document.getElementById('add-modal');
   if(!modal){ console.error('add-modal not found'); return; }
@@ -1426,7 +1468,7 @@ async function generateWithAI(){
   "who": "適用對象（簡短說明）"
 }`;
   try{
-    const res=await fetch('https://esg-ai-proxy.annycyt.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('https://esg-ai-proxy.annycyt.workers.dev',{method:'POST',headers:{'Content-Type':'application/json','X-Action':'ai'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const text=data.content?.map(c=>c.text||'').join('').trim();
     if(!text) throw new Error('API沒有回應內容');
@@ -1472,7 +1514,7 @@ function addNode(){
     rel:[], _custom:true};
   D[id]=node;
   const g=GROUPS.find(g=>g.cat===cat); if(g&&!g.ids.includes(id)) g.ids.push(id);
-  saveCustomNodes(); rebuildLayout();
+  cloudSave(); rebuildLayout();
   ['f-abbr','f-zh','f-en','f-prob','f-how','f-tw','f-exam','f-num','f-who'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
   hideErr(); refreshCustomList(); updateSavedCount();
   setTimeout(()=>{ currentId=id; renderAll(id); showPanel(D[id]); },100);
@@ -1483,7 +1525,7 @@ function deleteCustomNode(id){
   if(!confirm('確定要刪除「'+(D[id]?.zh||id)+'」嗎？')) return;
   delete D[id];
   GROUPS.forEach(g=>{ const i=g.ids.indexOf(id); if(i>-1) g.ids.splice(i,1); });
-  saveCustomNodes(); rebuildLayout(); refreshCustomList(); updateSavedCount();
+  cloudSave(); rebuildLayout(); refreshCustomList(); updateSavedCount();
   if(currentId===id) closePanel();
 }
 
@@ -1518,7 +1560,7 @@ function importNodes(event){
           added++;
         }
       });
-      saveCustomNodes();
+      cloudSave();
       rebuildLayout();
       refreshCustomList();
       updateSavedCount();
