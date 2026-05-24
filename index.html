@@ -1075,25 +1075,27 @@ function node(id, x, y, w, h, color, zhLabel, enLabel, selected=false){
     stroke:hex2rgba(color, strokeAlpha),
     'stroke-width':strokeW}, g);
 
-  // line1 = zhLabel (abbr or category name), line2 = enLabel (zh name)
+  // line1 = abbr/English code (bold), line2 = Chinese name (light)
+  const hasTwo = enLabel && enLabel.trim();
   const line1El=el('text',{
-    x: x+w/2, y: y+(enLabel ? h/2-7 : h/2),
+    x: x+w/2, y: y+(hasTwo ? h/2-7 : h/2),
     'text-anchor':'middle','dominant-baseline':'central',
-    'font-family':'IBM Plex Mono, IBM Plex Sans TC, sans-serif',
-    'font-size':'11','font-weight':'600',
-    fill: selected ? '#ffffff' : hex2rgba(color, 0.95)
+    'font-family':'IBM Plex Mono, IBM Plex Sans TC, Noto Sans TC, sans-serif',
+    'font-size':'11','font-weight':'700',
+    'letter-spacing':'0.03em',
+    fill: selected ? '#ffffff' : hex2rgba(color, 1)
   }, g);
-  line1El.textContent=truncStr(zhLabel, 20);
+  line1El.textContent=truncStr(zhLabel, 18);
 
-  if(enLabel){
+  if(hasTwo){
     const line2El=el('text',{
       x: x+w/2, y: y+h/2+8,
       'text-anchor':'middle','dominant-baseline':'central',
       'font-family':'IBM Plex Sans TC, Noto Sans TC, sans-serif',
       'font-size':'9','font-weight':'400',
-      fill: selected ? 'rgba(255,255,255,0.72)' : hex2rgba(color, 0.65)
+      fill: selected ? 'rgba(255,255,255,0.75)' : hex2rgba(color, 0.7)
     }, g);
-    line2El.textContent=truncStr(enLabel, 28);
+    line2El.textContent=truncStr(enLabel, 26);
   }
 
   g.style.cursor='pointer';
@@ -1313,31 +1315,33 @@ function rebuildLayout(){
 }
 
 // Explicit abbr map for all nodes
+// abbr = short code shown on node (line1, bold)
+// zh   = Chinese name shown on node (line2, light)
 const ABBR_MAP={
-  unfccc:'UNFCCC', kyoto:'京都議定書', cdm:'CDM/JI/ET', paris:'巴黎協定',
+  unfccc:'UNFCCC', kyoto:'京都議定書', cdm:'CDM / JI / ET', paris:'巴黎協定',
   ndc:'NDC', cop:'COP', ipcc:'IPCC', itmo:'ITMO', pacm:'PACM',
   csrd:'CSRD', esrs:'ESRS', csddd:'CSDDD', cbam:'CBAM', euets:'EU ETS',
   eudr:'EUDR', ppwr:'PPWR', corsia:'CORSIA', imo:'IMO 2050',
-  ira:'IRA', secrule:'SEC規則', cap:'Cap-and-Trade',
-  issb:'ISSB S1/S2', gri:'GRI', tcfd:'TCFD', tnfd:'TNFD', cdp:'CDP',
-  sasb:'SASB', doubmat:'雙重重大性', scope:'Scope 1/2/3', esma:'ESMA', sbtn:'SBTN',
+  ira:'IRA', secrule:'SEC 氣候規則', cap:'Cap-and-Trade',
+  issb:'ISSB S1 / S2', gri:'GRI', tcfd:'TCFD', tnfd:'TNFD', cdp:'CDP',
+  sasb:'SASB', doubmat:'雙重重大性', scope:'Scope 1 / 2 / 3', esma:'ESMA', sbtn:'SBTN',
   vcm:'VCM', ccp:'CCP', eua:'EUA', redd:'REDD+', sbti:'SBTi',
-  netzero:'Net Zero', twcf:'台灣碳費', tcex:'TCEX', cfvst:'碳費vs碳稅', cdr:'CDR',
-  ungp:'UNGP', ilo:'ILO核心公約', rba:'RBA', sa8000:'SA8000',
+  netzero:'Net Zero', twcf:'台灣碳費', tcex:'TCEX', cfvst:'碳費 vs 碳稅', cdr:'CDR',
+  ungp:'UNGP', ilo:'ILO 核心公約', rba:'RBA', sa8000:'SA8000',
   uflpa:'UFLPA', fpic:'FPIC', msa:'現代奴隸法',
-  sdgs:'SDGs', ungc:'UNGC', oecd:'OECD指導方針', clitigation:'氣候訴訟',
+  sdgs:'SDGs', ungc:'UNGC', oecd:'OECD 指導方針', clitigation:'氣候訴訟',
   cbcr:'CbCR', equator:'赤道原則',
   gbf:'GBF 30x30', naturalcap:'自然資本', bluec:'藍碳',
   epr:'EPR', fsc:'FSC', circular:'循環經濟',
   sfdr:'SFDR', eutax:'EU Taxonomy', greenbond:'綠色債券',
-  slb:'SLB', transitfin:'轉型金融', prisma:'PRI', esgratin:'ESG評級',
+  slb:'SLB', transitfin:'轉型金融', prisma:'PRI', esgratin:'ESG 評級',
   ghgpro:'GHG Protocol', iso14064:'ISO 14064', iso14067:'ISO 14067',
   iso14068:'ISO 14068-1', dac:'DAC', ccus:'CCUS', saf:'SAF',
-  greenh2:'綠氫/藍氫', greenamm:'綠氨', egs:'EGS', smr:'SMR', p2x:'P2X',
+  greenh2:'綠氫 / 藍氫', greenamm:'綠氨', egs:'EGS', smr:'SMR', p2x:'P2X',
   twlaw:'氣候變遷因應法', twpath:'台灣淨零路徑', trec:'T-REC',
   cppa:'CPPA', re100:'RE100', esco:'ESCO', iso50001:'ISO 50001', supchain:'供應鏈減碳'
 };
-Object.entries(D).forEach(([key, val])=>{ if(!val.abbr) val.abbr = ABBR_MAP[key]||val.zh; });
+Object.entries(D).forEach(([key, val])=>{ val.abbr = ABBR_MAP[key]||val.zh; });
 loadCustomNodes();
 </script>
 
@@ -1410,6 +1414,16 @@ loadCustomNodes();
     <button class="btn-add" id="btn-add" onclick="addNode()">加入關係圖</button>
   </div>
   <div id="custom-list"></div>
+
+  <div class="add-section-title">備份與還原</div>
+  <div class="btn-row" style="margin-bottom:6px">
+    <button class="btn-cancel" style="flex:1;text-align:center" onclick="exportNodes()">⬇ 匯出備份 JSON</button>
+    <label class="btn-cancel" style="flex:1;text-align:center;cursor:pointer">
+      ⬆ 匯入備份 JSON
+      <input type="file" accept=".json" style="display:none" onchange="importNodes(event)">
+    </label>
+  </div>
+  <div style="font-size:10px;color:var(--text3);text-align:center;padding-bottom:4px">換裝置或清快取前請先匯出備份</div>
 </div>
 </div>
 
@@ -1499,6 +1513,50 @@ function deleteCustomNode(id){
   GROUPS.forEach(g=>{ const i=g.ids.indexOf(id); if(i>-1) g.ids.splice(i,1); });
   saveCustomNodes(); rebuildLayout(); refreshCustomList(); updateSavedCount();
   if(currentId===id) closePanel();
+}
+
+function exportNodes(){
+  const custom=Object.values(D).filter(n=>n._custom);
+  if(!custom.length){ alert('還沒有自訂名詞可以匯出'); return; }
+  const json=JSON.stringify(custom, null, 2);
+  const blob=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='esg_custom_nodes_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importNodes(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const nodes=JSON.parse(e.target.result);
+      if(!Array.isArray(nodes)) throw new Error('格式錯誤');
+      let added=0;
+      nodes.forEach(n=>{
+        if(!n.id||!n.zh||!n.cat) return;
+        if(!D[n.id]){
+          n._custom=true;
+          D[n.id]=n;
+          const g=GROUPS.find(g=>g.cat===n.cat);
+          if(g&&!g.ids.includes(n.id)) g.ids.push(n.id);
+          added++;
+        }
+      });
+      saveCustomNodes();
+      rebuildLayout();
+      refreshCustomList();
+      updateSavedCount();
+      alert(`成功匯入 ${added} 個名詞！${nodes.length-added>0?'（'+（nodes.length-added)+'個已存在，略過）':''}`);
+    }catch(err){
+      alert('匯入失敗：'+err.message+'\n請確認是由本工具匯出的 JSON 檔案');
+    }
+    event.target.value='';
+  };
+  reader.readAsText(file);
 }
 
 function refreshCustomList(){
