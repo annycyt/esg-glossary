@@ -1200,10 +1200,11 @@ function renderAll(selectedId=null){
     const lastItemY = firstItemY + (g.ids.length-1)*(GROUP_ITEM_H+GROUP_ITEM_GAP);
     const connectorY = gp.y + GROUP_HEADER_H + GROUP_BRACE_PAD/2;
 
-    /* header → spine */
-    line(gp.x+NW/2, gp.y+GROUP_HEADER_H, gp.x+NW/2, connectorY, cat.color);
-    line(gp.x+NW/2, connectorY, spineX, connectorY, cat.color);
-    line(spineX, connectorY, spineX, lastItemY+GROUP_ITEM_H/2, cat.color);
+    /* header → spine: vertical drop then spine */
+    const dropY = gp.y + GROUP_HEADER_H + 8;
+    line(gp.x+NW/2, gp.y+GROUP_HEADER_H, gp.x+NW/2, dropY, cat.color);
+    line(gp.x+NW/2, dropY, spineX, dropY, cat.color);
+    line(spineX, dropY, spineX, lastItemY+GROUP_ITEM_H/2, cat.color);
 
     /* ticks + items */
     g.ids.forEach((id, ii)=>{
@@ -1283,18 +1284,7 @@ function showPanel(d, id){
   `;
 }
 
-// Delete button uses event delegation to avoid inline onclick escaping issues
-document.getElementById('panel').addEventListener('click', function(e){
-  const btn = e.target.closest('#del-node-btn');
-  if(!btn) return;
-  const delId = btn.dataset.delId;
-  if(!delId || !D[delId] || !D[delId]._custom) return;
-  if(!confirm('確定要刪除「'+(D[delId].zh||delId)+'」嗎？')) return;
-  delete D[delId];
-  GROUPS.forEach(g=>{ const i=g.ids.indexOf(delId); if(i>-1) g.ids.splice(i,1); });
-  cloudSave(); rebuildLayout();
-  closePanel();
-});
+// (delete delegation moved to main listener below)
 
 function jumpTo(id){
   if(!D[id]) return;
@@ -1921,6 +1911,15 @@ cloudLoad();
     if(editBtn){ openEditModal(editBtn.dataset.editId); return; }
     const regenBtn = e.target.closest('#btn-ai-regen');
     if(regenBtn){ openRegenModal(regenBtn.dataset.regenId); return; }
+    const delBtn = e.target.closest('#del-node-btn');
+    if(delBtn){
+      const delId = delBtn.dataset.delId;
+      if(!delId||!D[delId]||!D[delId]._custom) return;
+      if(!confirm('確定要刪除「'+(D[delId].zh||delId)+'」嗎？')) return;
+      delete D[delId];
+      GROUPS.forEach(g=>{ const i=g.ids.indexOf(delId); if(i>-1) g.ids.splice(i,1); });
+      cloudSave(); rebuildLayout(); closePanel(); return;
+    }
   });
 })();
 </script>
