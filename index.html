@@ -1116,24 +1116,65 @@ let editingId = null;
 let pendingAiData = null;
 let workerUrl = localStorage.getItem('esg_worker_url') || 'https://esg-ai-proxy.annycyt.workers.dev';
 
-// Load custom nodes
-function loadCustom(){
+// ── KV sync ──
+async function kvGet(){
   try{
-    const s = localStorage.getItem('esg_custom_nodes_v3');
-    if(!s) return;
-    const nodes = JSON.parse(s);
-    nodes.forEach(n=>{
-      D[n.id] = n;
-      const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
-      if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
-    });
-  }catch(e){}
+    const res = await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'get-nodes'})});
+    const data = await res.json();
+    return data.nodes||[];
+  }catch(e){ return []; }
+}
+async function kvSave(nodes){
+  try{
+    await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save-nodes',nodes})});
+  }catch(e){ console.warn('KV save failed',e); }
+}
+
+// Load custom nodes from KV
+async function loadCustom(){
+  const nodes = await kvGet();
+  nodes.forEach(n=>{
+    D[n.id] = n;
+    const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
+    if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+  });
+  if(nodes.length){ renderLanes(); updateCount(); }
 }
 function saveCustom(){
   const custom = Object.values(D).filter(n=>n._custom);
+  kvSave(custom);
+  // also keep local backup
   localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
 }
-loadCustom();
+// sync status indicator
+function showSyncStatus(msg, color='var(--text3)'){
+  let el = document.getElementById('sync-status');
+  if(!el){ el=document.createElement('div'); el.id='sync-status';
+    el.style.cssText='font-size:10px;color:var(--text3);margin-left:4px;transition:opacity .3s';
+    document.getElementById('hdr-count').after(el); }
+  el.textContent=msg; el.style.color=color; el.style.opacity='1';
+  if(color!=='var(--text3)') setTimeout(()=>{ el.style.opacity='0'; },3000);
+}
+
+// override loadCustom to show status
+async function loadCustomWithStatus(){
+  showSyncStatus('⟳ 同步中…');
+  const nodes = await kvGet();
+  nodes.forEach(n=>{
+    D[n.id] = n;
+    const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
+    if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+  });
+  if(nodes.length){
+    renderLanes(); updateCount();
+    showSyncStatus('✓ 已同步 '+nodes.length+' 個自訂名詞','var(--l1)');
+  } else {
+    showSyncStatus('');
+  }
+}
+
+// load on start
+loadCustomWithStatus();
 
 /* ════════════════════════════════════════════
    RENDER LANES
@@ -1497,9 +1538,12 @@ ${hint?'補充說明：'+hint:''}
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        model:'claude-sonnet-4-5',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
+        action:'ai',
+        payload:{
+          model:'claude-sonnet-4-5',
+          max_tokens:1000,
+          messages:[{role:'user',content:prompt}]
+        }
       })
     });
     const data = await res.json();
