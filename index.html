@@ -523,8 +523,8 @@ ${hint?'用戶補充說明：'+hint:''}
   try{
     const resp=await fetch(WORKER_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','X-ESG-Token':ESG_TOKEN},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,esg_token:ESG_TOKEN,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
     if(data.error){throw new Error(data.error.message);}
@@ -574,8 +574,8 @@ async function runAIFill(){
   try{
     const resp=await fetch(WORKER_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','X-ESG-Token':ESG_TOKEN},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,esg_token:ESG_TOKEN,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
     if(data.error) throw new Error(data.error.message);
