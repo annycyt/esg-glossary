@@ -122,7 +122,6 @@ select.finput{cursor:pointer}
   <div><h1>ESG 永續領域功能分類圖</h1></div>
   <input id="srch" placeholder="搜尋名詞…" autocomplete="off" oninput="onSearch(this.value)">
   <button class="hbtn primary" onclick="togglePanel('add')">＋ 新增名詞</button>
-  <button class="hbtn" onclick="togglePanel('settings')">⚙ API設定</button>
   <span id="hdr-count"></span>
 </div>
 
@@ -151,13 +150,21 @@ select.finput{cursor:pointer}
   </div>
   <div class="panel-btns">
     <button class="cbtn" onclick="togglePanel('add')">取消</button>
+    <button class="cbtn" id="ai-fill-btn" onclick="runAIFill()" title="輸入縮寫後，AI 自動生成說明欄位">✦ AI 自動生成說明</button>
     <button class="cbtn ok" onclick="addTerm()">加入關係圖</button>
   </div>
+  <div id="ai-fill-loading" style="display:none;font-size:11px;color:var(--text3);padding:4px 0;text-align:right">AI 生成中，請稍候…</div>
 </div>
 
-<!-- edit panel -->
-<div id="edit-panel" class="panel" style="display:none">
-  <div class="panel-title">✏ 編輯名詞</div>
+<!-- modal overlay backdrop -->
+<div id="modal-bg" onclick="closeModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300"></div>
+
+<!-- edit modal -->
+<div id="edit-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:310;background:var(--bg2);border:1px solid var(--border3);border-radius:10px;width:min(700px,95vw);max-height:88vh;overflow-y:auto;padding:20px 20px 16px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:500">✏ 編輯名詞</div>
+    <button class="cbtn" onclick="closeModal()">✕</button>
+  </div>
   <div class="panel-row c3">
     <div><span class="flabel">縮寫</span><input id="ea" class="finput" readonly style="opacity:.5"></div>
     <div><span class="flabel">中文名稱 / 英文</span><input id="ez" class="finput"></div>
@@ -176,49 +183,33 @@ select.finput{cursor:pointer}
     <div><span class="flabel">適用對象</span><input id="ew" class="finput"></div>
   </div>
   <div class="panel-btns">
-    <button class="cbtn" onclick="closeEdit()">取消</button>
+    <button class="cbtn" onclick="closeModal()">取消</button>
     <button class="cbtn ok" onclick="saveEdit()">儲存</button>
   </div>
 </div>
 
-<!-- ai panel -->
-<div id="ai-panel" class="panel" style="display:none">
-  <div class="panel-title">✦ AI 重新生成說明</div>
-  <div id="ai-nokey" style="display:none">
-    <p class="apikey-note">需要 Anthropic API Key 才能使用 AI 功能。請先在「⚙ API設定」中輸入。</p>
+<!-- ai modal -->
+<div id="ai-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:310;background:var(--bg2);border:1px solid var(--border3);border-radius:10px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;padding:20px 20px 16px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:500">✦ AI 重新生成說明</div>
+    <button class="cbtn" onclick="closeModal()">✕</button>
   </div>
   <div id="ai-form">
     <div class="panel-row c1">
       <div><span class="flabel">補充說明或問題（可空白）</span><input id="ai-hint" class="finput" placeholder="例如：請加強台灣的實際影響說明"></div>
     </div>
     <div class="panel-btns" style="margin-bottom:8px">
-      <button class="cbtn" onclick="closeAI()">取消</button>
+      <button class="cbtn" onclick="closeModal()">取消</button>
       <button class="cbtn ok" id="ai-run-btn" onclick="runAI()">✦ 重新生成</button>
     </div>
     <div id="ai-loading" style="display:none;font-size:12px;color:var(--text3);padding:4px 0">AI 生成中，請稍候…</div>
     <div id="ai-result-wrap" style="display:none">
       <div class="ai-result" id="ai-result"></div>
       <div class="panel-btns">
-        <button class="cbtn" onclick="closeAI()">取消</button>
+        <button class="cbtn" onclick="closeModal()">取消</button>
         <button class="cbtn ok" onclick="applyAI()">套用此版本</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- settings panel -->
-<div id="settings-panel" class="panel" style="display:none">
-  <div class="panel-title">⚙ API 設定</div>
-  <div class="panel-row c1">
-    <div>
-      <span class="flabel">Anthropic API Key（用於 AI 重新生成功能）</span>
-      <input id="apikey-input" class="finput" type="password" placeholder="sk-ant-...">
-    </div>
-  </div>
-  <p class="apikey-note" style="margin:6px 0 10px">API Key 儲存在瀏覽器 localStorage，不會傳送至任何第三方。<br>取得 API Key：<a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></p>
-  <div class="panel-btns">
-    <button class="cbtn" onclick="togglePanel('settings')">關閉</button>
-    <button class="cbtn ok" onclick="saveAPIKey()">儲存 API Key</button>
   </div>
 </div>
 
@@ -378,11 +369,10 @@ function allTermKeys(){return LAYER_DEFS.flatMap(l=>l.terms);}
    PANELS
 ════════════════════════════════ */
 function togglePanel(name){
-  const panels=['add','edit','ai','settings'];
-  if(openPanel===name){openPanel=null; panels.forEach(p=>el(p+'-panel').style.display='none'); return;}
-  panels.forEach(p=>el(p+'-panel').style.display='none');
+  if(openPanel===name){openPanel=null; el('add-panel').style.display='none'; return;}
+  el('add-panel').style.display='none';
   openPanel=name;
-  el(name+'-panel').style.display='block';
+  el('add-panel').style.display='block';
   if(name==='add'){
     populateLayerSelect('nl');
     el('na').value=''; el('nz').value=''; el('np').value=''; el('nh').value='';
@@ -390,13 +380,20 @@ function togglePanel(name){
     el('nvol').checked=false;
     el('na').focus();
   }
-  if(name==='settings'){
-    el('apikey-input').value=localStorage.getItem('esg_apikey')||'';
-  }
 }
 
-function closeEdit(){openPanel=null;el('edit-panel').style.display='none';}
-function closeAI(){openPanel=null;el('ai-panel').style.display='none'; el('ai-result-wrap').style.display='none'; el('ai-loading').style.display='none';}
+function closeModal(){
+  el('edit-panel').style.display='none';
+  el('ai-panel').style.display='none';
+  el('modal-bg').style.display='none';
+  el('ai-result-wrap').style.display='none';
+  el('ai-loading').style.display='none';
+  openPanel=null;
+  document.body.style.overflow='';
+}
+
+function closeEdit(){closeModal();}
+function closeAI(){closeModal();}
 
 /* ════════════════════════════════
    LAYER SELECT POPULATOR
@@ -452,12 +449,11 @@ function openEdit(key){
   el('ee').value=t.exam||'';
   el('en2').value=t.num||'';
   el('ew').value=t.who||'';
-  el('add-panel').style.display='none';
   el('ai-panel').style.display='none';
-  el('settings-panel').style.display='none';
   el('edit-panel').style.display='block';
+  el('modal-bg').style.display='block';
+  document.body.style.overflow='hidden';
   openPanel='edit';
-  el('edit-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function saveEdit(){
@@ -489,24 +485,20 @@ function saveEdit(){
 function openAI(key){
   aiKey=key; aiResult=null;
   const t=D[key]; if(!t) return;
-  el('add-panel').style.display='none';
   el('edit-panel').style.display='none';
-  el('settings-panel').style.display='none';
   el('ai-panel').style.display='block';
+  el('modal-bg').style.display='block';
+  document.body.style.overflow='hidden';
   openPanel='ai';
   el('ai-result-wrap').style.display='none';
   el('ai-loading').style.display='none';
   el('ai-hint').value='';
-  const apikey=localStorage.getItem('esg_apikey')||'';
-  el('ai-nokey').style.display=apikey?'none':'block';
-  el('ai-form').style.display='block';
-  el('ai-run-btn').disabled=!apikey;
-  el('ai-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+  el('ai-run-btn').disabled=false;
 }
 
 async function runAI(){
   const apikey=localStorage.getItem('esg_apikey')||'';
-  if(!apikey){alert('請先在「⚙ API設定」中輸入 Anthropic API Key');return;}
+  if(!apikey){alert('請先在瀏覽器 console 執行：\nlocalStorage.setItem(\'esg_apikey\',\'sk-ant-...\')');return;}
   if(!aiKey||!D[aiKey]) return;
   const t=D[aiKey];
   const hint=el('ai-hint').value.trim();
@@ -563,6 +555,43 @@ function applyAI(){
   if(aiResult.who) t.who=aiResult.who;
   closeAI();
   renderDetail(aiKey);
+}
+
+async function runAIFill(){
+  const abbr=el('na').value.trim();
+  if(!abbr){el('na').style.outline='1px solid #D85A30'; el('na').focus(); alert('請先填入縮寫'); return;}
+  const apikey=localStorage.getItem('esg_apikey')||'';
+  if(!apikey){alert('請先在瀏覽器 console 執行：\nlocalStorage.setItem(\'esg_apikey\',\'sk-ant-...\')'); return;}
+  el('ai-fill-btn').disabled=true;
+  el('ai-fill-loading').style.display='block';
+  const zh=el('nz').value.trim();
+  const prompt=`你是ESG永續領域的專家，請為以下ESG名詞生成說明內容，以台灣企業和從業者為受眾。
+名詞縮寫：${abbr}${zh?' 中文名稱：'+zh:''}
+請以JSON格式回覆，包含以下欄位：zh（中文名稱，10字以內）、prob（解決什麼問題，2-3句）、how（怎麼運作，3-5句）、tw（台灣影響，2-3句含具體案例）、exam（考試重點，每點以▸開頭，3-5點）、num（關鍵數字，20字以內）、who（適用對象，20字以內）。只回JSON，不要Markdown代碼塊。`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apikey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    if(data.error) throw new Error(data.error.message);
+    const text=(data.content||[]).map(c=>c.text||'').join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    const r=JSON.parse(clean);
+    if(r.zh&&!el('nz').value.trim()) el('nz').value=r.zh;
+    if(r.prob) el('np').value=r.prob;
+    if(r.how) el('nh').value=r.how;
+    if(r.tw) el('ntw').value=r.tw;
+    if(r.exam) el('ne').value=r.exam;
+    if(r.num) el('nn').value=r.num;
+    if(r.who) el('nw').value=r.who;
+  }catch(e){
+    alert('AI 生成失敗：'+e.message);
+  }finally{
+    el('ai-fill-btn').disabled=false;
+    el('ai-fill-loading').style.display='none';
+  }
 }
 
 function saveAPIKey(){
