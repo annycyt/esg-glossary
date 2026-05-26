@@ -229,16 +229,10 @@ select.finput{cursor:pointer}
 </div><!-- #app -->
 <script>
 /* ════════════════════════════════
-   API KEY — 存在 localStorage，第一次使用時提示輸入
+   CONFIG
 ════════════════════════════════ */
-function getApiKey(){
-  let k=localStorage.getItem('esg_apikey')||'';
-  if(!k){
-    k=prompt('請輸入 Anthropic API Key（只需輸入一次，之後自動記住）：','');
-    if(k&&k.trim()) localStorage.setItem('esg_apikey',k.trim());
-  }
-  return k?k.trim():'';
-}
+const WORKER_URL = 'https://esg-ai-proxy.annycyt.workers.dev';
+const ESG_TOKEN  = 'esg-annycyt-2026';
 
 /* ════════════════════════════════
    DATA — 所有名詞原始資料
@@ -510,7 +504,6 @@ function openAI(key){
 
 async function runAI(){
   if(!aiKey||!D[aiKey]) return;
-  const apikey=getApiKey(); if(!apikey) return;
   const t=D[aiKey];
   const hint=el('ai-hint').value.trim();
   el('ai-loading').style.display='block';
@@ -527,10 +520,10 @@ ${hint?'用戶補充說明：'+hint:''}
 
 請以JSON格式回覆，包含以下欄位：prob（解決什麼問題，2-3句話）、how（怎麼運作，3-5句話）、tw（台灣影響，2-3句台灣具體案例）、exam（考試重點，每點以▸開頭，3-5點）、num（關鍵數字，20字以內）、who（適用對象，20字以內）。只回JSON，不要Markdown代碼塊或其他文字。`;
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch(WORKER_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apikey,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,esg_token:ESG_TOKEN,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
     if(data.error){throw new Error(data.error.message);}
@@ -571,7 +564,6 @@ function applyAI(){
 async function runAIFill(){
   const abbr=el('na').value.trim();
   if(!abbr){el('na').style.outline='1px solid #D85A30'; el('na').focus(); alert('請先填入縮寫'); return;}
-  const apikey=getApiKey(); if(!apikey) return;
   el('ai-fill-btn').disabled=true;
   el('ai-fill-loading').style.display='block';
   const zh=el('nz').value.trim();
@@ -579,10 +571,10 @@ async function runAIFill(){
 名詞縮寫：${abbr}${zh?' 中文名稱：'+zh:''}
 請以JSON格式回覆，包含以下欄位：zh（中文名稱，10字以內）、prob（解決什麼問題，2-3句）、how（怎麼運作，3-5句）、tw（台灣影響，2-3句含具體案例）、exam（考試重點，每點以▸開頭，3-5點）、num（關鍵數字，20字以內）、who（適用對象，20字以內）。只回JSON，不要Markdown代碼塊。`;
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch(WORKER_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apikey,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,esg_token:ESG_TOKEN,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
     if(data.error) throw new Error(data.error.message);
