@@ -1146,8 +1146,10 @@ function saveCustom(){
   localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
 }
 function saveEdited(){
-  const edited = Object.values(D).filter(n=>n._edited && !n._custom);
-  // also store in localStorage as immediate backup
+  // inject the key as 'id' so we can look it up on restore
+  const edited = Object.entries(D)
+    .filter(([k,v])=>v._edited && !v._custom)
+    .map(([k,v])=>({...v, id:k}));
   localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
   const custom = Object.values(D).filter(n=>n._custom);
   kvSave([...custom, ...edited]);
@@ -1167,8 +1169,12 @@ function restoreEditedFromLocal(){
   try{
     const s = localStorage.getItem('esg_edited_nodes_v3');
     if(!s) return;
-    JSON.parse(s).forEach(n=>{ if(D[n.id]) Object.assign(D[n.id], n); });
-  }catch(e){}
+    JSON.parse(s).forEach(n=>{
+      if(n.id && D[n.id]){
+        Object.assign(D[n.id], n);
+      }
+    });
+  }catch(e){ console.warn('restoreEdited error',e); }
 }
 restoreEditedFromLocal();
 
@@ -1195,7 +1201,7 @@ async function loadCustomWithStatus(){
     let localEditedIds = new Set();
     try{
       const le = JSON.parse(localStorage.getItem('esg_edited_nodes_v3')||'[]');
-      le.forEach(n=>localEditedIds.add(n.id));
+      le.forEach(n=>{ if(n.id) localEditedIds.add(n.id); });
     }catch(e){}
 
     let customCount = 0;
@@ -1208,7 +1214,7 @@ async function loadCustomWithStatus(){
           if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
         }
         customCount++;
-      } else if(n._edited && D[n.id] && !localEditedIds.has(n.id)){
+      } else if(n._edited && n.id && D[n.id] && !localEditedIds.has(n.id)){
         // only restore KV edits if we don't have a local version
         Object.assign(D[n.id], n);
       }
