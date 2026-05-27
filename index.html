@@ -1191,22 +1191,34 @@ async function loadCustomWithStatus(){
   showSyncStatus('⟳ 同步中…');
   try{
     const nodes = await kvGet();
+    // get local edited ids to avoid overwriting newer local data
+    let localEditedIds = new Set();
+    try{
+      const le = JSON.parse(localStorage.getItem('esg_edited_nodes_v3')||'[]');
+      le.forEach(n=>localEditedIds.add(n.id));
+    }catch(e){}
+
     let customCount = 0;
     nodes.forEach(n=>{
       if(n._custom){
-        D[n.id] = n;
-        const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
-        if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+        // only add if not already in D (local custom takes priority)
+        if(!D[n.id]){
+          D[n.id] = n;
+          const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
+          if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+        }
         customCount++;
-      } else if(n._edited && D[n.id]){
+      } else if(n._edited && D[n.id] && !localEditedIds.has(n.id)){
+        // only restore KV edits if we don't have a local version
         Object.assign(D[n.id], n);
       }
     });
-    // sync local storage with KV data
-    const custom = nodes.filter(n=>n._custom);
-    const edited = nodes.filter(n=>n._edited&&!n._custom);
-    if(custom.length) localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
-    if(edited.length) localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
+    // push local data to KV to ensure cross-device sync is up to date
+    const allCustom = Object.values(D).filter(n=>n._custom);
+    const allEdited = Object.values(D).filter(n=>n._edited&&!n._custom);
+    if(allCustom.length||allEdited.length){
+      kvSave([...allCustom,...allEdited]);
+    }
     renderLanes(); updateCount();
     showSyncStatus(customCount>0?'✓ 已同步 '+customCount+' 個自訂名詞':'','var(--l1)');
   } catch(e){
@@ -1516,9 +1528,11 @@ function submitEdit(){
   });
   if(d._custom){ saveCustom(); }
   else { d._edited = true; saveEdited(); }
+  const savedId = editingId; // save before closeSidePanel clears it
+  selectedId = savedId;
   closeSidePanel();
   renderLanes(document.getElementById('srch').value.trim());
-  showDetailPanel(editingId);
+  showDetailPanel(savedId);
 }
 
 /* ── REGEN ── */
