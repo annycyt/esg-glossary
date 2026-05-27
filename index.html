@@ -1370,6 +1370,15 @@ function findLayerOf(id){
   return LAYER_DEFS.find(l=>l.terms.includes(id));
 }
 
+function renderMd(text){
+  if(!text) return '';
+  return text
+    .replace(/</g,'&lt;')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\n/g,'<br>');
+}
+
 function showDetailPanel(id){
   const d = D[id];
   const layer = findLayerOf(id);
@@ -1393,7 +1402,7 @@ function showDetailPanel(id){
     <div class="p-box">${(d.prob||'').replace(/\n/g,'<br>')}</div>
     <div class="p-sec">怎麼運作</div>
     <div class="p-box">${(d.how||'').replace(/\n/g,'<br>')}</div>
-    ${d.detail?`<div class="p-sec">詳細清單</div><div class="p-box" style="border-left:3px solid var(--l3);font-family:var(--mono);font-size:11px">${d.detail.replace(/\n/g,'<br>')}</div>`:''}
+    ${d.detail?`<div class="p-sec">詳細清單</div><div class="p-box" style="border-left:3px solid var(--l3);font-size:11px">${renderMd(d.detail)}</div>`:''}
     <div class="p-grid">
       <div class="p-cell"><div class="p-lbl">台灣影響</div><div class="p-val">${d.tw||''}</div></div>
       <div class="p-cell"><div class="p-lbl">考試重點</div><div class="p-val">${d.exam||''}</div></div>
@@ -1402,7 +1411,7 @@ function showDetailPanel(id){
     </div>
     <div class="p-sec">關聯名詞</div>
     <div class="p-chips">${relChips}</div>
-    ${d.note?`<div class="p-sec">我的補充筆記</div><div class="p-box" style="border-left:3px solid var(--l5);background:var(--l5b)">${d.note.replace(/\n/g,'<br>')}</div>`:''}
+    ${d.note?`<div class="p-sec">我的補充筆記</div><div class="p-box" style="border-left:3px solid var(--l5);background:var(--l5b)">${renderMd(d.note)}</div>`:''}
   `;
 }
 
@@ -1629,22 +1638,7 @@ async function generateAI(mode){
   if(mode==='regen'){
     if(!hint){ errEl.textContent='請輸入你的問題'; errEl.style.display='block'; btn.disabled=false; icon.classList.remove('spin'); icon.textContent='✦'; return; }
     const d = D[targetId];
-    const context = [
-      d.prob?'背景：'+d.prob:'',
-      d.how?'運作方式：'+d.how.slice(0,300):'',
-    ].filter(Boolean).join('\n');
-    var prompt = `你是ESG永續領域的專家教師，熟悉台灣法規環境和國際氣候政策。
-
-關於「${abbr}${en?' ('+en+')':''}」，使用者有以下問題：
-${hint}
-
-${context?'名詞背景參考：\n'+context:''}
-
-請用繁體中文直接回答這個問題，回答要：
-- 完整且具體，不要只給大綱
-- 如果有清單（如12項準則、8項公約等），請逐一列出每一項的名稱和說明
-- 如果有數字、年份、門檻，請明確標示
-- 不需要JSON格式，直接用自然語言回答`;
+    var prompt = `關於「${abbr}${en?' ('+en+')':''}」：${hint}`;
 
     try{
       const geminiKey = localStorage.getItem('esg_gemini_key')||'';
@@ -1662,7 +1656,7 @@ ${context?'名詞背景參考：\n'+context:''}
       pendingNoteText = answerText;
       document.getElementById('regen-preview').innerHTML = `
         <div class="s-sec-title">AI 回答預覽（將存入補充筆記）</div>
-        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.75;max-height:300px;overflow-y:auto">${answerText.replace(/</g,'&lt;')}</div>
+        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.75;max-height:300px;overflow-y:auto">${renderMd(answerText)}</div>
         <div class="btn-row">
           <button class="btn-secondary" onclick="document.getElementById('regen-preview').innerHTML='';pendingNoteText=null">放棄</button>
           <button class="btn-primary" onclick="applyRegen()">存入補充筆記</button>
@@ -1677,33 +1671,9 @@ ${context?'名詞背景參考：\n'+context:''}
     return;
   }
 
-  const layerDefs = {
-    l1:'科學根源 & 國際政治承諾（UNFCCC、巴黎協定、NDC、COP等）',
-    l2:'強制法規（有懲罰）（CSRD、CBAM、CSDDD、台灣碳費等政府立法）',
-    l3:'主流自願準則（市場實質強制）（ISSB、GRI、SBTi、RBA等）',
-    l4:'運作機制（碳定價設計、盤查方法學、計算標準等）',
-    l5:'市場工具 & 金融產品（VCM、T-REC、綠色債券、TCEX等）',
-    l6:'概念術語 & 技術解方（CDR、DAC、綠氫、循環經濟等）'
-  };
-  const layerChoices = Object.entries(layerDefs).map(([k,v])=>`${k}: ${v}`).join('\n');
-  var prompt = `你是ESG永續領域的專家教師，熟悉台灣法規環境、供應鏈減碳壓力、國際氣候政策。
-
-請為以下名詞生成完整的繁體中文說明：
-名詞：${abbr}${en?' ('+en+')':''}
-
-說明要求：
-- prob（解決什麼問題）：用白話說明這個機制/法規「為什麼存在」，從企業或政策角度出發，80-150字
-- how（怎麼運作）：具體說明核心規定、運作邏輯、關鍵時程，若有子項目（如12項準則、8項公約等）請逐一列出，可用編號分點，100-600字
-- tw（台灣影響）：聚焦台灣企業的實際影響，舉具體產業或公司例子，50-120字
-- exam（考試重點）：針對iPAS淨零碳規劃管理師考試，列出3-5個最重要的考點，每點獨立一行
-- num（關鍵數字）：重要的數字、年份、門檻值，用「／」分隔
-- who（適用對象）：明確說明哪些企業或組織必須遵守
-
-功能層分類（選最合適的一個）：
-${layerChoices}
-
-輸出格式（純JSON，不要任何markdown或說明文字）：
-{"zh":"中文名稱(2-8字)","en":"英文全名","layerId":"l1到l6其中之一","prob":"...","how":"...","detail":"若有子項目清單（如準則列表、公約條文、步驟清單等）請在此完整列出，無則留空字串","tw":"...","exam":"...","num":"...","who":"..."}`;
+  const layerIds = 'l1=科學根源國際政治承諾,l2=強制法規有懲罰,l3=主流自願準則,l4=運作機制,l5=市場工具金融產品,l6=概念術語技術解方';
+  var prompt = `請為ESG名詞「${abbr}${en?' ('+en+')':''}」生成繁體中文說明，只輸出純JSON不含其他文字：
+{"zh":"中文名稱","en":"英文全名","layerId":"從以下選一個(${layerIds})","prob":"解決什麼問題","how":"怎麼運作，若有清單請逐一列出","detail":"子項目清單，無則空字串","tw":"台灣影響","exam":"考試重點","num":"關鍵數字","who":"適用對象"}`;
 
   try{
     const geminiKey = localStorage.getItem('esg_gemini_key')||'';
