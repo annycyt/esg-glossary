@@ -1141,17 +1141,18 @@ async function loadCustom(){
   if(nodes.length){ renderLanes(); updateCount(); }
 }
 function saveCustom(){
-  const custom = Object.values(D).filter(n=>n._custom);
+  const ts = Date.now();
+  const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
   kvSave(custom);
   localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
 }
 function saveEdited(){
-  // inject the key as 'id' so we can look it up on restore
+  const ts = Date.now();
   const edited = Object.entries(D)
     .filter(([k,v])=>v._edited && !v._custom)
-    .map(([k,v])=>({...v, id:k}));
+    .map(([k,v])=>({...v, id:k, _ts:v._ts||ts}));
   localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
-  const custom = Object.values(D).filter(n=>n._custom);
+  const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
   kvSave([...custom, ...edited]);
 }
 // sync status indicator
@@ -1170,9 +1171,7 @@ function restoreEditedFromLocal(){
     const s = localStorage.getItem('esg_edited_nodes_v3');
     if(!s) return;
     JSON.parse(s).forEach(n=>{
-      if(n.id && D[n.id]){
-        Object.assign(D[n.id], n);
-      }
+      if(n.id && D[n.id]) Object.assign(D[n.id], n);
     });
   }catch(e){ console.warn('restoreEdited error',e); }
 }
@@ -1197,36 +1196,58 @@ async function loadCustomWithStatus(){
   showSyncStatus('⟳ 同步中…');
   try{
     const nodes = await kvGet();
-    // get local edited ids to avoid overwriting newer local data
-    let localEditedIds = new Set();
+
+    // build local timestamp map for edited nodes
+    const localTs = {};
     try{
-      const le = JSON.parse(localStorage.getItem('esg_edited_nodes_v3')||'[]');
-      le.forEach(n=>{ if(n.id) localEditedIds.add(n.id); });
+      JSON.parse(localStorage.getItem('esg_edited_nodes_v3')||'[]')
+        .forEach(n=>{ if(n.id) localTs[n.id] = n._ts||0; });
+      JSON.parse(localStorage.getItem('esg_custom_nodes_v3')||'[]')
+        .forEach(n=>{ if(n.id) localTs[n.id] = n._ts||0; });
     }catch(e){}
 
     let customCount = 0;
+    let kvWon = false;
     nodes.forEach(n=>{
+      const kvTs = n._ts||0;
+      const lcTs = localTs[n.id]||0;
+      // KV wins if its timestamp is newer than local
+      const kvNewer = kvTs > lcTs;
+
       if(n._custom){
-        // only add if not already in D (local custom takes priority)
-        if(!D[n.id]){
+        if(!D[n.id] || kvNewer){
           D[n.id] = n;
           const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
           if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+          if(kvNewer) kvWon = true;
         }
         customCount++;
-      } else if(n._edited && n.id && D[n.id] && !localEditedIds.has(n.id)){
-        // only restore KV edits if we don't have a local version
-        Object.assign(D[n.id], n);
+      } else if(n._edited && n.id && D[n.id]){
+        if(kvNewer){
+          Object.assign(D[n.id], n);
+          kvWon = true;
+        }
       }
     });
-    // push local data to KV to ensure cross-device sync is up to date
-    const allCustom = Object.values(D).filter(n=>n._custom);
-    const allEdited = Object.values(D).filter(n=>n._edited&&!n._custom);
-    if(allCustom.length||allEdited.length){
-      kvSave([...allCustom,...allEdited]);
-    }
+
+    // always push local newest data back to KV so other devices get it
+    const ts = Date.now();
+    const allCustom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
+    const allEdited = Object.entries(D)
+      .filter(([k,v])=>v._edited&&!v._custom)
+      .map(([k,v])=>({...v,id:k,_ts:v._ts||ts}));
+    if(allCustom.length||allEdited.length) kvSave([...allCustom,...allEdited]);
+
+    // update localStorage with merged result
+    if(allCustom.length) localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(allCustom));
+    if(allEdited.length) localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(allEdited));
+
     renderLanes(); updateCount();
-    showSyncStatus(customCount>0?'✓ 已同步 '+customCount+' 個自訂名詞':'','var(--l1)');
+    const msg = [
+      customCount>0 ? customCount+'個自訂' : '',
+      kvWon ? '已從其他裝置同步' : ''
+    ].filter(Boolean).join('・');
+    showSyncStatus(msg?'✓ '+msg:'', 'var(--l1)');
   } catch(e){
     showSyncStatus('⚠ KV 同步失敗，使用本地備份','#b5400a');
   }
