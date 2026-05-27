@@ -61,6 +61,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 
 /* ── BODY ── */
 #body{display:flex;flex:1;overflow:hidden}
+#resizer{
+  width:5px;flex-shrink:0;cursor:col-resize;
+  background:var(--border);
+  transition:background .15s;
+  position:relative;z-index:10;
+}
+#resizer:hover,#resizer.dragging{background:var(--border2);}
+#resizer::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:3px;height:32px;border-radius:2px;
+  background:var(--border2);
+}
+@media(max-width:700px){#resizer{display:none}}
 #lanes-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 12px 120px}
 #lanes-wrap::-webkit-scrollbar{width:5px}
 #lanes-wrap::-webkit-scrollbar-track{background:transparent}
@@ -300,6 +314,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
     <div style="font-size:10px;color:var(--text3);text-align:right;padding:4px 2px 6px">拖曳名詞可移動至其他功能層</div>
     <div id="lanes-container"></div>
   </div>
+
+  <!-- RESIZER -->
+  <div id="resizer" title="拖曳調整寬度"></div>
 
   <!-- DETAIL PANEL -->
   <div id="panel" class="closed">
@@ -1943,6 +1960,81 @@ function saveApiSettings(){
   closeApiModal();
   showSyncStatus('✓ 設定已儲存','var(--l1)');
 }
+
+/* ════════════════════════════════════════════
+   RESIZABLE PANEL
+════════════════════════════════════════════ */
+(function(){
+  const resizer = document.getElementById('resizer');
+  const panel = document.getElementById('panel');
+  const body = document.getElementById('body');
+  if(!resizer||!panel) return;
+
+  let isResizing = false;
+  let startX = 0;
+  let startWidth = 0;
+
+  resizer.addEventListener('mousedown', e=>{
+    if(window.innerWidth<=700) return;
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = panel.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  });
+
+  document.addEventListener('mousemove', e=>{
+    if(!isResizing) return;
+    const dx = startX - e.clientX; // dragging left = panel gets bigger
+    const newWidth = Math.min(Math.max(startWidth + dx, 280), window.innerWidth * 0.65);
+    panel.style.width = newWidth + 'px';
+    panel.style.minWidth = newWidth + 'px';
+    // also update panel-inner min-width
+    const inner = document.getElementById('panel-inner');
+    if(inner) inner.style.minWidth = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', ()=>{
+    if(!isResizing) return;
+    isResizing = false;
+    resizer.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    // save preference
+    const w = panel.offsetWidth;
+    if(w>0) localStorage.setItem('esg_panel_width', w);
+  });
+
+  // touch support
+  resizer.addEventListener('touchstart', e=>{
+    if(window.innerWidth<=700) return;
+    isResizing = true;
+    startX = e.touches[0].clientX;
+    startWidth = panel.offsetWidth;
+  }, {passive:true});
+
+  document.addEventListener('touchmove', e=>{
+    if(!isResizing) return;
+    const dx = startX - e.touches[0].clientX;
+    const newWidth = Math.min(Math.max(startWidth + dx, 280), window.innerWidth * 0.65);
+    panel.style.width = newWidth + 'px';
+    panel.style.minWidth = newWidth + 'px';
+    const inner = document.getElementById('panel-inner');
+    if(inner) inner.style.minWidth = newWidth + 'px';
+  }, {passive:true});
+
+  document.addEventListener('touchend', ()=>{ isResizing = false; });
+
+  // restore saved width
+  const saved = localStorage.getItem('esg_panel_width');
+  if(saved && parseInt(saved)>=280){
+    panel.style.width = saved+'px';
+    panel.style.minWidth = saved+'px';
+    const inner = document.getElementById('panel-inner');
+    if(inner) inner.style.minWidth = saved+'px';
+  }
+})();
 
 // Add settings button to header
 const settingsBtn = document.createElement('button');
