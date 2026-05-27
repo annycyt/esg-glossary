@@ -1121,13 +1121,21 @@ async function kvGet(){
   try{
     const res = await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'get-nodes'})});
     const data = await res.json();
-    return data.nodes||[];
-  }catch(e){ return []; }
+    const nodes = data.nodes||[];
+    console.log('[KV GET] nodes count:',nodes.length, nodes.map(n=>n.id+'@'+(n._ts||0)));
+    return nodes;
+  }catch(e){
+    console.error('[KV GET] failed:',e);
+    return [];
+  }
 }
 async function kvSave(nodes){
   try{
-    await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save-nodes',nodes})});
-  }catch(e){ console.warn('KV save failed',e); }
+    console.log('[KV SAVE] saving nodes:',nodes.length, nodes.map(n=>n.id+'@'+(n._ts||0)));
+    const res = await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save-nodes',nodes})});
+    const data = await res.json();
+    console.log('[KV SAVE] result:',data);
+  }catch(e){ console.warn('[KV SAVE] failed:',e); }
 }
 
 // Load custom nodes from KV
@@ -1150,7 +1158,8 @@ function saveEdited(){
   const ts = Date.now();
   const edited = Object.entries(D)
     .filter(([k,v])=>v._edited && !v._custom)
-    .map(([k,v])=>({...v, id:k, _ts:v._ts||ts}));
+    .map(([k,v])=>({...v, id:k, _ts:ts}));  // always use current ts
+  console.log('[saveEdited] saving:', edited.map(n=>n.id+'@'+n._ts));
   localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
   const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
   kvSave([...custom, ...edited]);
