@@ -290,7 +290,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   </div>
   <button id="btn-add-node" onclick="openAddPanel()">＋ 新增名詞</button>
   <div id="hdr-count"></div>
+  <button onclick="toggleDebug()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer">debug</button>
 </div>
+<div id="debug-panel" style="display:none;background:#111;color:#0f0;font-size:10px;padding:8px 12px;font-family:monospace;max-height:200px;overflow-y:auto;white-space:pre-wrap;border-bottom:1px solid #333" id="debug-panel"></div>
 
 <!-- BODY -->
 <div id="body">
@@ -1117,25 +1119,36 @@ let pendingAiData = null;
 let workerUrl = localStorage.getItem('esg_worker_url') || 'https://esg-ai-proxy.annycyt.workers.dev';
 
 // ── KV sync ──
+function dbg(msg){
+  const p=document.getElementById('debug-panel');
+  if(!p) return;
+  const t=new Date().toLocaleTimeString('zh-TW');
+  p.textContent = t+' '+msg+'\n' + p.textContent;
+}
+function toggleDebug(){
+  const p=document.getElementById('debug-panel');
+  if(p) p.style.display=p.style.display==='none'?'block':'none';
+}
 async function kvGet(){
   try{
+    dbg('GET 開始 worker:'+workerUrl);
     const res = await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'get-nodes'})});
     const data = await res.json();
     const nodes = data.nodes||[];
-    console.log('[KV GET] nodes count:',nodes.length, nodes.map(n=>n.id+'@'+(n._ts||0)));
+    dbg('GET 成功 '+nodes.length+'筆: '+nodes.map(n=>n.id+'@'+(n._ts||0)).join(', '));
     return nodes;
   }catch(e){
-    console.error('[KV GET] failed:',e);
+    dbg('GET 失敗: '+e.message);
     return [];
   }
 }
 async function kvSave(nodes){
   try{
-    console.log('[KV SAVE] saving nodes:',nodes.length, nodes.map(n=>n.id+'@'+(n._ts||0)));
+    dbg('SAVE 開始 '+nodes.length+'筆: '+nodes.map(n=>n.id+'@'+(n._ts||0)).join(', '));
     const res = await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save-nodes',nodes})});
     const data = await res.json();
-    console.log('[KV SAVE] result:',data);
-  }catch(e){ console.warn('[KV SAVE] failed:',e); }
+    dbg('SAVE 結果: '+JSON.stringify(data));
+  }catch(e){ dbg('SAVE 失敗: '+e.message); }
 }
 
 // Load custom nodes from KV
@@ -1158,8 +1171,8 @@ function saveEdited(){
   const ts = Date.now();
   const edited = Object.entries(D)
     .filter(([k,v])=>v._edited && !v._custom)
-    .map(([k,v])=>({...v, id:k, _ts:ts}));  // always use current ts
-  console.log('[saveEdited] saving:', edited.map(n=>n.id+'@'+n._ts));
+    .map(([k,v])=>({...v, id:k, _ts:ts}));
+  dbg('saveEdited: '+edited.map(n=>n.id+'@'+n._ts).join(', '));
   localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
   const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
   kvSave([...custom, ...edited]);
@@ -1217,11 +1230,12 @@ async function loadCustomWithStatus(){
 
     let customCount = 0;
     let kvWon = false;
+    dbg('KV比對 localTs:'+JSON.stringify(localTs));
     nodes.forEach(n=>{
       const kvTs = n._ts||0;
       const lcTs = localTs[n.id]||0;
-      // KV wins if its timestamp is newer than local
       const kvNewer = kvTs > lcTs;
+      dbg('節點 '+n.id+' kvTs='+kvTs+' lcTs='+lcTs+' kvNewer='+kvNewer);
 
       if(n._custom){
         if(!D[n.id] || kvNewer){
