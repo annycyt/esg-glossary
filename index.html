@@ -1664,11 +1664,15 @@ ${layerChoices}
       const detail = data.error || data.raw || 'Gemini 無回應';
       throw new Error('Gemini API 沒有回應：'+detail);
     }
-    // strip markdown fences if present
+    // extract JSON robustly - find first { and last }
     const clean = text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
-    const jsonMatch = clean.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('無法解析 AI 回應：'+clean.slice(0,100));
-    const parsed = JSON.parse(jsonMatch[0]);
+    const start = clean.indexOf('{');
+    const end = clean.lastIndexOf('}');
+    if(start===-1||end===-1) throw new Error('AI 回應中找不到 JSON：'+clean.slice(0,100));
+    const jsonStr = clean.slice(start, end+1);
+    let parsed;
+    try{ parsed = JSON.parse(jsonStr); }
+    catch(e){ throw new Error('JSON 解析失敗：'+e.message+' 內容：'+jsonStr.slice(0,100)); }
     pendingAiData = parsed;
 
     if(mode==='add'){
