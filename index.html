@@ -1616,11 +1616,34 @@ async function generateAI(mode){
     hint = document.getElementById('f-hint')?.value.trim();
   }
 
-  const layerMap = 'l1=科學根源國際政治承諾,l2=強制法規有懲罰,l3=主流自願準則,l4=運作機制,l5=市場工具金融產品,l6=概念術語技術解方';
-  const prompt = `請用繁體中文為ESG永續名詞「${abbr}」${en?'('+en+')':''}生成說明。${hint?'補充：'+hint:''}
+  const layerDefs = {
+    l1:'科學根源 & 國際政治承諾（UNFCCC、巴黎協定、NDC、COP等）',
+    l2:'強制法規（有懲罰）（CSRD、CBAM、CSDDD、台灣碳費等政府立法）',
+    l3:'主流自願準則（市場實質強制）（ISSB、GRI、SBTi、RBA等）',
+    l4:'運作機制（碳定價設計、盤查方法學、計算標準等）',
+    l5:'市場工具 & 金融產品（VCM、T-REC、綠色債券、TCEX等）',
+    l6:'概念術語 & 技術解方（CDR、DAC、綠氫、循環經濟等）'
+  };
+  const layerChoices = Object.entries(layerDefs).map(([k,v])=>`${k}: ${v}`).join('\n');
+  const prompt = `你是ESG永續領域的專家教師，熟悉台灣法規環境、供應鏈減碳壓力、國際氣候政策。
 
-只輸出 JSON，不要任何說明文字：
-{"zh":"中文名稱","en":"英文全名","layerId":"從以下選最合適的(${layerMap})","prob":"解決什麼問題，50到120字","how":"怎麼運作，80到200字","tw":"台灣影響，40到100字","exam":"3到5個考試重點，每點前加符號","num":"關鍵數字用斜線分隔","who":"適用對象"}`;
+請為以下名詞生成完整的繁體中文說明：
+名詞：${abbr}${en?' ('+en+')':''}
+${hint?'使用者補充說明：'+hint:''}
+
+說明要求：
+- prob（解決什麼問題）：用白話說明這個機制/法規「為什麼存在」，從企業或政策角度出發，80-150字
+- how（怎麼運作）：具體說明核心規定、運作邏輯、關鍵時程，可用編號分點，100-250字
+- tw（台灣影響）：聚焦台灣企業的實際影響，舉具體產業或公司例子，50-120字
+- exam（考試重點）：針對iPAS淨零碳規劃管理師考試，列出3-5個最重要的考點，每點獨立一行
+- num（關鍵數字）：重要的數字、年份、門檻值，用「／」分隔
+- who（適用對象）：明確說明哪些企業或組織必須遵守
+
+功能層分類（選最合適的一個）：
+${layerChoices}
+
+輸出格式（純JSON，不要任何markdown或說明文字）：
+{"zh":"中文名稱(2-8字)","en":"英文全名","layerId":"l1到l6其中之一","prob":"...","how":"...","tw":"...","exam":"...","num":"...","who":"..."}`;
 
   try{
     const geminiKey = localStorage.getItem('esg_gemini_key')||'';
