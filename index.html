@@ -290,9 +290,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   </div>
   <button id="btn-add-node" onclick="openAddPanel()">＋ 新增名詞</button>
   <div id="hdr-count"></div>
-  <button onclick="toggleDebug()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer">debug</button>
 </div>
-<div id="debug-panel" style="display:none;background:#111;color:#0f0;font-size:10px;padding:8px 12px;font-family:monospace;max-height:200px;overflow-y:auto;white-space:pre-wrap;border-bottom:1px solid #333" id="debug-panel"></div>
 
 <!-- BODY -->
 <div id="body">
@@ -1119,16 +1117,7 @@ let pendingAiData = null;
 let workerUrl = localStorage.getItem('esg_worker_url') || 'https://esg-ai-proxy.annycyt.workers.dev';
 
 // ── KV sync ──
-function dbg(msg){
-  const p=document.getElementById('debug-panel');
-  if(!p) return;
-  const t=new Date().toLocaleTimeString('zh-TW');
-  p.textContent = t+' '+msg+'\n' + p.textContent;
-}
-function toggleDebug(){
-  const p=document.getElementById('debug-panel');
-  if(p) p.style.display=p.style.display==='none'?'block':'none';
-}
+function dbg(msg){ /* silent */ }
 async function kvGet(){
   try{
     dbg('GET 開始 worker:'+workerUrl);
@@ -1659,10 +1648,15 @@ ${hint?'補充說明：'+hint:''}
       })
     });
     const data = await res.json();
-    const text = (data.text||data.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
-    if(!text) throw new Error(data.error||'Gemini API 沒有回應，請確認 API Key 是否正確');
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('無法解析 AI 回應');
+    const text = (data.text||'').trim();
+    if(!text){
+      const detail = data.error || data.raw || 'Gemini 無回應';
+      throw new Error('Gemini API 沒有回應：'+detail);
+    }
+    // strip markdown fences if present
+    const clean = text.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('無法解析 AI 回應：'+clean.slice(0,100));
     const parsed = JSON.parse(jsonMatch[0]);
     pendingAiData = parsed;
 
