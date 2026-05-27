@@ -1586,12 +1586,15 @@ function openRegenPanel(id){
   const d = D[id];
   openSidePanel();
   document.getElementById('side-content').innerHTML = `
-    <div class="s-title">✦ AI 重新生成說明</div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:12px">為「${d.zh}」重新生成說明內容，你可以加入補充說明讓 AI 更精準。</div>
-    <div class="s-label">補充說明（選填）</div>
-    <textarea class="s-textarea" id="f-hint" placeholder="例：請特別強調台灣的實際案例、強調和ISSB的差異…" style="min-height:56px"></textarea>
+    <div class="s-title">✦ AI 問答</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">針對「${d.zh}」自由提問，回答會存入補充筆記。</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+      例：列出CSRD底下的12項準則 / 和ISSB的差異是什麼 / 台灣哪些企業受影響
+    </div>
+    <div class="s-label">你的問題</div>
+    <textarea class="s-textarea" id="f-hint" placeholder="直接輸入你想問的問題…" style="min-height:80px"></textarea>
     <button class="btn-ai-gen" id="btn-gen" onclick="generateAI('regen')">
-      <span id="gen-icon">✦</span> AI 生成新版說明
+      <span id="gen-icon">✦</span> 送出問題
     </button>
     <div class="s-err" id="gen-err"></div>
     <div id="regen-preview"></div>
@@ -1622,6 +1625,58 @@ async function generateAI(mode){
     hint = document.getElementById('f-hint')?.value.trim();
   }
 
+  // regen mode: free-form Q&A, answer goes to note
+  if(mode==='regen'){
+    if(!hint){ errEl.textContent='請輸入你的問題'; errEl.style.display='block'; btn.disabled=false; icon.classList.remove('spin'); icon.textContent='✦'; return; }
+    const d = D[targetId];
+    const context = [
+      d.prob?'背景：'+d.prob:'',
+      d.how?'運作方式：'+d.how.slice(0,300):'',
+    ].filter(Boolean).join('\n');
+    var prompt = `你是ESG永續領域的專家教師，熟悉台灣法規環境和國際氣候政策。
+
+關於「${abbr}${en?' ('+en+')':''}」，使用者有以下問題：
+${hint}
+
+${context?'名詞背景參考：\n'+context:''}
+
+請用繁體中文直接回答這個問題，回答要：
+- 完整且具體，不要只給大綱
+- 如果有清單（如12項準則、8項公約等），請逐一列出每一項的名稱和說明
+- 如果有數字、年份、門檻，請明確標示
+- 不需要JSON格式，直接用自然語言回答`;
+
+    try{
+      const geminiKey = localStorage.getItem('esg_gemini_key')||'';
+      if(!geminiKey){ throw new Error('請先點右上角 ⚙ 設定 Gemini API Key'); }
+      const wUrl = workerUrl || 'https://esg-ai-proxy.annycyt.workers.dev';
+      const res = await fetch(wUrl, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'gemini', geminiKey, prompt })
+      });
+      const data = await res.json();
+      const answerText = (data.text||'').trim();
+      if(!answerText) throw new Error(data.error||'沒有回應');
+
+      pendingNoteText = answerText;
+      document.getElementById('regen-preview').innerHTML = `
+        <div class="s-sec-title">AI 回答預覽（將存入補充筆記）</div>
+        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.75;max-height:300px;overflow-y:auto">${answerText.replace(/</g,'&lt;')}</div>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="document.getElementById('regen-preview').innerHTML='';pendingNoteText=null">放棄</button>
+          <button class="btn-primary" onclick="applyRegen()">存入補充筆記</button>
+        </div>
+      `;
+    } catch(e){
+      errEl.textContent = 'AI 失敗：'+e.message;
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled=false; icon.classList.remove('spin'); icon.textContent='✦';
+    }
+    return;
+  }
+
   const layerDefs = {
     l1:'科學根源 & 國際政治承諾（UNFCCC、巴黎協定、NDC、COP等）',
     l2:'強制法規（有懲罰）（CSRD、CBAM、CSDDD、台灣碳費等政府立法）',
@@ -1631,11 +1686,10 @@ async function generateAI(mode){
     l6:'概念術語 & 技術解方（CDR、DAC、綠氫、循環經濟等）'
   };
   const layerChoices = Object.entries(layerDefs).map(([k,v])=>`${k}: ${v}`).join('\n');
-  const prompt = `你是ESG永續領域的專家教師，熟悉台灣法規環境、供應鏈減碳壓力、國際氣候政策。
+  var prompt = `你是ESG永續領域的專家教師，熟悉台灣法規環境、供應鏈減碳壓力、國際氣候政策。
 
 請為以下名詞生成完整的繁體中文說明：
 名詞：${abbr}${en?' ('+en+')':''}
-${hint?'使用者補充說明：'+hint:''}
 
 說明要求：
 - prob（解決什麼問題）：用白話說明這個機制/法規「為什麼存在」，從企業或政策角度出發，80-150字
