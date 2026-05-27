@@ -1393,6 +1393,7 @@ function showDetailPanel(id){
     <div class="p-box">${(d.prob||'').replace(/\n/g,'<br>')}</div>
     <div class="p-sec">怎麼運作</div>
     <div class="p-box">${(d.how||'').replace(/\n/g,'<br>')}</div>
+    ${d.detail?`<div class="p-sec">詳細清單</div><div class="p-box" style="border-left:3px solid var(--l3);font-family:var(--mono);font-size:11px">${d.detail.replace(/\n/g,'<br>')}</div>`:''}
     <div class="p-grid">
       <div class="p-cell"><div class="p-lbl">台灣影響</div><div class="p-val">${d.tw||''}</div></div>
       <div class="p-cell"><div class="p-lbl">考試重點</div><div class="p-val">${d.exam||''}</div></div>
@@ -1496,11 +1497,13 @@ function submitAdd(){
     num: document.getElementById('f-num').value.trim(),
     who: document.getElementById('f-who').value.trim(),
     note: document.getElementById('f-note')?.value.trim()||'',
+    detail: '',
     rel: [], _custom: true
   };
   D[id] = node;
   const layer = LAYER_DEFS.find(l=>l.id===layerId);
   if(layer && !layer.terms.includes(id)) layer.terms.push(id);
+  if(D['__pending_detail__']){ node.detail = D['__pending_detail__']; delete D['__pending_detail__']; }
   saveCustom();
   closeSidePanel();
   selectedId = id;
@@ -1534,6 +1537,8 @@ function openEditPanel(id){
       <div><div class="s-label">關鍵數字</div><input class="s-input" id="f-num" value="${d.num||''}"></div>
       <div><div class="s-label">適用對象</div><input class="s-input" id="f-who" value="${d.who||''}"></div>
     </div>
+    <div class="s-label">詳細清單（子項目、條文、步驟等，AI 會自動填入）</div>
+    <textarea class="s-textarea" id="f-detail" style="min-height:68px;font-family:var(--mono);font-size:11px">${d.detail||''}</textarea>
     <div class="s-label">📝 我的補充筆記（AI 重新生成不會覆蓋這裡）</div>
     <textarea class="s-textarea" id="f-note" style="min-height:56px">${d.note||''}</textarea>
     <div class="btn-row">
@@ -1564,6 +1569,7 @@ function submitEdit(){
     num: document.getElementById('f-num').value.trim(),
     who: document.getElementById('f-who').value.trim(),
     note: document.getElementById('f-note')?.value.trim()||d.note||'',
+    detail: document.getElementById('f-detail')?.value.trim()||d.detail||'',
   });
   if(d._custom){ saveCustom(); }
   else { d._edited = true; saveEdited(); }
@@ -1633,7 +1639,7 @@ ${hint?'使用者補充說明：'+hint:''}
 
 說明要求：
 - prob（解決什麼問題）：用白話說明這個機制/法規「為什麼存在」，從企業或政策角度出發，80-150字
-- how（怎麼運作）：具體說明核心規定、運作邏輯、關鍵時程，可用編號分點，100-250字
+- how（怎麼運作）：具體說明核心規定、運作邏輯、關鍵時程，若有子項目（如12項準則、8項公約等）請逐一列出，可用編號分點，100-600字
 - tw（台灣影響）：聚焦台灣企業的實際影響，舉具體產業或公司例子，50-120字
 - exam（考試重點）：針對iPAS淨零碳規劃管理師考試，列出3-5個最重要的考點，每點獨立一行
 - num（關鍵數字）：重要的數字、年份、門檻值，用「／」分隔
@@ -1643,7 +1649,7 @@ ${hint?'使用者補充說明：'+hint:''}
 ${layerChoices}
 
 輸出格式（純JSON，不要任何markdown或說明文字）：
-{"zh":"中文名稱(2-8字)","en":"英文全名","layerId":"l1到l6其中之一","prob":"...","how":"...","tw":"...","exam":"...","num":"...","who":"..."}`;
+{"zh":"中文名稱(2-8字)","en":"英文全名","layerId":"l1到l6其中之一","prob":"...","how":"...","detail":"若有子項目清單（如準則列表、公約條文、步驟清單等）請在此完整列出，無則留空字串","tw":"...","exam":"...","num":"...","who":"..."}`;
 
   try{
     const geminiKey = localStorage.getItem('esg_gemini_key')||'';
@@ -1686,6 +1692,7 @@ ${layerChoices}
       if(parsed.exam) document.getElementById('f-exam').value = parsed.exam;
       if(parsed.num) document.getElementById('f-num').value = parsed.num;
       if(parsed.who) document.getElementById('f-who').value = parsed.who;
+      if(parsed.detail) D['__pending_detail__'] = parsed.detail;
       // show which layer was selected
       const selLayer = LAYER_DEFS.find(l=>l.id===parsed.layerId);
       if(selLayer){
