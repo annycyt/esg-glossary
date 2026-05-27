@@ -61,7 +61,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 
 /* ── BODY ── */
 #body{display:flex;flex:1;overflow:hidden}
-#lanes-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 12px 40px}
+#lanes-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 12px 120px}
 #lanes-wrap::-webkit-scrollbar{width:5px}
 #lanes-wrap::-webkit-scrollbar-track{background:transparent}
 #lanes-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
@@ -324,11 +324,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 <div id="api-modal" onclick="handleApiModalClick(event)">
   <div id="api-box">
     <div class="api-title">⚙ API 設定</div>
-    <div class="api-desc">輸入你的 Cloudflare Worker 網址和 Anthropic API Key，用於 AI 自動生成說明。API Key 只存在你的瀏覽器，不會上傳到任何伺服器。</div>
-    <div class="s-label">Cloudflare Worker 網址</div>
-    <input class="s-input" id="api-worker-url" placeholder="https://esg-ai-proxy.annycyt.workers.dev" style="margin-bottom:10px">
-    <div class="s-label">Anthropic API Key</div>
-    <input class="s-input" id="api-key-input" type="password" placeholder="sk-ant-..." style="margin-bottom:14px">
+    <div class="api-desc">輸入你的 Gemini API Key，用於 AI 自動生成說明。完全免費（每天 1,500 次），API Key 只存在你的瀏覽器。<br><br>取得 Gemini API Key：<a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--l1)">aistudio.google.com/app/apikey</a></div>
+    <div class="s-label">Gemini API Key</div>
+    <input class="s-input" id="api-gemini-key" type="password" placeholder="AIza..." style="margin-bottom:10px">
+    <div class="s-label">Cloudflare Worker 網址（用於 KV 同步）</div>
+    <input class="s-input" id="api-worker-url" placeholder="https://esg-ai-proxy.annycyt.workers.dev" style="margin-bottom:14px">
     <div class="btn-row">
       <button class="btn-secondary" onclick="closeApiModal()">取消</button>
       <button class="btn-primary" onclick="saveApiSettings()">儲存</button>
@@ -1143,8 +1143,15 @@ async function loadCustom(){
 function saveCustom(){
   const custom = Object.values(D).filter(n=>n._custom);
   kvSave(custom);
-  // also keep local backup
   localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
+}
+function saveEdited(){
+  // save edited built-in nodes to KV so they sync across devices
+  const edited = Object.values(D).filter(n=>n._edited && !n._custom);
+  localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
+  // merge with custom for KV save
+  const custom = Object.values(D).filter(n=>n._custom);
+  kvSave([...custom, ...edited]);
 }
 // sync status indicator
 function showSyncStatus(msg, color='var(--text3)'){
@@ -1160,14 +1167,21 @@ function showSyncStatus(msg, color='var(--text3)'){
 async function loadCustomWithStatus(){
   showSyncStatus('⟳ 同步中…');
   const nodes = await kvGet();
+  let customCount = 0;
   nodes.forEach(n=>{
-    D[n.id] = n;
-    const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
-    if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+    if(n._custom){
+      D[n.id] = n;
+      const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
+      if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+      customCount++;
+    } else if(n._edited && D[n.id]){
+      // restore edits to built-in nodes
+      Object.assign(D[n.id], n);
+    }
   });
-  if(nodes.length){
-    renderLanes(); updateCount();
-    showSyncStatus('✓ 已同步 '+nodes.length+' 個自訂名詞','var(--l1)');
+  renderLanes(); updateCount();
+  if(customCount>0){
+    showSyncStatus('✓ 已同步 '+customCount+' 個自訂名詞','var(--l1)');
   } else {
     showSyncStatus('');
   }
@@ -1309,6 +1323,7 @@ function showDetailPanel(id){
     </div>
     <div class="p-sec">關聯名詞</div>
     <div class="p-chips">${relChips}</div>
+    ${d.note?`<div class="p-sec">我的補充筆記</div><div class="p-box" style="border-left:3px solid var(--l5);background:var(--l5b)">${d.note.replace(/\n/g,'<br>')}</div>`:''}
   `;
 }
 
@@ -1377,6 +1392,8 @@ function openAddPanel(){
       <div><div class="s-label">關鍵數字</div><input class="s-input" id="f-num" placeholder="例：2026年生效 ／ 門檻€1.5億"></div>
       <div><div class="s-label">適用對象</div><input class="s-input" id="f-who" placeholder="例：歐盟大型企業"></div>
     </div>
+    <div class="s-label">📝 我的補充筆記（存在這裡，AI 不會改掉）</div>
+    <textarea class="s-textarea" id="f-note" placeholder="自己的想法、記憶口訣、台灣實際案例…" style="min-height:56px"></textarea>
     <div class="btn-row">
       <button class="btn-secondary" onclick="closeSidePanel()">取消</button>
       <button class="btn-primary" onclick="submitAdd()">加入關係圖</button>
@@ -1400,6 +1417,7 @@ function submitAdd(){
     exam: document.getElementById('f-exam').value.trim(),
     num: document.getElementById('f-num').value.trim(),
     who: document.getElementById('f-who').value.trim(),
+    note: document.getElementById('f-note')?.value.trim()||'',
     rel: [], _custom: true
   };
   D[id] = node;
@@ -1438,6 +1456,8 @@ function openEditPanel(id){
       <div><div class="s-label">關鍵數字</div><input class="s-input" id="f-num" value="${d.num||''}"></div>
       <div><div class="s-label">適用對象</div><input class="s-input" id="f-who" value="${d.who||''}"></div>
     </div>
+    <div class="s-label">📝 我的補充筆記（AI 重新生成不會覆蓋這裡）</div>
+    <textarea class="s-textarea" id="f-note" style="min-height:56px">${d.note||''}</textarea>
     <div class="btn-row">
       <button class="btn-secondary" onclick="closeSidePanel()">取消</button>
       <button class="btn-primary" onclick="submitEdit()">儲存變更</button>
@@ -1465,8 +1485,10 @@ function submitEdit(){
     exam: document.getElementById('f-exam').value.trim(),
     num: document.getElementById('f-num').value.trim(),
     who: document.getElementById('f-who').value.trim(),
+    note: document.getElementById('f-note')?.value.trim()||d.note||'',
   });
-  if(d._custom) saveCustom();
+  if(d._custom){ saveCustom(); }
+  else { d._edited = true; saveEdited(); }
   closeSidePanel();
   renderLanes(document.getElementById('srch').value.trim());
   showDetailPanel(editingId);
@@ -1533,22 +1555,20 @@ ${hint?'補充說明：'+hint:''}
 }`;
 
   try{
-    const url = workerUrl || 'https://esg-ai-proxy.annycyt.workers.dev';
-    const res = await fetch(url, {
+    const geminiKey = localStorage.getItem('esg_gemini_key')||'';
+    if(!geminiKey){ throw new Error('請先點右上角 ⚙ 設定 Gemini API Key'); }
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+    const res = await fetch(geminiUrl, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        action:'ai',
-        payload:{
-          model:'claude-sonnet-4-5',
-          max_tokens:1000,
-          messages:[{role:'user',content:prompt}]
-        }
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{maxOutputTokens:1200,temperature:0.3}
       })
     });
     const data = await res.json();
-    const text = data.content?.map(c=>c.text||'').join('').trim();
-    if(!text) throw new Error('API沒有回應內容');
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
+    if(!text) throw new Error('Gemini API 沒有回應，請確認 API Key 是否正確');
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if(!jsonMatch) throw new Error('無法解析 AI 回應');
     const parsed = JSON.parse(jsonMatch[0]);
@@ -1577,17 +1597,20 @@ ${hint?'補充說明：'+hint:''}
     } else {
       // regen: show preview
       const selLayer = LAYER_DEFS.find(l=>l.id===parsed.layerId);
+      // regen → plain text into note, no formatting
+      const noteText = [
+        parsed.prob||'', parsed.how||'', parsed.tw||'',
+        parsed.exam||'', parsed.num||'', parsed.who||''
+      ].filter(Boolean).join('\n\n');
+      pendingNoteText = noteText;
+
       document.getElementById('regen-preview').innerHTML = `
-        <div class="s-sec-title">預覽新版說明</div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">分類：${selLayer?selLayer.title:parsed.layerId}</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:6px"><b>解決什麼問題：</b>${parsed.prob||''}</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:6px"><b>怎麼運作：</b>${parsed.how||''}</div>
-          <div style="font-size:12px;color:var(--text2)"><b>台灣影響：</b>${parsed.tw||''}</div>
-        </div>
+        <div class="s-sec-title">AI 生成內容預覽（將存入補充筆記）</div>
+        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);white-space:pre-wrap;line-height:1.7;max-height:220px;overflow-y:auto">${noteText.replace(/</g,'&lt;')}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">原本的說明欄位不會被更動，AI 內容只放進「補充筆記」</div>
         <div class="btn-row">
-          <button class="btn-secondary" onclick="document.getElementById('regen-preview').innerHTML=''">放棄</button>
-          <button class="btn-primary" onclick="applyRegen()">套用這個版本</button>
+          <button class="btn-secondary" onclick="document.getElementById('regen-preview').innerHTML='';pendingNoteText=null">放棄</button>
+          <button class="btn-primary" onclick="applyRegen()">存入補充筆記</button>
         </div>
       `;
     }
@@ -1601,25 +1624,19 @@ ${hint?'補充說明：'+hint:''}
   }
 }
 
+let pendingNoteText = null;
+
 function applyRegen(){
-  if(!pendingAiData || !editingId) return;
+  if(!editingId) return;
   const d = D[editingId];
-  const parsed = pendingAiData;
-  // move layer if changed
-  if(parsed.layerId && parsed.layerId !== findLayerOf(editingId)?.id){
-    const oldLayer = findLayerOf(editingId);
-    if(oldLayer) oldLayer.terms = oldLayer.terms.filter(t=>t!==editingId);
-    const newLayer = LAYER_DEFS.find(l=>l.id===parsed.layerId);
-    if(newLayer && !newLayer.terms.includes(editingId)) newLayer.terms.push(editingId);
-  }
-  Object.assign(d, {
-    zh: parsed.zh||d.zh, en: parsed.en||d.en,
-    prob: parsed.prob||d.prob, how: parsed.how||d.how,
-    tw: parsed.tw||d.tw, exam: parsed.exam||d.exam,
-    num: parsed.num||d.num, who: parsed.who||d.who,
-    layerId: parsed.layerId||d.layerId
-  });
-  if(d._custom) saveCustom();
+  // only update note field, preserve all original content
+  const newNote = pendingNoteText || '';
+  const timestamp = new Date().toLocaleDateString('zh-TW');
+  d.note = (d.note ? d.note + '\n\n---\n' : '') + '【AI 生成 ' + timestamp + '】\n' + newNote;
+  pendingNoteText = null;
+  pendingAiData = null;
+  if(d._custom){ saveCustom(); }
+  else { d._edited = true; saveEdited(); }
   closeSidePanel();
   renderLanes(document.getElementById('srch').value.trim());
   showDetailPanel(editingId);
@@ -1696,6 +1713,7 @@ function handleDropLane(e, lid){
    API SETTINGS
 ════════════════════════════════════════════ */
 function openApiModal(){
+  document.getElementById('api-gemini-key').value = localStorage.getItem('esg_gemini_key')||'';
   document.getElementById('api-worker-url').value = workerUrl;
   document.getElementById('api-modal').classList.add('open');
 }
@@ -1706,9 +1724,12 @@ function handleApiModalClick(e){
   if(e.target===document.getElementById('api-modal')) closeApiModal();
 }
 function saveApiSettings(){
+  const gkey = document.getElementById('api-gemini-key').value.trim();
+  if(gkey) localStorage.setItem('esg_gemini_key', gkey);
   workerUrl = document.getElementById('api-worker-url').value.trim();
   localStorage.setItem('esg_worker_url', workerUrl);
   closeApiModal();
+  showSyncStatus('✓ 設定已儲存','var(--l1)');
 }
 
 // Add settings button to header
