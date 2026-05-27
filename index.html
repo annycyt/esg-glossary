@@ -83,7 +83,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 }
 .lane-info{flex:1}
 .lane-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.lane-desc{font-size:11px;opacity:.75;line-height:1.5}
+.lane-desc{font-size:12px;opacity:.75;line-height:1.55}
 .lane-badge{
   font-size:10px;font-weight:500;padding:3px 10px;
   border-radius:20px;border:1.5px solid;white-space:nowrap;
@@ -98,7 +98,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 /* ── TERM CHIP ── */
 .term{
   display:inline-flex;align-items:center;gap:4px;
-  font-size:12px;font-weight:500;padding:5px 11px;
+  font-size:13px;font-weight:500;padding:6px 12px;
   border-radius:20px;border:1.5px solid;cursor:pointer;
   transition:all .12s;user-select:none;
   background:rgba(255,255,255,.7);
@@ -138,7 +138,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   padding:2px 9px;border-radius:20px;margin-bottom:8px;
   border:1.5px solid;
 }
-.p-title{font-size:18px;font-weight:600;margin-bottom:2px}
+.p-title{font-size:20px;font-weight:600;margin-bottom:2px}
 .p-actions{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .p-act-btn{
   font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;
@@ -146,16 +146,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   color:var(--text2);font-family:var(--font);transition:all .1s;
 }
 .p-act-btn:hover{background:var(--bg3);color:var(--text)}
-.p-sec{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin:11px 0 4px;font-weight:600}
+.p-sec{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:12px 0 5px;font-weight:600}
 .p-box{
   background:var(--card);border:1px solid var(--border);
   border-radius:8px;padding:9px 11px;margin-bottom:6px;
-  font-size:12px;line-height:1.75;color:var(--text2);
+  font-size:14px;line-height:1.8;color:var(--text2);
 }
 .p-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px}
 .p-cell{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
 .p-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;font-weight:600}
-.p-val{font-size:11px;line-height:1.65;color:var(--text2);white-space:pre-wrap}
+.p-val{font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap}
 .p-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .rel-chip{
   font-size:10px;padding:3px 9px;border-radius:4px;
@@ -1372,11 +1372,91 @@ function findLayerOf(id){
 
 function renderMd(text){
   if(!text) return '';
-  return text
-    .replace(/</g,'&lt;')
-    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/\n/g,'<br>');
+  // escape HTML first (but preserve existing <br> and html tags from user)
+  let t = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // restore intentional <br> that may have been in original
+  t = t.replace(/&lt;br&gt;/g,'<br>').replace(/&lt;br\/&gt;/g,'<br>');
+
+  // tables: detect lines with | separators
+  const lines = t.split('\n');
+  let result = [];
+  let tableLines = [];
+  let inTable = false;
+
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i];
+    const isTableRow = /^\s*\|/.test(line) && /\|\s*$/.test(line);
+    const isSeparator = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(line);
+
+    if(isTableRow && !isSeparator){
+      if(!inTable){ inTable=true; tableLines=[]; }
+      tableLines.push(line);
+    } else if(isSeparator && inTable){
+      // skip separator line, mark next rows as body
+      tableLines.push('__SEP__');
+    } else {
+      if(inTable){
+        // flush table
+        result.push(buildTable(tableLines));
+        tableLines=[]; inTable=false;
+      }
+      result.push(line);
+    }
+  }
+  if(inTable && tableLines.length) result.push(buildTable(tableLines));
+  t = result.join('\n');
+
+  // inline markdown
+  t = t
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+?)`/g,'<code style="background:rgba(0,0,0,.08);padding:1px 5px;border-radius:3px;font-family:monospace">$1</code>');
+
+  // headers
+  t = t.replace(/^### (.+)$/gm,'<div style="font-weight:600;font-size:1em;margin:10px 0 4px">$1</div>');
+  t = t.replace(/^## (.+)$/gm,'<div style="font-weight:700;font-size:1.05em;margin:12px 0 5px">$1</div>');
+  t = t.replace(/^# (.+)$/gm,'<div style="font-weight:700;font-size:1.1em;margin:14px 0 6px">$1</div>');
+
+  // lists
+  t = t.replace(/^[\-\*] (.+)$/gm,'<div style="padding-left:14px;margin:2px 0">• $1</div>');
+  t = t.replace(/^\d+\. (.+)$/gm,(m,p1,offset,str)=>{
+    const num = m.match(/^(\d+)/)[1];
+    return '<div style="padding-left:14px;margin:2px 0">'+num+'. '+p1+'</div>';
+  });
+
+  // line breaks (but not inside table HTML)
+  t = t.replace(/\n(?!<)/g,'<br>');
+  return t;
+}
+
+function buildTable(lines){
+  let hasHeader = lines.includes('__SEP__');
+  let sepIdx = lines.indexOf('__SEP__');
+  let headerLines = hasHeader ? lines.slice(0,sepIdx) : [];
+  let bodyLines = hasHeader ? lines.slice(sepIdx+1) : lines;
+
+  function parseRow(line){
+    return line.split('|').slice(1,-1).map(c=>c.trim());
+  }
+
+  let html = '<div style="overflow-x:auto;margin:8px 0"><table style="border-collapse:collapse;width:100%;font-size:inherit">';
+  if(headerLines.length){
+    html += '<thead>';
+    headerLines.forEach(l=>{
+      html += '<tr>'+parseRow(l).map(c=>'<th style="border:1px solid var(--border2);padding:5px 8px;background:var(--bg3);text-align:left;font-weight:600">'+c+'</th>').join('')+'</tr>';
+    });
+    html += '</thead>';
+  }
+  if(bodyLines.length){
+    html += '<tbody>';
+    bodyLines.forEach(l=>{
+      html += '<tr>'+parseRow(l).map(c=>'<td style="border:1px solid var(--border2);padding:5px 8px;vertical-align:top">'+c+'</td>').join('')+'</tr>';
+    });
+    html += '</tbody>';
+  }
+  html += '</table></div>';
+  return html;
 }
 
 function showDetailPanel(id){
@@ -1392,7 +1472,7 @@ function showDetailPanel(id){
   document.getElementById('panel-content').innerHTML = `
     <span class="p-layer-badge" style="color:${layer.color};border-color:${layer.color}55;background:${layer.bg}">${layer.badge}・${layer.title}</span>
     <div class="p-title">${d.zh}</div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">${d.en||''}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">${d.en||''}</div>
     <div class="p-actions">
       <button class="p-act-btn" onclick="openEditPanel('${id}')">✏ 編輯</button>
       <button class="p-act-btn" onclick="openRegenPanel('${id}')">✦ AI 重新生成</button>
