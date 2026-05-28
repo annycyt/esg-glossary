@@ -150,19 +150,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .p-close{display:flex;justify-content:flex-end;margin-bottom:8px}
 .p-close-btn{
   background:var(--bg3);border:1px solid var(--border2);
-  color:var(--text2);border-radius:6px;padding:3px 10px;
-  font-size:11px;cursor:pointer;font-family:var(--font);
+  color:var(--text2);border-radius:6px;padding:4px 12px;
+  font-size:13px;cursor:pointer;font-family:var(--font);
 }
 .p-close-btn:hover{background:var(--bg4)}
 .p-layer-badge{
-  display:inline-block;font-size:10px;font-weight:500;
-  padding:2px 9px;border-radius:20px;margin-bottom:8px;
+  display:inline-block;font-size:12px;font-weight:500;
+  padding:3px 10px;border-radius:20px;margin-bottom:8px;
   border:1.5px solid;
 }
 .p-title{font-size:20px;font-weight:600;margin-bottom:2px}
 .p-actions{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .p-act-btn{
-  font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;
+  font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer;
   border:1px solid var(--border2);background:var(--card);
   color:var(--text2);font-family:var(--font);transition:all .1s;
 }
@@ -177,10 +177,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .p-grid.full{grid-template-columns:1fr}
 .p-cell{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
 .p-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;font-weight:600}
-.p-val{font-size:13px;line-height:1.7;color:var(--text2)}
+.p-val{font-size:14px;line-height:1.75;color:var(--text2)}
 .p-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .rel-chip{
-  font-size:10px;padding:3px 9px;border-radius:4px;
+  font-size:13px;padding:4px 10px;border-radius:4px;
   background:var(--bg3);color:var(--text2);cursor:pointer;
   border:1px solid var(--border2);transition:all .1s;
 }
@@ -1519,7 +1519,7 @@ function showDetailPanel(id){
   document.getElementById('panel-content').innerHTML = `
     <span class="p-layer-badge" style="color:${layer.color};border-color:${layer.color}55;background:${layer.bg}">${layer.badge}・${layer.title}</span>
     <div class="p-title">${d.zh}</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">${d.en||''}</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:10px;font-family:var(--mono)">${d.en||''}</div>
     <div class="p-actions">
       <button class="p-act-btn" onclick="openEditPanel('${id}')">✏ 編輯</button>
       <button class="p-act-btn" onclick="openRegenPanel('${id}')">✦ AI 重新生成</button>
@@ -1529,7 +1529,7 @@ function showDetailPanel(id){
     <div class="p-box">${renderMd(d.prob||'')}</div>
     <div class="p-sec">怎麼運作</div>
     <div class="p-box">${renderMd(d.how||'')}</div>
-    ${d.detail?`<div class="p-sec">詳細清單</div><div class="p-box" style="border-left:3px solid var(--l3);font-size:11px">${renderMd(d.detail)}</div>`:''}
+    ${d.detail?`<div class="p-sec">詳細清單</div><div class="p-box" style="border-left:3px solid var(--l3);font-size:14px">${renderMd(d.detail)}</div>`:''}
     <div class="p-grid full">
       <div class="p-cell"><div class="p-lbl">台灣影響</div><div class="p-val">${renderMd(d.tw||'')}</div></div>
       <div class="p-cell"><div class="p-lbl">考試重點</div><div class="p-val">${renderMd(d.exam||'')}</div></div>
