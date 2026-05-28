@@ -1492,16 +1492,17 @@ function showDetailPanel(id){
   const layer = findLayerOf(id);
   if(!d || !layer) return;
   const panel = document.getElementById('panel');
-  // restore saved/current width before removing closed class
-  const savedW = localStorage.getItem('esg_panel_width');
-  const targetW = savedW && parseInt(savedW)>=280 ? savedW+'px' : 'var(--panel-w)';
-  panel.style.width = targetW;
-  panel.style.minWidth = targetW;
-  const inner = document.getElementById('panel-inner');
-  if(inner) inner.style.minWidth = targetW;
   panel.classList.remove('closed');
-  if(window.innerWidth<=700){ panel.classList.add('open'); }
-  else { setResizer(true); }
+  if(window.innerWidth<=700){
+    panel.classList.add('open');
+  } else {
+    // apply saved width after removing closed class
+    const savedW = parseInt(localStorage.getItem('esg_panel_width')||'0');
+    const w = savedW>=260 ? savedW : 380;
+    if(window._resizerApplyWidth) window._resizerApplyWidth(w);
+    else { panel.style.width=w+'px'; panel.style.minWidth=w+'px'; }
+    setResizer(true);
+  }
 
   const relChips = (d.rel||[]).map(r=>D[r]?`<span class="rel-chip" onclick="jumpToNode('${r}')">${D[r].zh}</span>`:'').join('');
 
@@ -1986,72 +1987,57 @@ function saveApiSettings(){
    RESIZABLE PANEL
 ════════════════════════════════════════════ */
 (function(){
+  if(window.innerWidth<=700) return;
   const resizer = document.getElementById('resizer');
   const panel = document.getElementById('panel');
-  const body = document.getElementById('body');
   if(!resizer||!panel) return;
 
   let isResizing = false;
   let startX = 0;
   let startWidth = 0;
 
+  function applyWidth(w){
+    panel.style.cssText = panel.style.cssText
+      .replace(/width:[^;]+;/g,'')
+      .replace(/min-width:[^;]+;/g,'');
+    panel.style.width = w+'px';
+    panel.style.minWidth = w+'px';
+    const inner = document.getElementById('panel-inner');
+    if(inner) inner.style.minWidth = w+'px';
+  }
+
   resizer.addEventListener('mousedown', e=>{
-    if(window.innerWidth<=700) return;
+    e.preventDefault();
     isResizing = true;
     startX = e.clientX;
-    startWidth = panel.offsetWidth;
+    startWidth = panel.getBoundingClientRect().width;
     resizer.classList.add('dragging');
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
+    // disable transition during drag
+    panel.style.transition = 'opacity .18s';
   });
 
-  document.addEventListener('mousemove', e=>{
+  window.addEventListener('mousemove', e=>{
     if(!isResizing) return;
     const dx = startX - e.clientX;
-    const newWidth = Math.min(Math.max(startWidth + dx, 280), window.innerWidth * 0.65);
-    panel.style.transition = 'none'; // disable transition during drag
-    panel.style.width = newWidth + 'px';
-    panel.style.minWidth = newWidth + 'px';
-    const inner = document.getElementById('panel-inner');
-    if(inner) inner.style.minWidth = newWidth + 'px';
+    const newW = Math.min(Math.max(startWidth + dx, 260), window.innerWidth * 0.7);
+    applyWidth(newW);
   });
 
-  document.addEventListener('mouseup', ()=>{
+  window.addEventListener('mouseup', e=>{
     if(!isResizing) return;
     isResizing = false;
     resizer.classList.remove('dragging');
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
-    panel.style.transition = ''; // restore transition
-    const w = panel.offsetWidth;
-    if(w>0) localStorage.setItem('esg_panel_width', w);
+    panel.style.transition = '';
+    const w = panel.getBoundingClientRect().width;
+    if(w>0) localStorage.setItem('esg_panel_width', String(Math.round(w)));
   });
 
-  // touch support
-  resizer.addEventListener('touchstart', e=>{
-    if(window.innerWidth<=700) return;
-    isResizing = true;
-    startX = e.touches[0].clientX;
-    startWidth = panel.offsetWidth;
-  }, {passive:true});
-
-  document.addEventListener('touchmove', e=>{
-    if(!isResizing) return;
-    const dx = startX - e.touches[0].clientX;
-    const newWidth = Math.min(Math.max(startWidth + dx, 280), window.innerWidth * 0.65);
-    panel.style.width = newWidth + 'px';
-    panel.style.minWidth = newWidth + 'px';
-    const inner = document.getElementById('panel-inner');
-    if(inner) inner.style.minWidth = newWidth + 'px';
-  }, {passive:true});
-
-  document.addEventListener('touchend', ()=>{ isResizing = false; });
-
-  // hide resizer on init (panel is closed)
-  resizer.style.display = 'none';
-
-  // restore saved width (applied when panel opens, not here)
-  // just store for reference - actual apply happens in showDetailPanel
+  // expose for use in showDetailPanel
+  window._resizerApplyWidth = applyWidth;
 })();
 
 // Add settings button to header
