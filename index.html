@@ -139,7 +139,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   overflow-y:auto;display:flex;flex-direction:column;
   transition:width .22s,opacity .18s,min-width .22s;
 }
-#panel.closed{width:0!important;min-width:0!important;opacity:0;overflow:hidden;border:none;flex-shrink:1}
+#panel.closed{width:0;min-width:0;opacity:0;overflow:hidden;border:none;flex-shrink:1;pointer-events:none}
 #panel-inner{padding:16px 15px;min-width:var(--panel-w)}
 .p-close{display:flex;justify-content:flex-end;margin-bottom:8px}
 .p-close-btn{
@@ -187,7 +187,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   overflow-y:auto;display:flex;flex-direction:column;
   transition:width .22s,opacity .18s,min-width .22s;
 }
-#side-panel.closed{width:0!important;min-width:0!important;opacity:0;overflow:hidden;border:none;flex-shrink:1}
+#side-panel.closed{width:0;min-width:0;opacity:0;overflow:hidden;border:none;flex-shrink:1;pointer-events:none}
 #side-inner{padding:16px 15px;min-width:var(--panel-w)}
 .s-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
 .s-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;font-weight:600}
@@ -1492,6 +1492,13 @@ function showDetailPanel(id){
   const layer = findLayerOf(id);
   if(!d || !layer) return;
   const panel = document.getElementById('panel');
+  // restore saved/current width before removing closed class
+  const savedW = localStorage.getItem('esg_panel_width');
+  const targetW = savedW && parseInt(savedW)>=280 ? savedW+'px' : 'var(--panel-w)';
+  panel.style.width = targetW;
+  panel.style.minWidth = targetW;
+  const inner = document.getElementById('panel-inner');
+  if(inner) inner.style.minWidth = targetW;
   panel.classList.remove('closed');
   if(window.innerWidth<=700){ panel.classList.add('open'); }
   else { setResizer(true); }
@@ -2000,11 +2007,11 @@ function saveApiSettings(){
 
   document.addEventListener('mousemove', e=>{
     if(!isResizing) return;
-    const dx = startX - e.clientX; // dragging left = panel gets bigger
+    const dx = startX - e.clientX;
     const newWidth = Math.min(Math.max(startWidth + dx, 280), window.innerWidth * 0.65);
+    panel.style.transition = 'none'; // disable transition during drag
     panel.style.width = newWidth + 'px';
     panel.style.minWidth = newWidth + 'px';
-    // also update panel-inner min-width
     const inner = document.getElementById('panel-inner');
     if(inner) inner.style.minWidth = newWidth + 'px';
   });
@@ -2015,7 +2022,7 @@ function saveApiSettings(){
     resizer.classList.remove('dragging');
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
-    // save preference
+    panel.style.transition = ''; // restore transition
     const w = panel.offsetWidth;
     if(w>0) localStorage.setItem('esg_panel_width', w);
   });
@@ -2043,14 +2050,8 @@ function saveApiSettings(){
   // hide resizer on init (panel is closed)
   resizer.style.display = 'none';
 
-  // restore saved width
-  const saved = localStorage.getItem('esg_panel_width');
-  if(saved && parseInt(saved)>=280){
-    panel.style.width = saved+'px';
-    panel.style.minWidth = saved+'px';
-    const inner = document.getElementById('panel-inner');
-    if(inner) inner.style.minWidth = saved+'px';
-  }
+  // restore saved width (applied when panel opens, not here)
+  // just store for reference - actual apply happens in showDetailPanel
 })();
 
 // Add settings button to header
