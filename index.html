@@ -167,9 +167,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   font-size:14px;line-height:1.8;color:var(--text2);
 }
 .p-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px}
+.p-grid.full{grid-template-columns:1fr}
 .p-cell{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
 .p-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;font-weight:600}
-.p-val{font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap}
+.p-val{font-size:13px;line-height:1.7;color:var(--text2)}
 .p-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .rel-chip{
   font-size:10px;padding:3px 9px;border-radius:4px;
@@ -1375,12 +1376,18 @@ function toggleNode(id, layerId){
   showDetailPanel(id, layerId);
 }
 
+function setResizer(show){
+  const r = document.getElementById('resizer');
+  if(r) r.style.display = show ? '' : 'none';
+}
+
 function closePanel(){
   selectedId = null;
   renderLanes(document.getElementById('srch').value.trim());
   const panel = document.getElementById('panel');
   panel.classList.add('closed');
   panel.classList.remove('open');
+  setResizer(false);
 }
 
 function findLayerOf(id){
@@ -1423,6 +1430,9 @@ function renderMd(text){
   }
   if(inTable && tableLines.length) result.push(buildTable(tableLines));
   t = result.join('\n');
+
+  // horizontal rule
+  t = t.replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid var(--border2);margin:8px 0">');
 
   // inline markdown
   t = t
@@ -1483,6 +1493,7 @@ function showDetailPanel(id){
   const panel = document.getElementById('panel');
   panel.classList.remove('closed');
   if(window.innerWidth<=700){ panel.classList.add('open'); }
+  else { setResizer(true); }
 
   const relChips = (d.rel||[]).map(r=>D[r]?`<span class="rel-chip" onclick="jumpToNode('${r}')">${D[r].zh}</span>`:'').join('');
 
@@ -1496,15 +1507,17 @@ function showDetailPanel(id){
       ${d._custom?`<button class="p-act-btn" style="color:#b4321e;border-color:#b4321e44" onclick="deleteNode('${id}')">✕ 刪除</button>`:''}
     </div>
     <div class="p-sec">解決什麼問題</div>
-    <div class="p-box">${(d.prob||'').replace(/\n/g,'<br>')}</div>
+    <div class="p-box">${renderMd(d.prob||'')}</div>
     <div class="p-sec">怎麼運作</div>
-    <div class="p-box">${(d.how||'').replace(/\n/g,'<br>')}</div>
+    <div class="p-box">${renderMd(d.how||'')}</div>
     ${d.detail?`<div class="p-sec">詳細清單</div><div class="p-box" style="border-left:3px solid var(--l3);font-size:11px">${renderMd(d.detail)}</div>`:''}
+    <div class="p-grid full">
+      <div class="p-cell"><div class="p-lbl">台灣影響</div><div class="p-val">${renderMd(d.tw||'')}</div></div>
+      <div class="p-cell"><div class="p-lbl">考試重點</div><div class="p-val">${renderMd(d.exam||'')}</div></div>
+    </div>
     <div class="p-grid">
-      <div class="p-cell"><div class="p-lbl">台灣影響</div><div class="p-val">${d.tw||''}</div></div>
-      <div class="p-cell"><div class="p-lbl">考試重點</div><div class="p-val">${d.exam||''}</div></div>
-      <div class="p-cell"><div class="p-lbl">關鍵數字</div><div class="p-val" style="color:${layer.color};font-weight:600">${d.num||''}</div></div>
-      <div class="p-cell"><div class="p-lbl">適用對象</div><div class="p-val">${d.who||''}</div></div>
+      <div class="p-cell"><div class="p-lbl">關鍵數字</div><div class="p-val" style="color:${layer.color};font-weight:600">${renderMd(d.num||'')}</div></div>
+      <div class="p-cell"><div class="p-lbl">適用對象</div><div class="p-val">${renderMd(d.who||'')}</div></div>
     </div>
     <div class="p-sec">關聯名詞</div>
     <div class="p-chips">${relChips}</div>
@@ -2025,6 +2038,9 @@ function saveApiSettings(){
   }, {passive:true});
 
   document.addEventListener('touchend', ()=>{ isResizing = false; });
+
+  // hide resizer on init (panel is closed)
+  resizer.style.display = 'none';
 
   // restore saved width
   const saved = localStorage.getItem('esg_panel_width');
