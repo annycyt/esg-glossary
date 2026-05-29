@@ -171,12 +171,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .p-sec-toggle{
   display:flex;align-items:center;justify-content:space-between;
   cursor:pointer;user-select:none;
-  padding:4px 0;
+  padding:6px 2px;border-radius:4px;
+  margin:10px 0 2px;
 }
+.p-sec-toggle:active{background:var(--bg3)}
+.p-sec-toggle:hover .p-sec-arrow{color:var(--text2)}
 .p-sec-toggle:hover{color:var(--text2)}
 .p-sec-arrow{
-  font-size:10px;transition:transform .2s;display:inline-block;
-  color:var(--text3);
+  font-size:18px;transition:transform .25s;display:inline-block;
+  color:var(--text2);line-height:1;margin-left:4px;
 }
 .p-sec-arrow.collapsed{transform:rotate(-90deg)}
 .p-collapsible{
@@ -1203,10 +1206,45 @@ async function loadCustom(){
 }
 function saveCustom(){
   const ts = Date.now();
-  // always use current ts so other devices know this is newer
   const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:ts}));
   kvSave(custom);
   localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
+}
+
+function saveLayout(){
+  // save all layer term orders + timestamp
+  const ts = Date.now();
+  const layout = {
+    _ts: ts,
+    layers: LAYER_DEFS.map(l=>({ id:l.id, terms:[...l.terms] }))
+  };
+  localStorage.setItem('esg_layout_v3', JSON.stringify(layout));
+  // save to KV as a special node with id '__layout__'
+  const allNodes = [
+    ...Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts})),
+    ...Object.entries(D).filter(([k,v])=>v._edited&&!v._custom).map(([k,v])=>({...v,id:k,_ts:v._ts||ts})),
+    { id:'__layout__', _layout:layout, _ts:ts }
+  ];
+  kvSave(allNodes);
+}
+
+function restoreLayoutFromLocal(){
+  try{
+    const s = localStorage.getItem('esg_layout_v3');
+    if(!s) return false;
+    const layout = JSON.parse(s);
+    if(!layout.layers) return false;
+    layout.layers.forEach(saved=>{
+      const layer = LAYER_DEFS.find(l=>l.id===saved.id);
+      if(!layer) return;
+      // rebuild terms: keep saved order, only include ids that exist in D
+      const reordered = saved.terms.filter(id=>D[id]);
+      // add any new ids not in saved (newly added built-ins)
+      layer.terms.forEach(id=>{ if(!reordered.includes(id)) reordered.push(id); });
+      layer.terms = reordered;
+    });
+    return true;
+  }catch(e){ return false; }
 }
 function saveEdited(){
   const ts = Date.now();
@@ -1253,6 +1291,7 @@ function restoreCustomFromLocal(){
   }catch(e){}
 }
 restoreCustomFromLocal();
+restoreLayoutFromLocal(); // restore saved term order
 renderLanes(); updateCount();
 
 async function loadCustomWithStatus(){
@@ -1278,7 +1317,14 @@ async function loadCustomWithStatus(){
       const kvNewer = kvTs > lcTs;
       dbg('節點 '+n.id+' kvTs='+kvTs+' lcTs='+lcTs+' kvNewer='+kvNewer);
 
-      if(n._custom){
+      if(n.id==='__layout__' && n._layout){
+        const localLayoutTs = JSON.parse(localStorage.getItem('esg_layout_v3')||'{"_ts":0}')._ts||0;
+        if(kvTs > localLayoutTs){
+          localStorage.setItem('esg_layout_v3', JSON.stringify(n._layout));
+          restoreLayoutFromLocal();
+          kvWon = true;
+        }
+      } else if(n._custom){
         if(!D[n.id] || kvNewer){
           D[n.id] = n;
           const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
@@ -1344,7 +1390,14 @@ loadCustomWithStatus();
       let updated = 0;
       nodes.forEach(n=>{
         const kvTs = n._ts||0;
-        if(n._custom){
+        if(n.id==='__layout__' && n._layout){
+          const localLayoutTs = JSON.parse(localStorage.getItem('esg_layout_v3')||'{"_ts":0}')._ts||0;
+          if(kvTs > localLayoutTs){
+            localStorage.setItem('esg_layout_v3', JSON.stringify(n._layout));
+            restoreLayoutFromLocal();
+            updated++;
+          }
+        } else if(n._custom){
           const localTs = D[n.id]?._ts||0;
           if(kvTs > localTs){
             D[n.id] = n;
@@ -1822,6 +1875,7 @@ function submitEdit(){
   });
   if(d._custom){ saveCustom(); }
   else { d._edited = true; saveEdited(); }
+  saveLayout();
   const savedId = editingId; // save before closeSidePanel clears it
   selectedId = savedId;
   closeSidePanel();
@@ -2062,7 +2116,7 @@ function handleDrop(e, targetId, targetLid){
     toLayer.terms.splice(idx, 0, dragId);
   }
 
-  if(D[dragId]?._custom) saveCustom();
+  saveLayout();
   dragId = null; dragFromLid = null;
   renderLanes(document.getElementById('srch').value.trim());
 }
@@ -2076,7 +2130,7 @@ function handleDropLane(e, lid){
   if(!fromLayer || !toLayer || fromLayer===toLayer) return;
   fromLayer.terms = fromLayer.terms.filter(t=>t!==dragId);
   if(!toLayer.terms.includes(dragId)) toLayer.terms.push(dragId);
-  if(D[dragId]?._custom) saveCustom();
+  saveLayout();
   dragId = null; dragFromLid = null;
   renderLanes(document.getElementById('srch').value.trim());
 }
@@ -2114,9 +2168,12 @@ async function forcePushToKV(){
     const edited = Object.entries(D)
       .filter(([k,v])=>v._edited&&!v._custom)
       .map(([k,v])=>({...v,id:k,_ts:ts}));
-    const all = [...custom,...edited];
+    // include layout
+    const layout = JSON.parse(localStorage.getItem('esg_layout_v3')||'null');
+    const layoutNode = layout ? [{ id:'__layout__', _layout:layout, _ts:ts }] : [];
+    const all = [...custom,...edited,...layoutNode];
     if(all.length===0){
-      if(statusEl) statusEl.textContent = '沒有自訂或編輯過的名詞需要推送。';
+      if(statusEl) statusEl.textContent = '沒有資料需要推送。';
       return;
     }
     await kvSave(all);
