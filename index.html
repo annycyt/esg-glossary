@@ -1177,7 +1177,8 @@ async function loadCustom(){
 }
 function saveCustom(){
   const ts = Date.now();
-  const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
+  // always use current ts so other devices know this is newer
+  const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:ts}));
   kvSave(custom);
   localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
 }
@@ -1267,17 +1268,14 @@ async function loadCustomWithStatus(){
       }
     });
 
-    // always push local newest data back to KV so other devices get it
-    const ts = Date.now();
-    const allCustom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:n._ts||ts}));
-    const allEdited = Object.entries(D)
+    // update localStorage with KV-won data
+    // DO NOT push back to KV on load - only push when user actually edits
+    const mergedCustom = Object.values(D).filter(n=>n._custom);
+    const mergedEdited = Object.entries(D)
       .filter(([k,v])=>v._edited&&!v._custom)
-      .map(([k,v])=>({...v,id:k,_ts:v._ts||ts}));
-    if(allCustom.length||allEdited.length) kvSave([...allCustom,...allEdited]);
-
-    // update localStorage with merged result
-    if(allCustom.length) localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(allCustom));
-    if(allEdited.length) localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(allEdited));
+      .map(([k,v])=>({...v,id:k}));
+    if(mergedCustom.length) localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(mergedCustom));
+    if(mergedEdited.length) localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(mergedEdited));
 
     renderLanes(); updateCount();
     const msg = [
@@ -1292,6 +1290,84 @@ async function loadCustomWithStatus(){
 
 // load on start
 loadCustomWithStatus();
+
+/* ════════════════════════════════════════════
+   POLLING - 每 30 秒檢查 KV 是否有新資料
+════════════════════════════════════════════ */
+(function(){
+  // 記錄上次 KV 的資料指紋（用所有 _ts 加總）
+  function getKvFingerprint(nodes){
+    return nodes.reduce((sum,n)=>sum+(n._ts||0),0);
+  }
+
+  let lastFingerprint = 0;
+  let pollTimer = null;
+
+  async function poll(){
+    // 如果使用者正在編輯，跳過這次（避免干擾）
+    const sideOpen = !document.getElementById('side-panel').classList.contains('closed');
+    if(sideOpen) return;
+
+    try{
+      const nodes = await kvGet();
+      const fp = getKvFingerprint(nodes);
+      if(fp === lastFingerprint) return; // 沒有變化，不處理
+      lastFingerprint = fp;
+
+      // 有新資料，套用更新
+      let updated = 0;
+      nodes.forEach(n=>{
+        const kvTs = n._ts||0;
+        if(n._custom){
+          const localTs = D[n.id]?._ts||0;
+          if(kvTs > localTs){
+            D[n.id] = n;
+            const layer = LAYER_DEFS.find(l=>l.id===n.layerId);
+            if(layer && !layer.terms.includes(n.id)) layer.terms.push(n.id);
+            updated++;
+          }
+        } else if(n._edited && n.id && D[n.id]){
+          const localTs = D[n.id]?._ts||0;
+          if(kvTs > localTs){
+            Object.assign(D[n.id], n);
+            updated++;
+          }
+        }
+      });
+
+      if(updated > 0){
+        // 更新 localStorage
+        const custom = nodes.filter(n=>n._custom);
+        const edited = nodes.filter(n=>n._edited&&!n._custom);
+        if(custom.length) localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
+        if(edited.length) localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
+
+        renderLanes(document.getElementById('srch').value.trim());
+        // 如果詳情面板開著，也刷新
+        if(selectedId) showDetailPanel(selectedId);
+        showSyncStatus('✓ 已從其他裝置同步 '+updated+' 個名詞','var(--l1)');
+      }
+    } catch(e){
+      // polling 失敗靜默處理，不干擾使用者
+    }
+  }
+
+  // 初始化指紋（從 localStorage 讀取）
+  try{
+    const c = JSON.parse(localStorage.getItem('esg_custom_nodes_v3')||'[]');
+    const e = JSON.parse(localStorage.getItem('esg_edited_nodes_v3')||'[]');
+    lastFingerprint = getKvFingerprint([...c,...e]);
+  } catch(ex){}
+
+  // 頁面可見時才 polling，背景時暫停（省電省流量）
+  function startPoll(){ if(!pollTimer) pollTimer = setInterval(poll, 30000); }
+  function stopPoll(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
+
+  document.addEventListener('visibilitychange', ()=>{
+    document.hidden ? stopPoll() : startPoll();
+  });
+  startPoll();
+})();
 
 /* ════════════════════════════════════════════
    RENDER LANES
