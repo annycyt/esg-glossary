@@ -358,6 +358,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
       <button class="btn-secondary" onclick="closeApiModal()">取消</button>
       <button class="btn-primary" onclick="saveApiSettings()">儲存</button>
     </div>
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+        如果本機有編輯紀錄但其他裝置沒有同步，點此強制推送所有本機資料到雲端。
+      </div>
+      <button onclick="forcePushToKV()" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font)">
+        ☁ 強制推送本機資料到雲端
+      </button>
+      <div id="force-push-status" style="font-size:11px;margin-top:6px;color:var(--text3)"></div>
+    </div>
   </div>
 </div>
 
@@ -2067,6 +2076,32 @@ function saveApiSettings(){
   localStorage.setItem('esg_worker_url', workerUrl);
   closeApiModal();
   showSyncStatus('✓ 設定已儲存','var(--l1)');
+}
+
+async function forcePushToKV(){
+  const statusEl = document.getElementById('force-push-status');
+  if(statusEl) statusEl.textContent = '⟳ 推送中…';
+  try{
+    const ts = Date.now();
+    // collect ALL edited and custom nodes from D
+    const custom = Object.values(D).filter(n=>n._custom).map(n=>({...n,_ts:ts}));
+    const edited = Object.entries(D)
+      .filter(([k,v])=>v._edited&&!v._custom)
+      .map(([k,v])=>({...v,id:k,_ts:ts}));
+    const all = [...custom,...edited];
+    if(all.length===0){
+      if(statusEl) statusEl.textContent = '沒有自訂或編輯過的名詞需要推送。';
+      return;
+    }
+    await kvSave(all);
+    // update localStorage with new ts
+    if(custom.length) localStorage.setItem('esg_custom_nodes_v3', JSON.stringify(custom));
+    if(edited.length) localStorage.setItem('esg_edited_nodes_v3', JSON.stringify(edited));
+    if(statusEl) statusEl.textContent = '✓ 已推送 '+all.length+' 筆資料到雲端，其他裝置重新整理即可同步。';
+    showSyncStatus('✓ 強制推送完成','var(--l1)');
+  } catch(e){
+    if(statusEl) statusEl.textContent = '✗ 推送失敗：'+e.message;
+  }
 }
 
 /* ════════════════════════════════════════════
