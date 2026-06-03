@@ -184,8 +184,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .p-sec-arrow.collapsed{transform:rotate(-90deg)}
 .p-collapsible{
   overflow:hidden;
-  transition:max-height .25s ease, opacity .2s;
-  max-height:2000px;opacity:1;
+  transition:max-height .4s ease, opacity .2s;
+  max-height:9999px;opacity:1;
 }
 .p-collapsible.collapsed{max-height:0;opacity:0}
 .p-box{
@@ -1950,7 +1950,7 @@ async function generateAI(mode){
       pendingNoteText = answerText;
       document.getElementById('regen-preview').innerHTML = `
         <div class="s-sec-title">AI 回答預覽（將存入補充筆記）</div>
-        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.75;max-height:300px;overflow-y:auto">${renderMd(answerText)}</div>
+        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.75;overflow-y:auto">${renderMd(answerText)}</div>
         <div class="btn-row">
           <button class="btn-secondary" onclick="document.getElementById('regen-preview').innerHTML='';pendingNoteText=null">放棄</button>
           <button class="btn-primary" onclick="applyRegen()">存入補充筆記</button>
@@ -2032,7 +2032,7 @@ async function generateAI(mode){
 
       document.getElementById('regen-preview').innerHTML = `
         <div class="s-sec-title">AI 生成內容預覽（將存入補充筆記）</div>
-        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);white-space:pre-wrap;line-height:1.7;max-height:220px;overflow-y:auto">${noteText.replace(/</g,'&lt;')}</div>
+        <div style="background:var(--l5b);border:1px solid var(--l5)44;border-left:3px solid var(--l5);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--text2);white-space:pre-wrap;line-height:1.7;overflow-y:auto">${noteText.replace(/</g,'&lt;')}</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px">原本的說明欄位不會被更動，AI 內容只放進「補充筆記」</div>
         <div class="btn-row">
           <button class="btn-secondary" onclick="document.getElementById('regen-preview').innerHTML='';pendingNoteText=null">放棄</button>
