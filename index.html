@@ -231,7 +231,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .s-textarea{
   width:100%;background:var(--card);border:1.5px solid var(--border2);
   border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text);
-  font-family:var(--font);outline:none;resize:vertical;min-height:68px;
+  font-family:var(--font);outline:none;resize:vertical;min-height:120px;
   line-height:1.65;margin-bottom:8px;
 }
 .s-textarea:focus,.s-input:focus{border-color:var(--l1)}
@@ -290,13 +290,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
   #hdr-count{display:none}
   #panel,#side-panel{
     position:fixed;left:0;right:0;bottom:0;
-    width:100%!important;max-height:75vh;
+    width:100%!important;max-height:88vh;
     border-left:none;border-top:2px solid var(--border2);
     border-radius:14px 14px 0 0;transform:translateY(100%);
     transition:transform .3s ease;opacity:1!important;z-index:200;
   }
   #panel.open,#side-panel.open{transform:translateY(0)}
-  #panel-inner,#side-inner{min-width:0;padding:12px 14px 32px}
+  #panel-inner,#side-inner{min-width:0;padding:12px 14px 80px}
   #panel-inner::before,#side-inner::before{
     content:'';display:block;width:36px;height:4px;
     background:var(--border2);border-radius:2px;margin:0 auto 12px;
